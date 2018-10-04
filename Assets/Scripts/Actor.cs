@@ -331,7 +331,7 @@ public class Skill
 
         }
         public Item[] items;
-        public EquipementSlot[] Equipement;
+        public EquipementSlot[] Slot;
 
         /// <summary>
         /// Light Equipement Build
@@ -341,12 +341,12 @@ public class Skill
             get { var e = new Inventory();
 
                 e.items = new Item[3];
-                e.Equipement = new EquipementSlot[4];
-                e.Equipement[0].SlotType = global::Equipement.Slot.Armor;
-                e.Equipement[1].SlotType = global::Equipement.Slot.Head;
-                e.Equipement[2].SlotType = global::Equipement.Slot.Accessory;
-                e.Equipement[3].SlotType = global::Equipement.Slot.Weapon;
-                foreach (var item in e.Equipement) item.item.OnItemBreak += e.OnItemBreak;
+                e.Slot = new EquipementSlot[4];
+                e.Slot[0].SlotType = global::Equipement.Slot.Armor;
+                e.Slot[1].SlotType = global::Equipement.Slot.Head;
+                e.Slot[2].SlotType = global::Equipement.Slot.Accessory;
+                e.Slot[3].SlotType = global::Equipement.Slot.Weapon;
+                foreach (var item in e.Slot) item.item.OnItemBreak += e.OnItemBreak;
 
 
 
@@ -354,18 +354,40 @@ public class Skill
                 return e;
             }
         }
-        public void ChangeInventory(Inventory r)
+        public void ChangeInventory(Inventory r, Inventory z)
         {
             var g = this;
             var e = new Inventory();
-          
-            
+            e.Slot = z.Slot;
+            e.items = z.items;
+            var t = new List<Equipement>();
+            foreach (var item in g.Slot)
+                t.Add(item.item);
+
+            for (int i = 0; i <t.Count; i++)
+            {
+                if (t[i].slot == e.Slot[i].SlotType)
+                {
+                    e.Slot[i].Equip(t[i]);
+                }
+            }
 
 
+
+            this = e;
         }
 
 
-
+        public bool IsFull
+        {
+            get {  bool t = true;
+                for (int i = 0; i < items.Length; i++)
+                {
+                    if (items[i] == null) t = false; 
+                }
+                return t;
+                 }
+        }
         public struct EquipementSlot
         {
             public string SlotName;
