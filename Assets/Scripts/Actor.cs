@@ -135,20 +135,26 @@ public abstract class Actor : IComparable<Actor> {
     
     //Action
     public delegate void DamageHandler(float z,Skill x, DamageType d);
+
     public event DamageHandler OnAttack, OnDamage;
     public virtual void Use(Skill s, Actor[] Target)
     {
-        if (HP >= s.NeedHp) TakeDamage(s.NeedHp);
+        if (HP >= s.HpCost) TakeDamage(s.HpCost);
         else return;
 
-        if (MP >= s.NeedMP) ConsumeMP(s.NeedMP);
+        if (MP >= s.MpCost) ConsumeMP(s.MpCost);
         else return;
 
-        if (SP >= s.NeedSP) ConsumeSP(s.NeedSP);
+        if (SP >= s.SpCost) ConsumeSP(s.SpCost);
         else return;
 
         foreach (var item in Target) s.Activate(item, GetStats);
 
+    }
+    public virtual void Use(Item i, Actor[] T)
+    {
+        foreach (var item in T) i.On(item);
+         
     }
     public void TakeDamage(float x)
     {
@@ -279,16 +285,15 @@ public class Skill
     static Random SkillRandom = new Random();
     public string Name ="";
     public DamageType Type;
-    //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT
-    public float Damage  = 0;
+
+    //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
+    public float Damage  = 1;
     protected float BaseCritChance = 5;
     public TargetType Targets;
 
-    //Requirement
-
-        
-    public float NeedMP =0, NeedHp = 0;
-    public int NeedSP = 0;
+    //Requirement    
+    public float MpCost =0, HpCost = 0;
+    public int SpCost = 0;
     public static Skill Base {
 
         get
@@ -296,12 +301,11 @@ public class Skill
             var e = new Skill();
             e.Name = "Attack";
             e.Type = DamageType.Physical;
-            e.Damage = 5;
+            e.Damage = .25f;
             e.Targets = TargetType.OneEnemy;
             return e;
         }
     }
-
     public virtual void Activate(Actor Target, stat Stats = new stat())
     {
         var x = Damage;
@@ -312,12 +316,72 @@ public class Skill
 
             Target.TakeDamage(x,this, Type);
     }
-
     public void Activate(Actor[] a)
     {
         foreach (var item in a) { Activate(item);  } 
     }
 
+
+    //Inventory
+    public struct Inventory
+    {
+        //Not everyone have the same size of inventory. Not everybody have the same size of bag nor can equip as much items. Some cannot equip anything,
+        public void OnItemBreak(Item a)
+        {
+
+        }
+        public Item[] items;
+        public EquipementSlot[] Equipement;
+
+        /// <summary>
+        /// Light Equipement Build
+        /// </summary>
+        public static Inventory Light
+        {
+            get { var e = new Inventory();
+
+                e.items = new Item[3];
+                e.Equipement = new EquipementSlot[4];
+                e.Equipement[0].SlotType = global::Equipement.Slot.Armor;
+                e.Equipement[1].SlotType = global::Equipement.Slot.Head;
+                e.Equipement[2].SlotType = global::Equipement.Slot.Accessory;
+                e.Equipement[3].SlotType = global::Equipement.Slot.Weapon;
+                foreach (var item in e.Equipement) item.item.OnItemBreak += e.OnItemBreak;
+
+
+
+
+                return e;
+            }
+        }
+        public void ChangeInventory(Inventory r)
+        {
+            var g = this;
+            var e = new Inventory();
+          
+            
+
+
+        }
+
+
+
+        public struct EquipementSlot
+        {
+            public string SlotName;
+            public Equipement item;
+            public Equipement.Slot SlotType;
+            public void Equip(Equipement q)
+            {
+                if (q.slot != SlotType) return;
+                item = q;
+            
+               
+            }
+        }
+    }
+ 
+    
 
 }
 [Flags]
