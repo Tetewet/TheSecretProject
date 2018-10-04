@@ -10,7 +10,6 @@ public class dialogue : MonoBehaviour {
     void Start()
     {
         dialogueText = GetComponent<Text>();
-        dialogueText.text = "David + Brad + Roberto /n+ Alonso + Théo";
         StartCoroutine(DialogueCoroutine());
     }
 
@@ -18,10 +17,12 @@ public class dialogue : MonoBehaviour {
     {
         int number = 10;
         dialogueText.text = "Foo";
+        yield return new WaitForSeconds(2);
         dialogueText.text += " Bar";
-        dialogueText.text = "n = " + number;
         yield return new WaitForSeconds(2);
         dialogueText.text = "n = " + number;
         number *= 20;
+        yield return new WaitForSeconds(2);
+        dialogueText.text = "n = " + number;
     }
 }
