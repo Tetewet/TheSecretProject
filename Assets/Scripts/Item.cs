@@ -31,9 +31,23 @@ public abstract class Item
 
 public class Equipement : Item
 {
+    public enum Slot
+    {
+        Head = 0, Armor =1, Accessory =2
+    }
+    public stat StatsBonus;
+    public Slot slot;
+    public float DEF = 0;
+    public float MagDEF = 0;
+    public override string ToString()
+    {
+        return slot + " " + Name.ToString();
+    }
+}
 
-    public stat Stats;
-
-
-
+public class Consumeable : Item
+{
+    public stat StatsBonus;
+    public float HPregen, MPregen, SPregen;
+    
 }
