@@ -40,9 +40,9 @@ public class InGameActor : MonoBehaviour {
         actor.ConsumeSP(-10);
         Position = GameManager.Battlefied[(int)actor.transform.TilePosition.x, (int)actor.transform.TilePosition.y].transform.position;
         this.transform.position = Vector3.Lerp(transform.position, Position + offset, Speed * Time.smoothDeltaTime);
-        
 
 
+        //Debug
 
         var h = Input.GetAxis("Horizontal");
         var v = Input.GetAxis("Vertical");
@@ -51,10 +51,10 @@ public class InGameActor : MonoBehaviour {
             item.SetBool("Walking", walking);
         if (timer>= StepDuration && walking)
         {
-           
 
+         
 
-                var u = new Vector((int)h, -(int)v);
+                var u = new Vector(Mathf.Clamp((int)(h)  ,-1,1), Mathf.Clamp(-(int)(v)  , -1,1));
           
 
                  foreach (var item in sprity)
