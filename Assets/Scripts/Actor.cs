@@ -18,11 +18,11 @@ public struct Vector
     }
     public static float Distance(Vector a, Vector b)
     {
-        return (a - b).magnitude;
+        return Math.Abs((a - b).magnitude);
     }
-    public float magnitude { get { return (x + y) / 2; } }
+    public float magnitude { get { return Math.Abs((x + y) / 2); } }
     public Vector normalized { get { return new Vector(x, y) / magnitude; } }
-
+    
     public static Vector zero { get { var v = new Vector(); v.x = 0; v.y = 0; return v; } }
     public static Vector one { get { var v = new Vector(); v.x = 1; v.y = 1; return v; } }
     public static Vector up { get { var v = new Vector(); v.x = 0; v.y = 1; return v; } }
@@ -61,7 +61,7 @@ public struct Vector
     }
     public override string ToString()
     {
-        return "{" + x + " , " + y + " }";
+        return "{X:" + x + " , Y:" + y + "}";
     }
 }
 
@@ -97,9 +97,10 @@ public abstract class Actor : IComparable<Actor> {
 
         Level++;
     }
-    public Actor(string Name)
+    public Actor(string Name, stat BaseStats)
     {
         this.Name = Name;
+        this.baseStats = BaseStats;
     }
 
     //Status
@@ -183,25 +184,99 @@ public abstract class Actor : IComparable<Actor> {
     public virtual void Turn(Battle battle)
     {
         //This turn
-
+        SP += 3;
         Battle.Turn ThisTurn = battle.ThisTurn;
+        while (!IsDefeat && SP > 0)
+        {
+            Move(_transform.TilePosition);
+        }
         //Act Here - Add logic for monster here             
         
     }
  
     //Position In world;
-    public void WalkTo(Vector position)
+    public void Move(Vector position, int map = 0 )
     {
-
+       
+        _transform.position += position;
+        
     }
 
-    internal Transform _transform;
+    //Move with bound and collision in mind 
+    public virtual void Move(Vector v)
+    {
+        
+        var b = GameManager.CurrentBattle;
+        var e = transform.currentTile.Position + v;
+
+        if (e.x < 0) e.x = 0;if (e.x > b.map.Width) e.x = b.map.Width - 1;
+        if (e.y < 0) e.y = 0; if (e.y > b.map.Length) e.y = b.map.Length - 1;
+        for (int x = 0; x < b.map.Width; x++)
+        {
+           
+            for (int y = 0; y < b.map.Length; y++)
+            {
+                //Check if there is something blocking the right
+                if (e.normalized.x > 0 && x < b.map.Width)            
+                    if(x > transform.TilePosition.x && x < e.x)                                  
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor))
+                        { UnityEngine.Debug.Log((b.map.Tiles[x, y].Actor != null)); CantMove();  return; }
+                //Check if there is something blocking the  left
+                if (e.normalized.x < 0 && x > 0)
+                    if (x < transform.TilePosition.x && x > e.x)
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(); return; }
+                //Check if ....
+                if (e.normalized.y  > 0 && y < b.map.Length)
+                    if (y > transform.TilePosition.y && y < e.y)
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(); return; }
+
+                //Ch...
+                if (e.normalized.y < 0 && y > 0)
+                    if (y > transform.TilePosition.y && y < e.y)
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this,b.map.Tiles[x, y].Actor)) { CantMove(); return; }
+
+            }
+        }
+
+
+        Move(b.map.AtPos(e));
+
+    }
+    //Position In Battle
+    
+    public virtual void Move(Map.Tile where)
+    {
+        var a = Vector.Distance(where.Position, transform.currentTile.Position);
+        
+       /* if (where.Actor != null || SP * GetStats.AGI < a )
+        {
+            CantMove();
+            
+            return;
+        }*/
+
+        SP -= (int)(a/GetStats.AGI);
+        if (SP < 0) SP = 0;
+      
+        _transform.currentTile.OnQuitting();
+        _transform.currentTile = where;
+        _transform.currentTile.Enter(this); 
+      
+    }
+    
+    void CantMove()
+    {
+        //DEBUG
+        
+    }
+    protected Transform _transform;
     /// <summary>
     /// World-Related Variables (Position, Direction )
     /// </summary>
     public Transform transform
     {
-        get{ return transform; }
+        get{ return _transform; }
+       
     }
     public struct Transform
     {
@@ -211,6 +286,16 @@ public abstract class Actor : IComparable<Actor> {
             Down =2,
             Right = 3,
             Left =4
+        }
+        public Map.Tile currentTile
+        {
+            get { return _curtile; }
+            set { _curtile = value; }
+        }
+        private Map.Tile _curtile;
+        public Vector TilePosition
+        {
+            get { return _curtile.Position; }
         }
         public Vector position
         {
@@ -285,7 +370,7 @@ public class Skill
     static Random SkillRandom = new Random();
     public string Name ="";
     public DamageType Type;
-
+    public int Reach = 1;
     //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
     public float Damage  = 1;
     protected float BaseCritChance = 5;
@@ -300,6 +385,7 @@ public class Skill
         {
             var e = new Skill();
             e.Name = "Attack";
+            e.Reach = 1;
             e.Type = DamageType.Physical;
             e.Damage = .25f;
             e.Targets = TargetType.OneEnemy;
@@ -422,24 +508,24 @@ public enum DamageType
 /// <summary>
 /// Stats of any living being.
 /// </summary>
-public struct stat :IComparable<stat>
+public struct stat : IComparable<stat>
 {
 
-    public delegate void OnStatsGainHandler( );
+    public delegate void OnStatsGainHandler();
     public event OnStatsGainHandler OnGainStats;
     public int STR, AGI, END, WIS, INT, LUC;
     //For fine tuning turn order
-    public int Priority ;
+    public int Priority;
     //For fine tuning targeting
     public int Threat;
     public float PhysDEF { get { return STR / 2 + END + AGI / 4; } }
-    public float MagDEF { get { return INT + WIS * 2 ; } }
+    public float MagDEF { get { return INT + WIS * 2; } }
     public float MaximumHP { get { return END * 5; } }
     public float MaximumMP { get { return WIS * 5; } }
- 
-    public int Magnitude{ get { return (STR + AGI + END + WIS + INT + LUC)/6; } }
-  
-    public void AddStats(int x , _stats s)
+
+    public int Magnitude { get { return (STR + AGI + END + WIS + INT + LUC) / 6; } }
+
+    public void AddStats(int x, _stats s)
     {
         switch (s)
         {
@@ -477,10 +563,14 @@ public struct stat :IComparable<stat>
     {
         return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
     }
- 
+
     //Useful Functions
 
 
+    public static stat zero
+    {
+        get { return new stat(); }
+    }
     public static stat operator +(stat a, stat b)
     {
         var e = new stat();

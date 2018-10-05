@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+ 
 
+ 
 public class Battle{
 
     public void Run()
@@ -14,7 +15,11 @@ public class Battle{
        }
         OnBattleEnd();
     }
-
+    public Map map;
+    public bool IsTeamWith(Actor a, Actor b)
+    {
+        return (Players.Contains(a) && Players.Contains(b)) || (Foes.Contains(a) && Foes.Contains(b));
+    }
     public void OnBattleEnd()
     {
 
@@ -37,12 +42,12 @@ public class Battle{
     }
     public List<Turn> History = new List<Turn>();
     public WinCondition Win = WinCondition.Default;
-    public Actor[] Players, Foes; 
+    public List<Actor> Players = new List<Actor>(), Foes = new List<Actor>(); 
     public class Turn
     {
 
         public List<Actor> Order = new List<Actor>();
-        public Turn(Actor[] TeamA, Actor[] TeamB)
+        public Turn(List<Actor>  TeamA, List<Actor> TeamB)
         {
             var e = new List<Actor>();
 
@@ -54,7 +59,81 @@ public class Battle{
         }
     }
 }
+ 
+public class Map  
+{
+    public string Name = "Arena";
+    public int Width
+    {
+        get { return Tiles.GetLength(0); }
+    }
+    public int Length
+    {
+        get { return Tiles.GetLength(1); }
+    }
+    public Tile[,] Tiles;
+    public Map(Vector size)
+    {
+        Tiles = new Tile[(int)size.x, (int)size.y];
+        for (int x = 0; x < Tiles.GetLength(0); x++)
+        {
+            for (int y = 0; y < Tiles.GetLength(1); y++)
+            {
+                Tiles[x, y].Position = new Vector(x, y);
+            }
+        }
 
+
+    }
+    public Tile AtPos(Vector v)
+    {
+        Tile g = new Tile();
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Length; y++)
+            {
+
+                int a = (int)v.x;
+                int b = (int)v.y;
+               
+                
+                if (v.y > y) b = y;
+                 if (v.x > x) a= x;
+                g = Tiles[a, b];
+                
+            }
+        }
+        return g;
+    }
+    public Tile AtPos(int X ,int Y )
+    {
+        return AtPos(new Vector(X, Y));
+    }
+    public struct Tile
+    {
+
+        //There can be at any given time one actor or a list of item
+        public Actor Actor;
+        public Item[] item;
+        public Vector Position;
+        public void Enter(Actor a)
+        {
+            Actor = a;
+        }
+        public  void OnQuitting()
+        {
+            Actor = null;
+        }
+        
+        
+    }
+
+    public override string ToString()
+    {
+        return Name + " | Size : " + Tiles.GetLength(0) + "-" + Tiles.GetLength(1);
+    }
+}
+ 
 public class WinCondition
 {
     //In case we want to be specific - e.g One actor left
@@ -77,6 +156,7 @@ public class WinCondition
         else return Result.Win;
 
     }
+
     public static WinCondition Default
     {
         get { var e = new WinCondition();           
