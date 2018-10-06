@@ -63,7 +63,7 @@ public class InGameActor : MonoBehaviour {
         if (DistanceToPos < 0.09f) OnEnterTile();
 
 
-
+        sprity[0].sortingOrder = 2 + (int)actor.TilePosition.y;
 
         Indicator.gameObject.SetActive(GameManager.SelectedActor == actor);
         Indicator.transform.position = e.transform.position;
