@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
- 
 
- 
+
+[System.Serializable]
 public class Battle{
 
     public void Run()
@@ -59,7 +59,7 @@ public class Battle{
         }
     }
 }
- 
+ [System.Serializable]
 public class Map  
 {
     public string Name = "Arena";
@@ -79,7 +79,9 @@ public class Map
         {
             for (int y = 0; y < Tiles.GetLength(1); y++)
             {
+                Tiles[x, y] = new Tile();
                 Tiles[x, y].Position = new Vector(x, y);
+                
             }
         }
 
@@ -87,51 +89,93 @@ public class Map
     }
     public Tile AtPos(Vector v)
     {
-        Tile g = new Tile();
-        for (int x = 0; x < Width; x++)
-        {
-            for (int y = 0; y < Length; y++)
-            {
-
-                int a = (int)v.x;
-                int b = (int)v.y;
-               
-                
-                if (v.y > y) b = y;
-                 if (v.x > x) a= x;
-                g = Tiles[a, b];
-                
-            }
-        }
-        return g;
+        var a = (int)v.x;
+        var b = (int)v.y;
+        if (a < 0) a = 0; if (a >= Width) a = Width - 1;
+        if (b < 0) b = 0; if (b >= Length) b= Length - 1;
+ 
+        return Tiles[a, b];
+       
     }
     public Tile AtPos(int X ,int Y )
     {
         return AtPos(new Vector(X, Y));
     }
-    public struct Tile
+    public class  Tile
     {
 
         //There can be at any given time one actor or a list of item
         public Actor Actor;
-        public Item[] item;
+        public List<Item> Items = new List<Item>();
         public Vector Position;
+        public int x
+        {
+            get { return (int)Position.x; }
+        }
+        public int y
+        {
+            get { return (int)Position.y; }
+        }
         public void Enter(Actor a)
         {
+            UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
+            if (Items.Count >= 0)
+            {
+                for (int i = 0; i < Items.Count; i++)
+                {
+                    if (!a.inventory.IsFull) { UnityEngine.Debug.Log(a.ToString() + " takes  " + Items[i].ToString()); a.Grab(Items[i]);Items.Remove(Items[i]); }
+                }
+
+                   
+            }
             Actor = a;
+          /*  if(a.Path.Count > 0)
+            a.Path.Dequeue();*/
+
         }
         public  void OnQuitting()
         {
+            if(Actor!=null)
+            UnityEngine.Debug.Log(Actor.ToString() + " exits " + Position.ToString());
             Actor = null;
         }
-        
-        
+        public Tile()
+        {
+            
+        }
+        public void AddItem(Item a)
+        {
+            Items.Add(a);
+            a.CurrentTile = this;
+        }
+        public override string ToString()
+        {
+            var e = Position.ToString();
+            e += " Items: ";
+            foreach (var x in Items)
+            { e += " " + x.ToString() + "\n"; }
+            e += " Actor: " + Actor;
+            return e;
+        }
     }
 
     public override string ToString()
     {
-        return Name + " | Size : " + Tiles.GetLength(0) + "-" + Tiles.GetLength(1);
+        var e = Name + " | Size : " + Tiles.GetLength(0) + "-" + Tiles.GetLength(1);
+        e += "\n";
+        for (int x = 0; x <  Width; x++)
+        {
+            for (int y = 0; y <  Length; y++)
+            {
+
+                 e +=  Tiles[x, y].ToString() + "\n"; 
+
+            }
+
+        }
+        return e;
     }
+ 
 }
  
 public class WinCondition

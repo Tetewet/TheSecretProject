@@ -4,32 +4,205 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
+    public static GameManager GM;
     public static bool InBattleMode = true;
     public static Vector3 VecTo3(Vector v)
     {
         return new Vector3(v.x, v.y, 0);
     }
     public static BattleTile[,] Battlefied;
-    public GridLayoutGroup grid;
-    public GameObject panel;
+
+    Image[] Inventory;
+    public GridLayoutGroup grid, CharacterInventory;
+    public Color GridColor;
+    [Header("Templates")]
+ 
+    public GameObject ActorPrefab;
+    public GameObject ItemPrefab;
+    public GameObject panel, InventoryCeil;
+    public Text OnHover; 
+    public Animator Cursor;
+    public static Vector CursorPos;
+    public Vector3 CursorOffset;
+    public static Actor SelectedActor;
+    public static Actor ActorAtCursor = null;
+    
+    public static InGameItem CreateNewItemOnField(Item i, Vector Position)
+    {
+        var e = Instantiate(GM.ItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameItem>();
+
+        e.item = i;
+        CurrentBattle.map.AtPos(Position).AddItem(e.item);
+        return e;
+    }
+
     public static Battle CurrentBattle;
  
     public string MapName;
 
-    public InGameActor Madoshi;
+    public InGameActor[] Actors;
 
+    void InitializeUI()
+    {
+        Inventory = new Image[100];
+        for (int i = 0; i < Inventory.Length; i++)
+            Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
+
+
+    }
     private void Awake()
     {
+        if (!GM) GM = this;
+        else Destroy(this.gameObject);
         CurrentBattle = new Battle();
-        CurrentBattle.map = new Map(new Vector(15, 6));
-
+        //14 6
+        CurrentBattle.map = new Map(new Vector(18, 9));
+        InitializeUI();
         GenerateMap(CurrentBattle.map);
-       
+        OnHover.enabled = true;
+
+
     }
     public void Start()
     {
-        Madoshi.actor.Move(CurrentBattle.map.AtPos(0, 0));
+        //Debug
+        for (int i = 0; i < Actors.Length; i++)
+        {
+            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(5+ i, 3));
+        }
+ 
+        CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        ToggleGrid();
     }
+    float timer = 0;
+    private void FixedUpdate()
+    {
+        timer += Time.fixedDeltaTime;
+    }
+ 
+    public void OnCursorExit(Map.Tile t)
+    {
+ 
+
+
+    }
+    public void OnCursorUpdate(Map.Tile t)
+    {
+        OnHover.gameObject.SetActive( ActorAtCursor != null);
+        CharacterInventory.gameObject.SetActive( ActorAtCursor !=null);
+        Cursor.SetBool("Hover", ActorAtCursor != null);
+        ActorAtCursor = t.Actor;
+        if (ActorAtCursor != null)
+        {
+            OnHover.text =
+    ActorAtCursor.Name + " lv"
+    + ActorAtCursor.GetLevel.ToString("00") + "\n[ hp  "
+    + ActorAtCursor.HP.ToString("00") + " ]\n[ mp "
+    + ActorAtCursor.MP.ToString("00") + " ]\n[ sp  "
+    + ActorAtCursor.SP.ToString("00") + " ]";
+
+             for (int i = 0; i < 100; i++)
+            {
+                if(i < ActorAtCursor.inventory.items.Length )
+                {
+                   
+                    if (ActorAtCursor.inventory.items[i] != null)
+                    {
+                        Inventory[i].transform.parent.gameObject.SetActive(true);
+                        Inventory[i].enabled = true;
+                   
+                        if (Inventory[i].sprite == null)
+                        {
+                            Inventory[i].sprite = LoadSprite(ActorAtCursor.inventory.items[i].ResourcePath);
+                        }
+                    }
+                    else
+                    {
+                        Inventory[i].sprite =  null;
+                        Inventory[i].enabled = false;
+                    }
+                
+                }
+                else
+                {
+                    Inventory[i].sprite = null;
+                    Inventory[i].transform.parent.gameObject.SetActive(false);
+                }
+             
+            }
+
+        }
+
+        
+    }
+
+    public static Sprite LoadSprite(string name)
+    {
+        return Resources.Load<Sprite>("Sprites/" + name);
+    }
+    public void OnPressed(Map.Tile t)
+    {
+       
+        var curtile = t;
+
+        //Debug
+        print("Tiles: " + curtile.Position + " Unity: " + CursorPos + " Actor: " + curtile.Actor);
+
+        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
+        else if (SelectedActor == curtile.Actor) SelectedActor = null;
+
+        if (SelectedActor != null) SelectedActor.Move(curtile);
+
+    }
+    private void Update()
+    {
+      
+
+        CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
+        var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
+        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
+        var h = Input.GetAxisRaw("Horizontal");
+        var v = Input.GetAxisRaw("Vertical");
+        var walking = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
+        if (timer >= .15f && walking)
+        {
+            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
+
+            var u = new Vector(h, -v);
+    
+            CursorPos += u;
+            timer = 0;
+
+        }
+     
+        var curtile = CurrentBattle.map.AtPos(CursorPos);
+        OnCursorUpdate(curtile);
+  
+
+        if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);
+
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            ToggleGrid();
+        }
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            print(CurrentBattle.map);
+        }
+    }
+    public void ToggleGrid()
+    {
+        foreach (var item in Battlefied)
+        {
+            foreach (var x in item.Sprite)
+            {
+                x.enabled = ShowGrid;
+            }
+        }
+        ShowGrid = !ShowGrid;
+    }
+    public bool ShowGrid;
     public void GenerateMap(Map t)
     {
        
@@ -41,6 +214,13 @@ public class GameManager : MonoBehaviour {
             {
                 var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
                 e.tile = t.Tiles[x, y];
+                foreach (var item in e.Sprite)
+                {
+                    var z = GridColor;
+                    z.a = item.color.a;
+
+                    item.color = z;
+                }
                 var v = t.Tiles[x, y].Position;
                 Battlefied[x, y] = e;
                 e.Value = new Vector2(v.x, v.y);

@@ -59,6 +59,14 @@ public struct Vector
         e.y -= b.y;
         return e;
     }
+    public static bool operator ==(Vector a, Vector b)
+    {
+        return a.x == b.x && a.y == b.y;
+    }
+    public static bool operator !=(Vector a, Vector b)
+    {
+        return !(a == b);
+    }
     public override string ToString()
     {
         return "{X:" + x + " , Y:" + y + "}";
@@ -76,7 +84,7 @@ public abstract class Actor : IComparable<Actor> {
     {
         get { return Level; }
     }
-    private int Level = 0;
+    private int Level = 1;
     protected float EXP = 0;
     public float GetEXP
     {
@@ -104,9 +112,9 @@ public abstract class Actor : IComparable<Actor> {
     }
 
     //Status
-    protected float HP = 10;
-    protected float MP = 10;
-    protected int SP = 10;
+    public float HP = 10;
+     public float MP = 10;
+    public int SP = 10;
     public void Heal()
     {
         HP = GetStats.MaximumHP;
@@ -154,7 +162,17 @@ public abstract class Actor : IComparable<Actor> {
     }
     public virtual void Use(Item i, Actor[] T)
     {
-        foreach (var item in T) i.On(item);
+        foreach (var item in T)
+        {
+           if(i.Uses >0) i.On(item);
+           else
+            {
+                for (int x = 0; x < inventory.items.Length; x++)
+                    inventory.items[x] = null;
+                i.Dispose();
+                break;
+            }
+        } 
          
     }
     public void TakeDamage(float x)
@@ -180,6 +198,29 @@ public abstract class Actor : IComparable<Actor> {
     }
 
 
+    public void Grab( Item a)
+    {
+
+        for (int i = 0; i < inventory.items.Length; i++)
+        {
+            if (inventory.items[i] == null)
+            {   
+                inventory.items[i] = a;
+                a.OnGrab(this);
+                break;
+
+            }
+        }
+    }
+    //Inventory
+
+ 
+    public Map.Tile CurrentTile = new Map.Tile();
+  
+    public Vector TilePosition
+    {
+        get { return CurrentTile.Position; }
+    }
     //Act for one turn. Must be in a battle
     public virtual void Turn(Battle battle)
     {
@@ -188,7 +229,7 @@ public abstract class Actor : IComparable<Actor> {
         Battle.Turn ThisTurn = battle.ThisTurn;
         while (!IsDefeat && SP > 0)
         {
-            Move(_transform.TilePosition);
+            Move( TilePosition);
         }
         //Act Here - Add logic for monster here             
         
@@ -205,9 +246,9 @@ public abstract class Actor : IComparable<Actor> {
     //Move with bound and collision in mind 
     public virtual void Move(Vector v)
     {
-        
+        if (v == Vector.zero) return;
         var b = GameManager.CurrentBattle;
-        var e = transform.currentTile.Position + v;
+        var e =  CurrentTile.Position + v;
 
         if (e.x < 0) e.x = 0;if (e.x > b.map.Width) e.x = b.map.Width - 1;
         if (e.y < 0) e.y = 0; if (e.y > b.map.Length) e.y = b.map.Length - 1;
@@ -218,49 +259,88 @@ public abstract class Actor : IComparable<Actor> {
             {
                 //Check if there is something blocking the right
                 if (e.normalized.x > 0 && x < b.map.Width)            
-                    if(x > transform.TilePosition.x && x < e.x)                                  
+                    if(x >  TilePosition.x && x < e.x)                                  
                         if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor))
                         { UnityEngine.Debug.Log((b.map.Tiles[x, y].Actor != null)); CantMove();  return; }
                 //Check if there is something blocking the  left
                 if (e.normalized.x < 0 && x > 0)
-                    if (x < transform.TilePosition.x && x > e.x)
+                    if (x <  TilePosition.x && x > e.x)
                         if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(); return; }
                 //Check if ....
                 if (e.normalized.y  > 0 && y < b.map.Length)
-                    if (y > transform.TilePosition.y && y < e.y)
+                    if (y >  TilePosition.y && y < e.y)
                         if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(); return; }
 
                 //Ch...
                 if (e.normalized.y < 0 && y > 0)
-                    if (y > transform.TilePosition.y && y < e.y)
+                    if (y >  TilePosition.y && y < e.y)
                         if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this,b.map.Tiles[x, y].Actor)) { CantMove(); return; }
 
             }
         }
 
-
+     
         Move(b.map.AtPos(e));
 
     }
     //Position In Battle
-    
+
+    public Queue<Vector> Path = new Queue<Vector>();
+    public void Teleport(Map.Tile where)
+    {
+        CurrentTile.OnQuitting();
+        CurrentTile = where;      
+        CurrentTile.Enter(this);
+
+    }
     public virtual void Move(Map.Tile where)
     {
-        var a = Vector.Distance(where.Position, transform.currentTile.Position);
-        
-       /* if (where.Actor != null || SP * GetStats.AGI < a )
-        {
-            CantMove();
-            
-            return;
-        }*/
+       var v = Vector.Distance(where.Position,CurrentTile.Position);
+        /*
+                Path.Clear();
+                int x = (int)( TilePosition.x -where.x);
+                int y = (int)( TilePosition.y -where.y);
+                var a = 1;
+                var b = 1;
+                if (x < 0) a = -1;
+                if (y < 0) b = -1;
+                if (Math.Abs(x) < Math.Abs(y))
+                {
 
-        SP -= (int)(a/GetStats.AGI);
+                    for (int i = 0; i <  x; i++) Path.Enqueue( TilePosition + Vector.right * i * a);
+                    for (int i = 0; i <  y; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
+                }
+                else
+                {
+                    for (int i = 0; i <  y; i++) Path.Enqueue( TilePosition + Vector.up * i * b);
+                    for (int i = 0; i <  x; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
+                }
+
+                */
+
+         if (where.Actor != null )
+         {
+             CantMove();
+             return;
+         } 
+        /* while (Path.Count > 0)
+         {
+             CurrentTile.OnQuitting();
+
+             CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
+
+             CurrentTile.Enter(this);
+         }*/
+        CurrentTile.OnQuitting();
+
+        CurrentTile = where;
+
+        CurrentTile.Enter(this);
+        SP -= (int)(v/GetStats.AGI);
         if (SP < 0) SP = 0;
       
-        _transform.currentTile.OnQuitting();
-        _transform.currentTile = where;
-        _transform.currentTile.Enter(this); 
+    
+        
       
     }
     
@@ -287,16 +367,8 @@ public abstract class Actor : IComparable<Actor> {
             Right = 3,
             Left =4
         }
-        public Map.Tile currentTile
-        {
-            get { return _curtile; }
-            set { _curtile = value; }
-        }
-        private Map.Tile _curtile;
-        public Vector TilePosition
-        {
-            get { return _curtile.Position; }
-        }
+       
+    
         public Vector position
         {
             get { return _position; }
@@ -322,6 +394,86 @@ public abstract class Actor : IComparable<Actor> {
 
     }
 
+    public Inventory inventory = Inventory.Light;
+    //Inventory
+    public class Inventory
+    {
+        //Not everyone have the same size of inventory. Not everybody have the same size of bag nor can equip as much items. Some cannot equip anything,
+        public void OnItemBreak(Item a)
+        {
+
+        }
+        public Item[] items;
+    
+        public EquipementSlot[] Slot;
+
+        /// <summary>
+        /// Light Equipement Build
+        /// </summary>
+        public static Inventory Light
+        {
+            get
+            {
+                var e = new Inventory();
+
+                e.items = new Item[3];
+                e.Slot = new EquipementSlot[4];
+                e.Slot[0].SlotType = global::Equipement.Slot.Armor;
+                e.Slot[1].SlotType = global::Equipement.Slot.Head;
+                e.Slot[2].SlotType = global::Equipement.Slot.Accessory;
+                e.Slot[3].SlotType = global::Equipement.Slot.Weapon;
+               // foreach (var ITEM in e.Slot) ITEM.item.OnItemBreak += e.OnItemBreak;
+
+                return e;
+            }
+        }
+        public void ChangeInventory(Inventory r, Inventory z)
+        {
+            var g = this;
+        
+            Slot = z.Slot;
+             items = z.items;
+            var t = new List<Equipement>();
+            foreach (var item in g.Slot)
+                t.Add(item.item);
+
+            for (int i = 0; i < t.Count; i++)
+            {
+                if (t[i].slot ==  Slot[i].SlotType)
+                {
+                    Slot[i].Equip(t[i]);
+                }
+            }
+ 
+        }
+
+
+        public bool IsFull
+        {
+            get
+            {
+                bool t = true;
+                for (int i = 0; i < items.Length; i++)
+                {
+                    if (items[i] == null) t = false;
+                }
+                return t;
+            }
+        }
+        public struct EquipementSlot
+        {
+            public string SlotName;
+            public Equipement item;
+            public Equipement.Slot SlotType;
+            public void Equip(Equipement q)
+            {
+                if (q.slot != SlotType) return;
+                item = q;
+
+
+            }
+        }
+    }
 
 
     /// <summary>
@@ -408,87 +560,7 @@ public class Skill
     }
 
 
-    //Inventory
-    public struct Inventory
-    {
-        //Not everyone have the same size of inventory. Not everybody have the same size of bag nor can equip as much items. Some cannot equip anything,
-        public void OnItemBreak(Item a)
-        {
 
-        }
-        public Item[] items;
-        public EquipementSlot[] Slot;
-
-        /// <summary>
-        /// Light Equipement Build
-        /// </summary>
-        public static Inventory Light
-        {
-            get { var e = new Inventory();
-
-                e.items = new Item[3];
-                e.Slot = new EquipementSlot[4];
-                e.Slot[0].SlotType = global::Equipement.Slot.Armor;
-                e.Slot[1].SlotType = global::Equipement.Slot.Head;
-                e.Slot[2].SlotType = global::Equipement.Slot.Accessory;
-                e.Slot[3].SlotType = global::Equipement.Slot.Weapon;
-                foreach (var item in e.Slot) item.item.OnItemBreak += e.OnItemBreak;
-
-
-
-
-                return e;
-            }
-        }
-        public void ChangeInventory(Inventory r, Inventory z)
-        {
-            var g = this;
-            var e = new Inventory();
-            e.Slot = z.Slot;
-            e.items = z.items;
-            var t = new List<Equipement>();
-            foreach (var item in g.Slot)
-                t.Add(item.item);
-
-            for (int i = 0; i <t.Count; i++)
-            {
-                if (t[i].slot == e.Slot[i].SlotType)
-                {
-                    e.Slot[i].Equip(t[i]);
-                }
-            }
-
-
-
-            this = e;
-        }
-
-
-        public bool IsFull
-        {
-            get {  bool t = true;
-                for (int i = 0; i < items.Length; i++)
-                {
-                    if (items[i] == null) t = false; 
-                }
-                return t;
-                 }
-        }
-        public struct EquipementSlot
-        {
-            public string SlotName;
-            public Equipement item;
-            public Equipement.Slot SlotType;
-            public void Equip(Equipement q)
-            {
-                if (q.slot != SlotType) return;
-                item = q;
-            
-               
-            }
-        }
-    }
- 
     
 
 }
