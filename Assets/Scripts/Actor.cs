@@ -293,44 +293,63 @@ public abstract class Actor : IComparable<Actor> {
         CurrentTile.Enter(this);
 
     }
+    public void CreatePath(Map.Tile where)
+    {           
+               int x = (int)(where.x -TilePosition.x );
+               int y = (int)(where.y - TilePosition.y );
+        UnityEngine.Debug.Log("Create Path : " + x + " " + y );
+               var a = 1;
+               var b = 1;
+               if (x < 0) a = -1;
+               if (y < 0) b = -1;
+               if (Math.Abs(x) > Math.Abs(y))
+               {
+
+                   for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
+                   for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
+               }
+               else
+               {
+                   for (int i = 0; i <= Math.Abs(y); i++) Path.Enqueue( TilePosition + Vector.up * i * b);
+                   for (int i = 0; i <= Math.Abs(x) + 1 ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
+               }
+
+         
+        while (Path.Count > 1)
+        {
+            CurrentTile.OnQuitting();
+            if (GameManager.CurrentBattle.map.AtPos(Path.Peek()).Actor != null)
+            {
+                CantMove();
+                break;
+            }
+            CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
+
+            CurrentTile.Enter(this);
+        }
+
+
+    }
     public virtual void Move(Map.Tile where)
     {
        var v = Vector.Distance(where.Position,CurrentTile.Position);
-        /*
-                Path.Clear();
-                int x = (int)( TilePosition.x -where.x);
-                int y = (int)( TilePosition.y -where.y);
-                var a = 1;
-                var b = 1;
-                if (x < 0) a = -1;
-                if (y < 0) b = -1;
-                if (Math.Abs(x) < Math.Abs(y))
-                {
 
-                    for (int i = 0; i <  x; i++) Path.Enqueue( TilePosition + Vector.right * i * a);
-                    for (int i = 0; i <  y; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
-                }
-                else
-                {
-                    for (int i = 0; i <  y; i++) Path.Enqueue( TilePosition + Vector.up * i * b);
-                    for (int i = 0; i <  x; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
-                }
+        if (where.Actor != null)
+        {
+            CantMove();
+            return;
+        }
 
-                */
+        if (v  >1)
+        {
+            Path.Clear();
+            CreatePath(where);
+            return;
+        }
+   
 
-         if (where.Actor != null )
-         {
-             CantMove();
-             return;
-         } 
-        /* while (Path.Count > 0)
-         {
-             CurrentTile.OnQuitting();
 
-             CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
-
-             CurrentTile.Enter(this);
-         }*/
+   
         CurrentTile.OnQuitting();
 
         CurrentTile = where;

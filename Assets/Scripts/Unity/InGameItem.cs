@@ -24,7 +24,7 @@ public class InGameItem : MonoBehaviour {
 
     }
     public void Update()
-    {
+    { 
             
         if(item != null)
         {
