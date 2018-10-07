@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour {
  
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
-    public GameObject panel, InventoryCeil;
+    public GameObject panel, InventoryCeil, GameEnd;
     public Text OnHover; 
     public Animator Cursor;
     public static Vector CursorPos;
@@ -64,16 +64,13 @@ public class GameManager : MonoBehaviour {
     {
         if (!GM) GM = this;
         else Destroy(this.gameObject);
-
-      
-
-
-     
-
+        DontDestroyOnLoad(this.gameObject);
+ 
     }
     public void Start()
     {
         CurrentBattle = new Battle(Actors, Foes);
+        CurrentBattle.BattlEnd += OnBattleEnd;
         CurrentBattle.StartNewTurn();
         //14 6
         CurrentBattle.map = new Map(new Vector(18, 9));
@@ -99,6 +96,12 @@ public class GameManager : MonoBehaviour {
         CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
         ToggleGrid();
     }
+
+    private void OnBattleEnd()
+    {
+        GameEnd.SetActive(true);
+    }
+
     float timer = 0;
     private void FixedUpdate()
     {
@@ -109,9 +112,6 @@ public class GameManager : MonoBehaviour {
     public static List<Vector> PathUI = new List<Vector>( );
     public static void EstimathPath( Vector where)
     {
-      
-
-    
 
         PathUI.Clear();
         if (SelectedActor == null)
@@ -146,12 +146,13 @@ public class GameManager : MonoBehaviour {
 
         foreach (var item in PathUI)
         {
-            print(item);
+      
             for (int h = 0; h < Battlefied.GetLength(0); h++)
                 for (int j = 0; j < Battlefied.GetLength(1); j++)
                     foreach (var ff in Battlefied[h, j].Sprite)
                     {
-                        ff.enabled = (item == Battlefied[h, j].tile.Position);
+                        if (item == Battlefied[h, j].tile.Position) ff.enabled = true;
+                        else ff.enabled = false;
 
 
                     }

@@ -204,7 +204,8 @@ public abstract class Actor : IComparable<Actor> {
         }
        
         HP -= x;
-        if (HP <= 0) Ondeath(x, f ,a);
+        if (HP <= 0) { Ondeath(x, f, a);  HP = 0; }
+    
         if (OnDamage != null) OnDamage(x,f);
     }
     
