@@ -46,7 +46,7 @@ public abstract class Item : IDisposable
     /// Use on
     /// </summary>
     /// <param name="a">Use the item on this actor</param>
-    public virtual void On(Actor a)
+    public virtual void OnUse(Actor a = null)
     {
         Uses--;
         if (Uses <= 1)
@@ -122,11 +122,11 @@ public class Consumeable : Item
     {
     }
 
-    public override void On(Actor a)
+    public override void OnUse(Actor a)
     {
         if(HPregen!=0)a.TakeDamage(-HPregen);
         if (MPregen != 0) a.ConsumeMP(-MPregen);
         if (SPregen != 0) a.ConsumeSP(-SPregen);
-        base.On(a);
+        base.OnUse(a);
     }
 }

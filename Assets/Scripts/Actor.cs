@@ -171,7 +171,7 @@ public abstract class Actor : IComparable<Actor> {
     {
         foreach (var item in T)
         {
-           if(i.Uses >0) i.On(item);
+           if(i.Uses >0) i.OnUse(item);
            else
             {
                 for (int x = 0; x < inventory.items.Length; x++)

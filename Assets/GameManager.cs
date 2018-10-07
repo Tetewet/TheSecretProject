@@ -104,7 +104,64 @@ public class GameManager : MonoBehaviour {
     {
         timer += Time.fixedDeltaTime;
     }
+
+
+    public static List<Vector> PathUI = new List<Vector>( );
+    public static void EstimathPath( Vector where)
+    {
+      
+
+    
+
+        PathUI.Clear();
+        if (SelectedActor == null)
+        {
+            foreach (var item in Battlefied)
+                foreach (var z in item.Sprite)
+                    z.enabled = !GM.ShowGrid;
+            return;
+        }
+
+        int x = (int)(where.x - SelectedActor.TilePosition.x);
+        int y = (int)(where.y - SelectedActor.TilePosition.y);
+        var a = 1;
+        var b = 1;
+        if (x < 0) a = -1;
+        if (y < 0) b = -1;
+
+
+
+        if (Mathf.Abs(x) > Mathf.Abs(y))
+        {
+            for (int i = 0; i <= Mathf.Abs(x); i++)
+            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a); }
+            for (int i = 0; i <= Mathf.Abs(y) + 1; i++) PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
+        }
+        else
+        {
+            for (int i = 0; i <= Mathf.Abs(y); i++)
+            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b); }
+            for (int i = 0; i <= Mathf.Abs(x) + 1; i++)  PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
+        }
+
+        foreach (var item in PathUI)
+        {
+            print(item);
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)
+                    {
+                        ff.enabled = (item == Battlefied[h, j].tile.Position);
+
+
+                    }
+        }
+         
+                       
  
+     
+    }
+
     public void OnCursorExit(Map.Tile t)
     {
  
@@ -158,7 +215,7 @@ public class GameManager : MonoBehaviour {
 
         }
 
-        
+        EstimathPath(CursorPos);
     }
 
     public static Sprite LoadSprite(string name)

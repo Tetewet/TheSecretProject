@@ -162,7 +162,6 @@ public class InGameActor : MonoBehaviour {
         
     }
 
-  
     public void OnEnterTile()
     {
         transform.position = (Vector2)GameManager.Battlefied[(int)actor.TilePosition.x, (int)actor.TilePosition.y].transform.position + offset;
@@ -258,6 +257,6 @@ public class InGameActor : MonoBehaviour {
 
         if (actor.SP > 0 && MyTurn && IsFoe && !attacking) AI();
         if (MyTurn && timeSinceTurn > 1 && TimeSincedAttack > 1) if (actor.SP <= 0) EndTurn();
-
+         
     }
 }
