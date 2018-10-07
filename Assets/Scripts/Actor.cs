@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public struct Vector
 {
     public float x, y;
+  
     public Vector(Vector v)
     {
         this.x = v.x;
@@ -18,7 +19,7 @@ public struct Vector
     }
     public static float Distance(Vector a, Vector b)
     {
-        return Math.Abs((a - b).magnitude);
+        return Math.Abs( (float)Math.Sqrt(Math.Pow((b.x - a.x),2) + Math.Pow((b.y - b.y),2)) );
     }
     public float magnitude { get { return Math.Abs((x + y) / 2); } }
     public Vector normalized { get { return new Vector(x, y) / magnitude; } }
@@ -78,7 +79,7 @@ public abstract class Actor : IComparable<Actor> {
 
     public const float BASEEXP = 100;
     public string Name;
-
+    public bool Controllable = true;
     //Level
     public int GetLevel
     {
@@ -105,10 +106,12 @@ public abstract class Actor : IComparable<Actor> {
 
         Level++;
     }
-    public Actor(string Name, stat BaseStats)
+    public Actor(string Name, stat BaseStats, bool Controllable)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
+        this.Controllable = Controllable;
+        
     }
 
     //Status
@@ -119,6 +122,7 @@ public abstract class Actor : IComparable<Actor> {
     {
         HP = GetStats.MaximumHP;
         MP = GetStats.MaximumMP;
+        SP = 0;
     }
 
 
@@ -143,20 +147,23 @@ public abstract class Actor : IComparable<Actor> {
 
     
     //Action
-    public delegate void DamageHandler(float z,Skill x, DamageType d);
+    public delegate void DamageHandler(float z,Skill x );
 
-    public event DamageHandler OnAttack, OnDamage;
+    public event DamageHandler OnAttack, OnDamage, OnBlocked;
+    
     public virtual void Use(Skill s, Actor[] Target)
     {
-        if (HP >= s.HpCost) TakeDamage(s.HpCost);
-        else return;
 
-        if (MP >= s.MpCost) ConsumeMP(s.MpCost);
-        else return;
+        if (HP >= s.HpCost) { if (s.HpCost != 0) TakeDamage(s.HpCost); } 
+            else { UnityEngine.Debug.Log(Name + " not enough HP :" + HP +"/" + s.HpCost ); return; }
 
-        if (SP >= s.SpCost) ConsumeSP(s.SpCost);
-        else return;
+        if (MP >= s.MpCost) { if (s.MpCost != 0) ConsumeMP(s.MpCost); }
+        else { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return; }
 
+        if (SP >= s.SpCost) { if (s.SpCost != 0) ConsumeSP(s.SpCost); }
+        else { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return; }
+
+        UnityEngine.Debug.Log(Name + " uses " + s.Name);
         foreach (var item in Target) s.Activate(item, GetStats);
 
     }
@@ -177,17 +184,34 @@ public abstract class Actor : IComparable<Actor> {
     }
     public void TakeDamage(float x)
     {
-        TakeDamage(x, null, DamageType.None);
+        TakeDamage(x, null );
     }
-    public virtual void TakeDamage(float x, Skill f, DamageType d)
+    public virtual void TakeDamage(float x, Skill f , Actor a = null)
+    {
+
+        var i = x;
+        if(f != null) 
+        {
+            if (f.Type == DamageType.Magical) x -= GetStats.MagDEF;
+            else if (f.Type == DamageType.Physical) x -= GetStats.PhysDEF;
+            if (x <= 0 && f.Type != DamageType.None)
+            {
+                if(OnBlocked!= null)OnBlocked(x, f);
+                UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
+                return;
+            }
+            UnityEngine.Debug.Log(Name + " took " + f.Type + " " + x);
+        }
+       
+        HP -= x;
+        if (HP <= 0) Ondeath(x, f ,a);
+        if (OnDamage != null) OnDamage(x,f);
+    }
+    
+    public virtual void Ondeath(float x, Skill f , Actor a = null)
     {
    
-        if (d == DamageType.Magical) x -= baseStats.MagDEF;
-        else if (d == DamageType.Physical) x -= baseStats.PhysDEF;
-        HP -= x;
-        if (OnDamage != null) OnDamage(x,f,d);
     }
-
     public void ConsumeMP(float x )
     {
         MP -= x;
@@ -195,9 +219,10 @@ public abstract class Actor : IComparable<Actor> {
     public void ConsumeSP(int x)
     {
         SP -= x;
+        if (SP < 0) SP = 0;
     }
 
-
+     public int tilewalked = 0;
     public void Grab( Item a)
     {
 
@@ -224,17 +249,18 @@ public abstract class Actor : IComparable<Actor> {
     //Act for one turn. Must be in a battle
     public virtual void Turn(Battle battle)
     {
+        if (IsDefeat) return;
         //This turn
         SP += 3;
+        if (SP > 10) SP = 10;
         Battle.Turn ThisTurn = battle.ThisTurn;
-        while (!IsDefeat && SP > 0)
-        {
-            Move( TilePosition);
-        }
+       if(OnTurn!=null) OnTurn(ThisTurn);
         //Act Here - Add logic for monster here             
         
     }
- 
+
+    public delegate void OnTurnHandler(Battle.Turn e);
+    public event OnTurnHandler OnTurn;
     //Position In world;
     public void Move(Vector position, int map = 0 )
     {
@@ -244,7 +270,7 @@ public abstract class Actor : IComparable<Actor> {
     }
 
     //Move with bound and collision in mind 
-    public virtual void Move(Vector v)
+    public virtual void Move(Vector v,bool bypass = false)
     {
         if (v == Vector.zero) return;
         var b = GameManager.CurrentBattle;
@@ -252,6 +278,7 @@ public abstract class Actor : IComparable<Actor> {
 
         if (e.x < 0) e.x = 0;if (e.x > b.map.Width) e.x = b.map.Width - 1;
         if (e.y < 0) e.y = 0; if (e.y > b.map.Length) e.y = b.map.Length - 1;
+        if(!bypass)
         for (int x = 0; x < b.map.Width; x++)
         {
            
@@ -261,27 +288,30 @@ public abstract class Actor : IComparable<Actor> {
                 if (e.normalized.x > 0 && x < b.map.Width)            
                     if(x >  TilePosition.x && x < e.x)                                  
                         if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor))
-                        { UnityEngine.Debug.Log((b.map.Tiles[x, y].Actor != null)); CantMove();  return; }
+                        { UnityEngine.Debug.Log((b.map.Tiles[x, y].Actor != null)); CantMove(v);  return; }
                 //Check if there is something blocking the  left
                 if (e.normalized.x < 0 && x > 0)
                     if (x <  TilePosition.x && x > e.x)
-                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(); return; }
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(v); return; }
                 //Check if ....
                 if (e.normalized.y  > 0 && y < b.map.Length)
                     if (y >  TilePosition.y && y < e.y)
-                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(); return; }
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this, b.map.Tiles[x, y].Actor)) { CantMove(v); return; }
 
                 //Ch...
                 if (e.normalized.y < 0 && y > 0)
                     if (y >  TilePosition.y && y < e.y)
-                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this,b.map.Tiles[x, y].Actor)) { CantMove(); return; }
+                        if (b.map.Tiles[x, y].Actor != null || !b.IsTeamWith(this,b.map.Tiles[x, y].Actor)) { CantMove(v); return; }
 
             }
         }
 
-     
-        Move(b.map.AtPos(e));
 
+        // Move(b.map.AtPos(v));
+        
+        Path.Clear();
+        CreatePath(b.map.AtPos(v));
+        return;
     }
     //Position In Battle
 
@@ -297,76 +327,87 @@ public abstract class Actor : IComparable<Actor> {
     {           
                int x = (int)(where.x -TilePosition.x );
                int y = (int)(where.y - TilePosition.y );
-        UnityEngine.Debug.Log("Create Path : " + x + " " + y );
+        UnityEngine.Debug.Log(Name + ": Creating Path : from "+TilePosition.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y +"}" );
                var a = 1;
                var b = 1;
                if (x < 0) a = -1;
                if (y < 0) b = -1;
-               if (Math.Abs(x) > Math.Abs(y))
-               {
 
-                   for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
-                   for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
-               }
-               else
-               {
-                   for (int i = 0; i <= Math.Abs(y); i++) Path.Enqueue( TilePosition + Vector.up * i * b);
-                   for (int i = 0; i <= Math.Abs(x) + 1 ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
-               }
+        /*
+        for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
+        for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
+        */
 
-         
-        while (Path.Count > 1)
+
+        if (Math.Abs(x) > Math.Abs(y))
         {
-            CurrentTile.OnQuitting();
-            if (GameManager.CurrentBattle.map.AtPos(Path.Peek()).Actor != null)
-            {
-                CantMove();
-                break;
-            }
-            CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
-
-            CurrentTile.Enter(this);
+            for (int i = 0; i <= Math.Abs(x); i++)
+            { if (TilePosition + Vector.up * i * b == TilePosition) continue; Path.Enqueue(TilePosition + Vector.right * i * a); }
+            for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
+        }
+        else
+        {
+            for (int i = 0; i <= Math.Abs(y); i++)
+            { if (TilePosition + Vector.up * i * b == TilePosition) continue; Path.Enqueue(TilePosition + Vector.up * i * b); }
+            for (int i = 0; i <= Math.Abs(x) + 1 ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
         }
 
+        //We will have to move this section in the Unity section to sync the position
+        /*
+       while (Path.Count > 1)
+       {
+           CurrentTile.OnQuitting();
+           if (GameManager.CurrentBattle.map.AtPos(Path.Peek()).Actor != null)
+           {
+               CantMove();
+               break;
+           }
+           CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
+
+           CurrentTile.Enter(this);
+       }
+       */
 
     }
+
     public virtual void Move(Map.Tile where)
     {
        var v = Vector.Distance(where.Position,CurrentTile.Position);
 
+     
         if (where.Actor != null)
         {
-            CantMove();
+            CantMove(where.Position);
             return;
         }
 
-        if (v  >1)
-        {
-            Path.Clear();
-            CreatePath(where);
-            return;
-        }
-   
+        Path.Clear();
+        CreatePath(where);
+        return;
 
 
-   
-        CurrentTile.OnQuitting();
 
-        CurrentTile = where;
 
-        CurrentTile.Enter(this);
-        SP -= (int)(v/GetStats.AGI);
-        if (SP < 0) SP = 0;
-      
-    
-        
-      
+        /*
+
+                CurrentTile.OnQuitting();
+
+                CurrentTile = where;
+
+                CurrentTile.Enter(this);
+                SP -= (int)(v/GetStats.AGI);
+                if (SP < 0) SP = 0;
+
+            */
+
+
     }
     
-    void CantMove()
+   public void CantMove(Vector v)
     {
         //DEBUG
-        
+        UnityEngine.Debug.Log("Couldn't move to " + v);
+        Path.Clear();
     }
     protected Transform _transform;
     /// <summary>
@@ -546,6 +587,7 @@ public class Skill
     public float Damage  = 1;
     protected float BaseCritChance = 5;
     public TargetType Targets;
+    
 
     //Requirement    
     public float MpCost =0, HpCost = 0;
@@ -556,6 +598,7 @@ public class Skill
         {
             var e = new Skill();
             e.Name = "Attack";
+            e.SpCost = 1;
             e.Reach = 1;
             e.Type = DamageType.Physical;
             e.Damage = .25f;
@@ -565,13 +608,14 @@ public class Skill
     }
     public virtual void Activate(Actor Target, stat Stats = new stat())
     {
+     
         var x = Damage;
-        if (Type == DamageType.Magical) x *= Stats.INT;
+        if (Type == DamageType.Magical) x *=  Stats.INT;
         else if (Type == DamageType.Physical) x *= Stats.STR;
-
+        
         if ((Stats.LUC * 2 + BaseCritChance) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
 
-            Target.TakeDamage(x,this, Type);
+            Target.TakeDamage(x,this);
     }
     public void Activate(Actor[] a)
     {
@@ -609,8 +653,8 @@ public struct stat : IComparable<stat>
     public int Priority;
     //For fine tuning targeting
     public int Threat;
-    public float PhysDEF { get { return STR / 2 + END + AGI / 4; } }
-    public float MagDEF { get { return INT + WIS * 2; } }
+    public float PhysDEF { get { return ( STR / 2 + END + AGI / 4)/2; } }
+    public float MagDEF { get { return (INT + WIS * 2)/2; } }
     public float MaximumHP { get { return END * 5; } }
     public float MaximumMP { get { return WIS * 5; } }
 
@@ -705,7 +749,7 @@ public class Profession
     protected float ClassEXP = 0;
 
     public Skill[] SkillList;
-
+    
     public void AddExp(float exp)
     {
         ClassEXP += exp;

@@ -41,7 +41,17 @@ public class GameManager : MonoBehaviour {
     public string MapName;
 
     public InGameActor[] Actors;
+    public InGameActor[] Foes;
 
+    
+    public static InGameActor GetInGameFromActor(Actor a)
+    {
+        foreach (var item in GM.Actors)
+            if (item.actor == a) { return item;  }
+        foreach (var item in GM.Foes)
+            if (item.actor == a) { return item;   }
+        return null;
+    }
     void InitializeUI()
     {
         Inventory = new Image[100];
@@ -54,23 +64,38 @@ public class GameManager : MonoBehaviour {
     {
         if (!GM) GM = this;
         else Destroy(this.gameObject);
-        CurrentBattle = new Battle();
+
+      
+
+
+     
+
+    }
+    public void Start()
+    {
+        CurrentBattle = new Battle(Actors, Foes);
+        CurrentBattle.StartNewTurn();
         //14 6
         CurrentBattle.map = new Map(new Vector(18, 9));
         InitializeUI();
         GenerateMap(CurrentBattle.map);
         OnHover.enabled = true;
+        foreach (var item in Foes)      
+            item.actor.Controllable = false;
+        foreach (var item in Actors)
+            item.actor.Controllable = true;
 
-
-    }
-    public void Start()
-    {
+     
         //Debug
         for (int i = 0; i < Actors.Length; i++)
         {
-            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(5+ i, 3));
+            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(8+ i, 3));
         }
- 
+        for (int i = 0; i < Foes.Length; i++)
+        {
+           Foes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
+        }
+        CursorPos = new Vector(9, 4);
         CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
         ToggleGrid();
     }
@@ -151,20 +176,27 @@ public class GameManager : MonoBehaviour {
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
-        if (SelectedActor != null) SelectedActor.Move(curtile);
+        if(SelectedActor != null)
+            if( CurrentBattle.ThisTurn.Order.Count > 0)
+        if(GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
+        {
+                var gig = GetInGameFromActor(SelectedActor);
+          if(curtile.Actor == null) SelectedActor.Move(curtile);
+          else { if (gig) gig.Attack(curtile.Actor,Skill.Base ); }
+        }
+     
 
     }
     private void Update()
     {
       
-
         CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
         var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
-        var walking = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
-        if (timer >= .15f && walking)
+        var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
+        if (timer >= .10f && inputs)
         {
             OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
 
@@ -174,14 +206,10 @@ public class GameManager : MonoBehaviour {
             timer = 0;
 
         }
-     
+  
         var curtile = CurrentBattle.map.AtPos(CursorPos);
         OnCursorUpdate(curtile);
-  
-
         if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);
-
-
         if (Input.GetKeyDown(KeyCode.G))
         {
             ToggleGrid();
@@ -191,6 +219,8 @@ public class GameManager : MonoBehaviour {
             print(CurrentBattle.map);
         }
     }
+ 
+
     public void ToggleGrid()
     {
         foreach (var item in Battlefied)
@@ -203,6 +233,7 @@ public class GameManager : MonoBehaviour {
         ShowGrid = !ShowGrid;
     }
     public bool ShowGrid;
+
     public void GenerateMap(Map t)
     {
        
@@ -229,49 +260,5 @@ public class GameManager : MonoBehaviour {
         }
         MapName = t.ToString();
     }
-   /* [System.Serializable]
-    public class MapWrapper 
-    {
-        public Tile[,] Tiles;
-        public MapWrapper(Map a)
-        {
-
-            Tiles = new Tile[(int)a.Tiles.GetLength(0), (int)a.Tiles.GetLength(1)];
-            for (int x = 0; x < Tiles.GetLength(0); x++)
-            {
-                for (int y = 0; y < Tiles.GetLength(1); y++)
-                {
-                    Tiles[x, y].tile.Position = new Vector(x, y);
-                }
-            }
-        }
-        public Tile AtPos(Vector v)
-        {
-            Tile g = new Tile();
-            for (int x = 0; x < Tiles.GetLength(0); x++)
-            {
-                for (int y = 0; y < Tiles.GetLength(1); y++)
-                {
-
-                    int a = (int)v.x;
-                    int b = (int)v.y;
-                    if (v.y > y) b = y;
-                    if (v.x > x) a = x;
-                    g = Tiles[a, b];
-
-                }
-            }
-            return g;
-        }
-        [System.Serializable]
-        public struct Tile
-        {
-
-           public Map.Tile tile;
-
-
-        }
-    }
-    */
-    
+  
 }

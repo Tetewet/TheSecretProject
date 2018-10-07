@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class Battle{
-
+    //Console Mode
     public void Run()
     {
         while (OnGoing)
@@ -15,6 +15,66 @@ public class Battle{
        }
         OnBattleEnd();
     }
+    //Unity Mode 
+ 
+    public Battle (Actor[] Player, Actor[] Foe)
+    {
+        foreach (var item in Player)
+            Players.Add(item);
+
+        foreach (var item in Foe)
+            Foes.Add(item);
+    }
+
+    public Battle(InGameActor[] Player, InGameActor[] Foe)
+    {
+        foreach (var item in Player)
+            Players.Add(item.actor);
+
+        foreach (var item in Foe)
+            Foes.Add(item.actor);
+    }
+
+
+
+    public void StartNewTurn()
+    {
+        var e = new Turn(Players, Foes);
+        
+        History.Add(e);
+        var f = "";
+       
+        e.Order[0].Turn(this);
+        foreach (var item in e.Order )
+        {
+           f +=  item.ToString() + "\n";
+        }
+        UnityEngine.Debug.Log(f);
+    }
+   
+    public void EndTurn()
+    {
+        
+        ThisTurn.Order.Remove(ThisTurn.Order[0]);
+ 
+
+
+
+        if (ThisTurn.Order.Count <= 0)
+        {
+            if (OnGoing)
+                StartNewTurn();
+            else
+                OnBattleEnd();
+            return;
+        }
+        else
+         ThisTurn.Order[0].Turn(this);
+
+
+
+
+    }
     public Map map;
     public bool IsTeamWith(Actor a, Actor b)
     {
@@ -22,7 +82,7 @@ public class Battle{
     }
     public void OnBattleEnd()
     {
-
+        UnityEngine.Debug.Log("Battle ended");
     }
     public bool OnGoing
     {
@@ -45,8 +105,9 @@ public class Battle{
     public List<Actor> Players = new List<Actor>(), Foes = new List<Actor>(); 
     public class Turn
     {
-
+        //Which one is going to play next - for now, two list will do trick. Less bothersome than using an index
         public List<Actor> Order = new List<Actor>();
+        public Actor[] History;
         public Turn(List<Actor>  TeamA, List<Actor> TeamB)
         {
             var e = new List<Actor>();
@@ -55,6 +116,7 @@ public class Battle{
             foreach (var item in TeamB) e.Add(item);
             e.Sort();
             Order = e;
+            History = Order.ToArray();
 
         }
     }
@@ -129,14 +191,18 @@ public class Map
                    
             }
             Actor = a;
-          /*  if(a.Path.Count > 0)
-            a.Path.Dequeue();*/
+            Actor.tilewalked++;
+            if(Actor.tilewalked > Actor.GetStats.AGI)
+            {
+                Actor.tilewalked = 0;
+                Actor.SP--;
+            }
 
         }
         public  void OnQuitting()
         {
             if(Actor!=null)
-            UnityEngine.Debug.Log(Actor.ToString() + " exits " + Position.ToString());
+           // UnityEngine.Debug.Log(Actor.ToString() + " exits " + Position.ToString());
             Actor = null;
         }
         public Tile()
