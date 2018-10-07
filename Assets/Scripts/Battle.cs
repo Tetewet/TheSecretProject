@@ -5,6 +5,10 @@ using System.Collections.Generic;
 [System.Serializable]
 public class Battle{
     //Console Mode
+
+    public delegate void OnBattleEndHandler();
+    public event OnBattleEndHandler BattlEnd;
+
     public void Run()
     {
         while (OnGoing)
@@ -54,11 +58,14 @@ public class Battle{
    
     public void EndTurn()
     {
-        
-        ThisTurn.Order.Remove(ThisTurn.Order[0]);
+        if (!OnGoing)
+        {
+            OnBattleEnd();
+            return;
+        }
+
+            ThisTurn.Order.Remove(ThisTurn.Order[0]);
  
-
-
 
         if (ThisTurn.Order.Count <= 0)
         {
@@ -82,6 +89,7 @@ public class Battle{
     }
     public void OnBattleEnd()
     {
+        BattlEnd();
         UnityEngine.Debug.Log("Battle ended");
     }
     public bool OnGoing
