@@ -1,0 +1,321 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class GameManager : MonoBehaviour {
+    public static GameManager GM;
+    public static bool InBattleMode = true;
+    public static Vector3 VecTo3(Vector v)
+    {
+        return new Vector3(v.x, v.y, 0);
+    }
+    public static BattleTile[,] Battlefied;
+
+    Image[] Inventory;
+    public GridLayoutGroup grid, CharacterInventory;
+    public Color GridColor;
+    [Header("Templates")]
+ 
+    public GameObject ActorPrefab;
+    public GameObject ItemPrefab;
+    public GameObject panel, InventoryCeil;
+    public Text OnHover; 
+    public Animator Cursor;
+    public static Vector CursorPos;
+    public Vector3 CursorOffset;
+    public static Actor SelectedActor;
+    public static Actor ActorAtCursor = null;
+    
+    public static InGameItem CreateNewItemOnField(Item i, Vector Position)
+    {
+        var e = Instantiate(GM.ItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameItem>();
+
+        e.item = i;
+        CurrentBattle.map.AtPos(Position).AddItem(e.item);
+        return e;
+    }
+
+    public static Battle CurrentBattle;
+ 
+    public string MapName;
+
+    public InGameActor[] Actors;
+    public InGameActor[] Foes;
+
+    
+    public static InGameActor GetInGameFromActor(Actor a)
+    {
+        foreach (var item in GM.Actors)
+            if (item.actor == a) { return item;  }
+        foreach (var item in GM.Foes)
+            if (item.actor == a) { return item;   }
+        return null;
+    }
+    void InitializeUI()
+    {
+        Inventory = new Image[100];
+        for (int i = 0; i < Inventory.Length; i++)
+            Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
+
+
+    }
+    private void Awake()
+    {
+        if (!GM) GM = this;
+        else Destroy(this.gameObject);
+
+      
+
+
+     
+
+    }
+    public void Start()
+    {
+        CurrentBattle = new Battle(Actors, Foes);
+        CurrentBattle.StartNewTurn();
+        //14 6
+        CurrentBattle.map = new Map(new Vector(18, 9));
+        InitializeUI();
+        GenerateMap(CurrentBattle.map);
+        OnHover.enabled = true;
+        foreach (var item in Foes)      
+            item.actor.Controllable = false;
+        foreach (var item in Actors)
+            item.actor.Controllable = true;
+
+     
+        //Debug
+        for (int i = 0; i < Actors.Length; i++)
+        {
+            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(8+ i, 3));
+        }
+        for (int i = 0; i < Foes.Length; i++)
+        {
+           Foes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
+        }
+        CursorPos = new Vector(9, 4);
+        CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        ToggleGrid();
+    }
+    float timer = 0;
+    private void FixedUpdate()
+    {
+        timer += Time.fixedDeltaTime;
+    }
+
+
+    public static List<Vector> PathUI = new List<Vector>( );
+    public static void EstimathPath( Vector where)
+    {
+      
+
+    
+
+        PathUI.Clear();
+        if (SelectedActor == null)
+        {
+            foreach (var item in Battlefied)
+                foreach (var z in item.Sprite)
+                    z.enabled = !GM.ShowGrid;
+            return;
+        }
+
+        int x = (int)(where.x - SelectedActor.TilePosition.x);
+        int y = (int)(where.y - SelectedActor.TilePosition.y);
+        var a = 1;
+        var b = 1;
+        if (x < 0) a = -1;
+        if (y < 0) b = -1;
+
+
+
+        if (Mathf.Abs(x) > Mathf.Abs(y))
+        {
+            for (int i = 0; i <= Mathf.Abs(x); i++)
+            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a); }
+            for (int i = 0; i <= Mathf.Abs(y) + 1; i++) PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
+        }
+        else
+        {
+            for (int i = 0; i <= Mathf.Abs(y); i++)
+            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b); }
+            for (int i = 0; i <= Mathf.Abs(x) + 1; i++)  PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
+        }
+
+        foreach (var item in PathUI)
+        {
+            print(item);
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)
+                    {
+                        ff.enabled = (item == Battlefied[h, j].tile.Position);
+
+
+                    }
+        }
+         
+                       
+ 
+     
+    }
+
+    public void OnCursorExit(Map.Tile t)
+    {
+ 
+
+
+    }
+    public void OnCursorUpdate(Map.Tile t)
+    {
+        OnHover.gameObject.SetActive( ActorAtCursor != null);
+        CharacterInventory.gameObject.SetActive( ActorAtCursor !=null);
+        Cursor.SetBool("Hover", ActorAtCursor != null);
+        ActorAtCursor = t.Actor;
+        if (ActorAtCursor != null)
+        {
+            OnHover.text =
+    ActorAtCursor.Name + " lv"
+    + ActorAtCursor.GetLevel.ToString("00") + "\n[ hp  "
+    + ActorAtCursor.HP.ToString("00") + " ]\n[ mp "
+    + ActorAtCursor.MP.ToString("00") + " ]\n[ sp  "
+    + ActorAtCursor.SP.ToString("00") + " ]";
+
+             for (int i = 0; i < 100; i++)
+            {
+                if(i < ActorAtCursor.inventory.items.Length )
+                {
+                   
+                    if (ActorAtCursor.inventory.items[i] != null)
+                    {
+                        Inventory[i].transform.parent.gameObject.SetActive(true);
+                        Inventory[i].enabled = true;
+                   
+                        if (Inventory[i].sprite == null)
+                        {
+                            Inventory[i].sprite = LoadSprite(ActorAtCursor.inventory.items[i].ResourcePath);
+                        }
+                    }
+                    else
+                    {
+                        Inventory[i].sprite =  null;
+                        Inventory[i].enabled = false;
+                    }
+                
+                }
+                else
+                {
+                    Inventory[i].sprite = null;
+                    Inventory[i].transform.parent.gameObject.SetActive(false);
+                }
+             
+            }
+
+        }
+
+        EstimathPath(CursorPos);
+    }
+
+    public static Sprite LoadSprite(string name)
+    {
+        return Resources.Load<Sprite>("Sprites/" + name);
+    }
+    public void OnPressed(Map.Tile t)
+    {
+       
+        var curtile = t;
+
+        //Debug
+        print("Tiles: " + curtile.Position + " Unity: " + CursorPos + " Actor: " + curtile.Actor);
+
+        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
+        else if (SelectedActor == curtile.Actor) SelectedActor = null;
+
+        if(SelectedActor != null)
+            if( CurrentBattle.ThisTurn.Order.Count > 0)
+        if(GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
+        {
+                var gig = GetInGameFromActor(SelectedActor);
+          if(curtile.Actor == null) SelectedActor.Move(curtile);
+          else { if (gig) gig.Attack(curtile.Actor,Skill.Base ); }
+        }
+     
+
+    }
+    private void Update()
+    {
+      
+        CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
+        var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
+        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
+        var h = Input.GetAxisRaw("Horizontal");
+        var v = Input.GetAxisRaw("Vertical");
+        var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
+        if (timer >= .10f && inputs)
+        {
+            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
+
+            var u = new Vector(h, -v);
+    
+            CursorPos += u;
+            timer = 0;
+
+        }
+  
+        var curtile = CurrentBattle.map.AtPos(CursorPos);
+        OnCursorUpdate(curtile);
+        if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            ToggleGrid();
+        }
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            print(CurrentBattle.map);
+        }
+    }
+ 
+
+    public void ToggleGrid()
+    {
+        foreach (var item in Battlefied)
+        {
+            foreach (var x in item.Sprite)
+            {
+                x.enabled = ShowGrid;
+            }
+        }
+        ShowGrid = !ShowGrid;
+    }
+    public bool ShowGrid;
+
+    public void GenerateMap(Map t)
+    {
+       
+        grid.constraintCount = t.Tiles.GetLength(0);
+        Battlefied = new BattleTile[t.Tiles.GetLength(0), t.Tiles.GetLength(1)];
+        for (int x = 0; x < t.Tiles.GetLength(0); x++)
+        {
+            for (int y = 0; y < t.Tiles.GetLength(1); y++)
+            {
+                var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
+                e.tile = t.Tiles[x, y];
+                foreach (var item in e.Sprite)
+                {
+                    var z = GridColor;
+                    z.a = item.color.a;
+
+                    item.color = z;
+                }
+                var v = t.Tiles[x, y].Position;
+                Battlefied[x, y] = e;
+                e.Value = new Vector2(v.x, v.y);
+            }
+      
+        }
+        MapName = t.ToString();
+    }
+  
+}
