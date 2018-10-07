@@ -113,7 +113,7 @@ public class GameManager : MonoBehaviour {
     public static void EstimathPath( Vector where)
     {
 
-        PathUI.Clear();
+     
         if (SelectedActor == null)
         {
             foreach (var item in Battlefied)
@@ -121,7 +121,7 @@ public class GameManager : MonoBehaviour {
                     z.enabled = !GM.ShowGrid;
             return;
         }
-
+      PathUI.Clear();
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
         var a = 1;
@@ -135,44 +135,53 @@ public class GameManager : MonoBehaviour {
         {
             for (int i = 0; i <= Mathf.Abs(x); i++)
             { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a); }
-            for (int i = 0; i <= Mathf.Abs(y) + 1; i++) PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
+            for (int i = 0; i <= Mathf.Abs(y) ; i++) PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
         }
         else
         {
             for (int i = 0; i <= Mathf.Abs(y); i++)
             { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b); }
-            for (int i = 0; i <= Mathf.Abs(x) + 1; i++)  PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
+            for (int i = 0; i <= Mathf.Abs(x) ; i++)  PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
         }
 
-        foreach (var item in PathUI)
-        {
-      
-            for (int h = 0; h < Battlefied.GetLength(0); h++)
-                for (int j = 0; j < Battlefied.GetLength(1); j++)
-                    foreach (var ff in Battlefied[h, j].Sprite)
-                    {
-                        if (item == Battlefied[h, j].tile.Position) ff.enabled = true;
-                        else ff.enabled = false;
 
-
-                    }
-        }
-         
+        for (int h = 0; h < Battlefied.GetLength(0); h++)
+            for (int j = 0; j < Battlefied.GetLength(1); j++)
+                foreach (var ff in Battlefied[h, j].Sprite)
+                {
+                   
+                     
+                        ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
+                  
                        
- 
-     
+                }
+
+
+
+        // if (item == Battlefied[h, j].tile.Position) ff.enabled = true;
+
+
+
+
+
+
     }
 
+    public void OnCursorEnter(Map.Tile t)
+    {
+   
+    }
     public void OnCursorExit(Map.Tile t)
     {
- 
 
+   
 
     }
     public void OnCursorUpdate(Map.Tile t)
     {
-        OnHover.gameObject.SetActive( ActorAtCursor != null);
-        CharacterInventory.gameObject.SetActive( ActorAtCursor !=null);
+
+        OnHover.gameObject.SetActive(ActorAtCursor != null);
+        CharacterInventory.gameObject.SetActive(ActorAtCursor != null);
         Cursor.SetBool("Hover", ActorAtCursor != null);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
@@ -184,16 +193,16 @@ public class GameManager : MonoBehaviour {
     + ActorAtCursor.MP.ToString("00") + " ]\n[ sp  "
     + ActorAtCursor.SP.ToString("00") + " ]";
 
-             for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++)
             {
-                if(i < ActorAtCursor.inventory.items.Length )
+                if (i < ActorAtCursor.inventory.items.Length)
                 {
-                   
+
                     if (ActorAtCursor.inventory.items[i] != null)
                     {
                         Inventory[i].transform.parent.gameObject.SetActive(true);
                         Inventory[i].enabled = true;
-                   
+
                         if (Inventory[i].sprite == null)
                         {
                             Inventory[i].sprite = LoadSprite(ActorAtCursor.inventory.items[i].ResourcePath);
@@ -201,22 +210,21 @@ public class GameManager : MonoBehaviour {
                     }
                     else
                     {
-                        Inventory[i].sprite =  null;
+                        Inventory[i].sprite = null;
                         Inventory[i].enabled = false;
                     }
-                
+
                 }
                 else
                 {
                     Inventory[i].sprite = null;
                     Inventory[i].transform.parent.gameObject.SetActive(false);
                 }
-             
+
             }
 
         }
 
-        EstimathPath(CursorPos);
     }
 
     public static Sprite LoadSprite(string name)
@@ -256,15 +264,15 @@ public class GameManager : MonoBehaviour {
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (timer >= .10f && inputs)
         {
-            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
 
+            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
             var u = new Vector(h, -v);
     
             CursorPos += u;
             timer = 0;
-
+            OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
         }
-  
+        EstimathPath(CursorPos);
         var curtile = CurrentBattle.map.AtPos(CursorPos);
         OnCursorUpdate(curtile);
         if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);

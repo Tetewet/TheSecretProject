@@ -46,8 +46,10 @@ public class InGameActor : MonoBehaviour {
         MyTurn = true;
         if (!IsFoe)
         {
-            GameManager.SelectedActor = actor;
             GameManager.CursorPos = actor.TilePosition;
+            GameManager.GM.OnPressed(actor.CurrentTile);
+           
+         
         }
         else AI(Turn);
 
