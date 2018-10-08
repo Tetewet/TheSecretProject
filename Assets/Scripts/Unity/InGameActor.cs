@@ -42,8 +42,10 @@ public class InGameActor : MonoBehaviour {
     }
     public void OnTurn(Battle.Turn Turn)
     {
+        actor.TileWalkedThisTurn = 0;
         sprity[0].color = Color.white;
         MyTurn = true;
+     
         if (!IsFoe)
         {
             GameManager.CursorPos = actor.TilePosition;
@@ -79,6 +81,7 @@ public class InGameActor : MonoBehaviour {
         actor.Use(tempattack, e);
         TimeSincedAttack = 0;
        if (actor.SP <= 0 ) EndTurn();
+       
         
     }
     private void EndTurn( )
@@ -89,7 +92,9 @@ public class InGameActor : MonoBehaviour {
     private IEnumerator _EndTurn()
     {
         yield return new WaitForSeconds(1);
-      
+
+        actor.Path.Clear();
+     
         GameManager.CurrentBattle.EndTurn();
         GameManager.SelectedActor = null;
         sprity[0].color = Color.gray;
@@ -170,7 +175,7 @@ public class InGameActor : MonoBehaviour {
 
     
 
-        while (actor.Path.Count > 1)
+        while (actor.Path.Count > 0)
         {
 
             if (timer < .14f) return;
@@ -186,8 +191,10 @@ public class InGameActor : MonoBehaviour {
                     timer = 0;
                 return;
             }
+        
             if (actor.SP > 0)
             {
+                
                 actor.CurrentTile.OnQuitting();
                 actor.CurrentTile = GameManager.CurrentBattle.map.AtPos(actor.Path.Dequeue());
                 actor.CurrentTile.Enter(actor);
@@ -230,7 +237,7 @@ public class InGameActor : MonoBehaviour {
         Position = new Vector2(actor.TilePosition.x, actor.TilePosition.y);
         DistanceToPos = (Vector3.Distance(transform.position, e.transform.position + new Vector3(offset.x, offset.y)) - 90.9f) * 100;
         this.transform.position = Vector3.Lerp(transform.position, (Vector2)e.transform.position + offset, Speed * Time.smoothDeltaTime / (DistanceToPos + .1f));
-        if (DistanceToPos <= 0.005f) OnEnterTile();
+        if (DistanceToPos <= 0.0025f) OnEnterTile();
 
 
         sprity[0].sortingOrder = 2 + (int)actor.TilePosition.y;

@@ -16,7 +16,8 @@ public class GameManager : MonoBehaviour {
     public GridLayoutGroup grid, CharacterInventory;
     public Color GridColor;
     [Header("Templates")]
- 
+
+    public Text DEBUGTimeWalked;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject panel, InventoryCeil, GameEnd;
@@ -72,6 +73,7 @@ public class GameManager : MonoBehaviour {
         CurrentBattle = new Battle(Actors, Foes);
         CurrentBattle.BattlEnd += OnBattleEnd;
         CurrentBattle.StartNewTurn();
+        CurrentBattle.OnTurnEnd += OnTurnEnd;
         //14 6
         CurrentBattle.map = new Map(new Vector(18, 9));
         InitializeUI();
@@ -97,6 +99,15 @@ public class GameManager : MonoBehaviour {
         ToggleGrid();
     }
 
+    private void OnTurnEnd()
+    {
+        ResetGrid();
+    }
+
+    private void OnPathCleared()
+    {
+        ResetGrid();
+    }
     private void OnBattleEnd()
     {
         GameEnd.SetActive(true);
@@ -113,15 +124,32 @@ public class GameManager : MonoBehaviour {
     public static void EstimathPath( Vector where)
     {
 
-     
-        if (SelectedActor == null)
+
+        var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
+
+        if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
         {
-            foreach (var item in Battlefied)
-                foreach (var z in item.Sprite)
-                    z.enabled = !GM.ShowGrid;
+            GM.ResetGrid();
             return;
         }
-      PathUI.Clear();
+        
+        PathUI.Clear();
+        // if (ThisTurnPlayer == SelectedActor && ThisTurnPlayer.Path.Count == 1 && ThisTurnPlayer.Path.Peek() == SelectedActor.TilePosition) GM.ResetGrid();
+
+
+        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1 )
+        {
+      
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)               
+                        ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
+            return;
+        }
+        if (SelectedActor == null  )
+
+        { GM.ResetGrid(); return; }
+
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
         var a = 1;
@@ -129,41 +157,62 @@ public class GameManager : MonoBehaviour {
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
+        var fs = SelectedActor.TileWalkedThisTurn -1 ;
+        
+        var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SP   ) - fs  ;
+        GM.DEBUGTimeWalked.text = SelectedActor.TileWalkedThisTurn.ToString();
+ 
 
 
-        if (Mathf.Abs(x) > Mathf.Abs(y))
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition+Vector.up * b).Actor != null)
         {
-            for (int i = 0; i <= Mathf.Abs(x); i++)
-            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a); }
-            for (int i = 0; i <= Mathf.Abs(y) ; i++) PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
+           
+            for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <   maximumtile; i++)
+            {
+                    PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
+            }
+
+            for (int i = 1; i <= Mathf.Abs(y) && PathUI.Count <   maximumtile; i++)
+            {
+                    PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
+                if (PathUI.Count > maximumtile) break;
+            }
+            
         }
         else
         {
-            for (int i = 0; i <= Mathf.Abs(y); i++)
-            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b); }
-            for (int i = 0; i <= Mathf.Abs(x) ; i++)  PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
+            
+         
+            for (int i = 1; i <= Mathf.Abs(y) && PathUI.Count <   maximumtile; i++)
+            {
+  
+                    PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b);
+          
+            }
+            for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <  maximumtile; i++)
+            {
+               
+                    PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
+                if (PathUI.Count > maximumtile) break;
+            }
+       
+           
         }
-
+ 
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
+            {
+               
+               
+               
                 foreach (var ff in Battlefied[h, j].Sprite)
-                {
-                   
-                     
-                        ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
-                  
-                       
-                }
+                      ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
+                    
+               
 
-
-
-        // if (item == Battlefied[h, j].tile.Position) ff.enabled = true;
-
-
-
-
-
+            }
+             
 
     }
 
@@ -186,6 +235,9 @@ public class GameManager : MonoBehaviour {
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
+
+            if (ActorAtCursor != SelectedActor) ChangeGridColor(Color.red);
+
             OnHover.text =
     ActorAtCursor.Name + " lv"
     + ActorAtCursor.GetLevel.ToString("00") + "\n[ hp  "
@@ -224,6 +276,7 @@ public class GameManager : MonoBehaviour {
             }
 
         }
+        else { ChangeGridColor(GridColor); }
 
     }
 
@@ -261,6 +314,7 @@ public class GameManager : MonoBehaviour {
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
+   
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (timer >= .10f && inputs)
         {
@@ -286,7 +340,15 @@ public class GameManager : MonoBehaviour {
         }
     }
  
-
+    public void ResetGrid()
+    {
+        foreach (var item in Battlefied)
+            foreach (var z in item.Sprite)
+                z.enabled = !GM.ShowGrid;
+        PathUI.Clear();
+     
+        
+    }
     public void ToggleGrid()
     {
         foreach (var item in Battlefied)
@@ -299,7 +361,20 @@ public class GameManager : MonoBehaviour {
         ShowGrid = !ShowGrid;
     }
     public bool ShowGrid;
+    public void ChangeGridColor(Color a)
+    {
 
+
+        foreach (var item in Battlefied)
+        {
+            foreach (var x in item.Sprite)
+            {
+                a.a = x.color.a;
+                x.color = a;
+            }
+
+        }
+    }
     public void GenerateMap(Map t)
     {
        

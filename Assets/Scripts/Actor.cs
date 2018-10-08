@@ -224,6 +224,7 @@ public abstract class Actor : IComparable<Actor> {
     }
 
      public int tilewalked = 0;
+    public int TileWalkedThisTurn = 0;
     public void Grab( Item a)
     {
 
@@ -253,11 +254,18 @@ public abstract class Actor : IComparable<Actor> {
         if (IsDefeat) return;
         //This turn
         SP += 3;
+        this.TileWalkedThisTurn = 0;
+        
         if (SP > 10) SP = 10;
         Battle.Turn ThisTurn = battle.ThisTurn;
        if(OnTurn!=null) OnTurn(ThisTurn);
         //Act Here - Add logic for monster here             
         
+    }
+    public virtual void OnTurnEnded()
+    {
+        
+      
     }
 
     public delegate void OnTurnHandler(Battle.Turn e);
@@ -325,7 +333,9 @@ public abstract class Actor : IComparable<Actor> {
 
     }
     public void CreatePath(Map.Tile where)
-    {           
+    {
+
+        Path.Clear();
                int x = (int)(where.x -TilePosition.x );
                int y = (int)(where.y - TilePosition.y );
         UnityEngine.Debug.Log(Name + ": Creating Path : from "+TilePosition.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y +"}" );
@@ -340,19 +350,22 @@ public abstract class Actor : IComparable<Actor> {
         */
 
 
-        if (Math.Abs(x) > Math.Abs(y))
+        if (Math.Abs(x) > Math.Abs(y) || GameManager.CurrentBattle.map.AtPos(TilePosition + Vector.up * b).Actor != null)
         {
-            for (int i = 0; i <= Math.Abs(x); i++)
+            for (int i = 1; i <= Math.Abs(x); i++)
             { if (TilePosition + Vector.up * i * b == TilePosition) continue; Path.Enqueue(TilePosition + Vector.right * i * a); }
-            for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
+            // y +1
+            for (int i = 1; i <= Math.Abs(y)  ; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
         }
         else
         {
-            for (int i = 0; i <= Math.Abs(y); i++)
+            for (int i = 1; i <= Math.Abs(y); i++)
             { if (TilePosition + Vector.up * i * b == TilePosition) continue; Path.Enqueue(TilePosition + Vector.up * i * b); }
-            for (int i = 0; i <= Math.Abs(x) + 1 ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
+            //x + 1
+            for (int i = 1; i <= Math.Abs(x)  ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
         }
 
+       // if(where.Actor == null )Path.Enqueue(where.Position);
         //We will have to move this section in the Unity section to sync the position
         /*
        while (Path.Count > 1)
@@ -385,23 +398,7 @@ public abstract class Actor : IComparable<Actor> {
         Path.Clear();
         CreatePath(where);
         return;
-
-
-
-
-        /*
-
-                CurrentTile.OnQuitting();
-
-                CurrentTile = where;
-
-                CurrentTile.Enter(this);
-                SP -= (int)(v/GetStats.AGI);
-                if (SP < 0) SP = 0;
-
-            */
-
-
+ 
     }
     
    public void CantMove(Vector v)
