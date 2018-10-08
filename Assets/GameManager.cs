@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour {
     public Color GridColor;
     [Header("Templates")]
 
-    public Text DEBUGTimeWalked;
+    public Text SpCostUI;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject panel, InventoryCeil, GameEnd;
@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour {
 
 
         var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
-
+        GM.SpCostUI.enabled = SelectedActor != null;
         if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
         {
             GM.ResetGrid();
@@ -157,48 +157,67 @@ public class GameManager : MonoBehaviour {
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
-        var fs = SelectedActor.TileWalkedThisTurn -1 ;
+        var fs = SelectedActor.TileWalkedThisTurn ;
         
         var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SP   ) - fs  ;
-        GM.DEBUGTimeWalked.text = SelectedActor.TileWalkedThisTurn.ToString();
- 
 
+        var xc = PathUI.Count <= maximumtile;
 
-        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition+Vector.up * b).Actor != null)
+        var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition + Vector.up * b).Actor != null)
         {
-           
-            for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <   maximumtile; i++)
-            {
-                    PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
-            }
+            //for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <   maximumtile; i++)
+            var lastxpos = SelectedActor.TilePosition + Vector.right * x;
 
-            for (int i = 1; i <= Mathf.Abs(y) && PathUI.Count <   maximumtile; i++)
+            for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
             {
-                    PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
-                if (PathUI.Count > maximumtile) break;
+
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastxpos = SelectedActor.TilePosition + Vector.right * i * a;
+                    break;
+                }
+                PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
             }
-            
+          //  if (PathUI.Count < maximumtile)
+
+                for (int i = 1; i <= Mathf.Abs(y); i++)
+                {
+                    PathUI.Add(lastxpos + Vector.up * i * b);
+                    //if (PathUI.Count > maximumtile) break;
+                }
+
         }
         else
         {
-            
-         
-            for (int i = 1; i <= Mathf.Abs(y) && PathUI.Count <   maximumtile; i++)
+            var lastypos = SelectedActor.TilePosition + Vector.up * y;
+
+            for (int i = 1; i <= Mathf.Abs(y) && xc; i++)
             {
-  
-                    PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b);
-          
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastypos = SelectedActor.TilePosition + Vector.up * i * b;
+                    break;
+                }
+                PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b);
+
             }
-            for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <  maximumtile; i++)
-            {
-               
-                    PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
-                if (PathUI.Count > maximumtile) break;
-            }
-       
-           
+           // if (PathUI.Count < maximumtile)
+                for (int i = 1; i <= Mathf.Abs(x); i++)
+                {
+
+                    PathUI.Add(lastypos + Vector.right * i * a);
+                
+                }
         }
- 
+
+        if(PathUI.Count > maximumtile && PathUI.Count > 0)
+        while (PathUI.Count > maximumtile)
+        {
+                PathUI.RemoveAt(PathUI.Count-1);
+                
+        }
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -239,7 +258,7 @@ public class GameManager : MonoBehaviour {
             if (ActorAtCursor != SelectedActor) ChangeGridColor(Color.red);
 
             OnHover.text =
-    ActorAtCursor.Name + " lv"
+     "* " + ActorAtCursor.Name + " *\n\nlvl"
     + ActorAtCursor.GetLevel.ToString("00") + "\n[ hp  "
     + ActorAtCursor.HP.ToString("00") + " ]\n[ mp "
     + ActorAtCursor.MP.ToString("00") + " ]\n[ sp  "
