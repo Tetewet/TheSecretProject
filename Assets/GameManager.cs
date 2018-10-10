@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour {
     public static GameManager GM;
     public static bool InBattleMode = true;
+    public Camera Cam;
     public static Vector3 VecTo3(Vector v)
     {
         return new Vector3(v.x, v.y, 0);
@@ -17,10 +18,12 @@ public class GameManager : MonoBehaviour {
     public Color GridColor;
     [Header("Templates")]
 
+
     public Text SpCostUI;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject panel, InventoryCeil, GameEnd;
+    public GameObject TabButtons, MiniMenu;
     public Text OnHover; 
     public Animator Cursor;
     public static Vector CursorPos;
@@ -97,6 +100,10 @@ public class GameManager : MonoBehaviour {
         CursorPos = new Vector(9, 4);
         CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
         ToggleGrid();
+
+        foreach (var item in Actors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
+        foreach (var item in Foes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
+
     }
 
     private void OnTurnEnd()
@@ -146,7 +153,7 @@ public class GameManager : MonoBehaviour {
                         ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
             return;
         }
-        if (SelectedActor == null  )
+        if (SelectedActor == null  && SelectedActor != ThisTurnPlayer   )
 
         { GM.ResetGrid(); return; }
 
@@ -157,11 +164,14 @@ public class GameManager : MonoBehaviour {
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
-        var fs = SelectedActor.TileWalkedThisTurn ;
+        var fs = SelectedActor.TileWalkedThisTurn  -1;
         
         var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SP   ) - fs  ;
 
         var xc = PathUI.Count <= maximumtile;
+
+        if (SelectedActor.GetStats.AGI * SelectedActor.SP < SelectedActor.TileWalkedThisTurn && SelectedActor.SP > 0)
+            maximumtile++;
 
         var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
         if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition + Vector.up * b).Actor != null)
@@ -210,11 +220,12 @@ public class GameManager : MonoBehaviour {
                 
                 }
         }
-
+       
         if(PathUI.Count > maximumtile && PathUI.Count > 0)
         while (PathUI.Count > maximumtile)
         {
-                PathUI.RemoveAt(PathUI.Count-1);
+                if (PathUI.Count < 0) break;
+                    PathUI.RemoveAt(PathUI.Count-1);
                 
         }
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
@@ -245,6 +256,7 @@ public class GameManager : MonoBehaviour {
    
 
     }
+   
     public void OnCursorUpdate(Map.Tile t)
     {
 
@@ -325,9 +337,18 @@ public class GameManager : MonoBehaviour {
      
 
     }
+    public void CameraUpdate()
+    {
+        var curpos = Cursor.transform.position;  
+        if (SelectedActor != null)
+            curpos = GetInGameFromActor(SelectedActor).transform.position ;
+
+        curpos.z = Cam.transform.position.z;
+        Cam.transform.position = Vector3.Lerp(Cam.transform.position, curpos, 10 * Time.smoothDeltaTime);
+    }
     private void Update()
     {
-      
+
         CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
         var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
@@ -357,6 +378,11 @@ public class GameManager : MonoBehaviour {
         {
             print(CurrentBattle.map);
         }
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            ShowTabMenu();
+        }
+        CameraUpdate();
     }
  
     public void ResetGrid()
@@ -393,6 +419,12 @@ public class GameManager : MonoBehaviour {
             }
 
         }
+    }
+    public void ShowTabMenu()
+    {
+        TabButtons.SetActive(!TabButtons.activeSelf);
+        TabButtons.gameObject.SetActive(!MiniMenu.gameObject.activeSelf);
+
     }
     public void GenerateMap(Map t)
     {

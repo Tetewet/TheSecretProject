@@ -33,6 +33,12 @@ public class InGameActor : MonoBehaviour {
 
 
     }
+
+    private void Start()
+    {
+
+        
+    }
     bool attacking = false;
 
     //Action and Attack
