@@ -21,7 +21,7 @@ namespace Assets.Scripts
         //    warrior, mage, rogue
         //}
 
-        public MonsterFactory(string monsterName, stat monsterStats, bool monsterControllable)
+        public MonsterFactory(string monsterName, stat monsterStats, bool monsterControllable) : base(monsterName, monsterStats, monsterControllable)
         {
             this.monsterName = monsterName;
             this.monsterStats = monsterStats;
