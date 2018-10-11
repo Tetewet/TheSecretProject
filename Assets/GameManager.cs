@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour {
     public static GameManager GM;
     public static bool InBattleMode = true;
+    public Camera Cam;
     public static Vector3 VecTo3(Vector v)
     {
         return new Vector3(v.x, v.y, 0);
@@ -16,10 +17,13 @@ public class GameManager : MonoBehaviour {
     public GridLayoutGroup grid, CharacterInventory;
     public Color GridColor;
     [Header("Templates")]
- 
+
+
+    public Text SpCostUI;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject panel, InventoryCeil, GameEnd;
+    public GameObject TabButtons, MiniMenu;
     public Text OnHover; 
     public Animator Cursor;
     public static Vector CursorPos;
@@ -72,6 +76,7 @@ public class GameManager : MonoBehaviour {
         CurrentBattle = new Battle(Actors, Foes);
         CurrentBattle.BattlEnd += OnBattleEnd;
         CurrentBattle.StartNewTurn();
+        CurrentBattle.OnTurnEnd += OnTurnEnd;
         //14 6
         CurrentBattle.map = new Map(new Vector(18, 9));
         InitializeUI();
@@ -95,8 +100,21 @@ public class GameManager : MonoBehaviour {
         CursorPos = new Vector(9, 4);
         CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
         ToggleGrid();
+
+        foreach (var item in Actors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
+        foreach (var item in Foes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
+
     }
 
+    private void OnTurnEnd()
+    {
+        ResetGrid();
+    }
+
+    private void OnPathCleared()
+    {
+        ResetGrid();
+    }
     private void OnBattleEnd()
     {
         GameEnd.SetActive(true);
@@ -113,14 +131,31 @@ public class GameManager : MonoBehaviour {
     public static void EstimathPath( Vector where)
     {
 
-        PathUI.Clear();
-        if (SelectedActor == null)
+
+        var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
+        GM.SpCostUI.enabled = SelectedActor != null;
+        if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
         {
-            foreach (var item in Battlefied)
-                foreach (var z in item.Sprite)
-                    z.enabled = !GM.ShowGrid;
+            GM.ResetGrid();
             return;
         }
+        
+        PathUI.Clear();
+        // if (ThisTurnPlayer == SelectedActor && ThisTurnPlayer.Path.Count == 1 && ThisTurnPlayer.Path.Peek() == SelectedActor.TilePosition) GM.ResetGrid();
+
+
+        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1 )
+        {
+      
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)               
+                        ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
+            return;
+        }
+        if (SelectedActor == null  && SelectedActor != ThisTurnPlayer   )
+
+        { GM.ResetGrid(); return; }
 
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
@@ -129,71 +164,128 @@ public class GameManager : MonoBehaviour {
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
+        var fs = SelectedActor.TileWalkedThisTurn  -1;
+        
+        var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SP   ) - fs  ;
 
+        var xc = PathUI.Count <= maximumtile;
 
-        if (Mathf.Abs(x) > Mathf.Abs(y))
+        if (SelectedActor.GetStats.AGI * SelectedActor.SP < SelectedActor.TileWalkedThisTurn && SelectedActor.SP > 0)
+            maximumtile++;
+
+        var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition + Vector.up * b).Actor != null)
         {
-            for (int i = 0; i <= Mathf.Abs(x); i++)
-            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a); }
-            for (int i = 0; i <= Mathf.Abs(y) + 1; i++) PathUI.Add(SelectedActor.TilePosition + Vector.right * x + Vector.up * i * b);
+            //for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <   maximumtile; i++)
+            var lastxpos = SelectedActor.TilePosition + Vector.right * x;
+
+            for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
+            {
+
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastxpos = SelectedActor.TilePosition + Vector.right * i * a;
+                    break;
+                }
+                PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
+            }
+          //  if (PathUI.Count < maximumtile)
+
+                for (int i = 1; i <= Mathf.Abs(y); i++)
+                {
+                    PathUI.Add(lastxpos + Vector.up * i * b);
+                    //if (PathUI.Count > maximumtile) break;
+                }
+
         }
         else
         {
-            for (int i = 0; i <= Mathf.Abs(y); i++)
-            { if (SelectedActor.TilePosition + Vector.up * i * b == SelectedActor.TilePosition) continue; PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b); }
-            for (int i = 0; i <= Mathf.Abs(x) + 1; i++)  PathUI.Add(SelectedActor.TilePosition + Vector.up * y + Vector.right * i * a);
-        }
+            var lastypos = SelectedActor.TilePosition + Vector.up * y;
 
-        foreach (var item in PathUI)
+            for (int i = 1; i <= Mathf.Abs(y) && xc; i++)
+            {
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastypos = SelectedActor.TilePosition + Vector.up * i * b;
+                    break;
+                }
+                PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b);
+
+            }
+           // if (PathUI.Count < maximumtile)
+                for (int i = 1; i <= Mathf.Abs(x); i++)
+                {
+
+                    PathUI.Add(lastypos + Vector.right * i * a);
+                
+                }
+        }
+       
+        if(PathUI.Count > maximumtile && PathUI.Count > 0)
+        while (PathUI.Count > maximumtile)
         {
-      
-            for (int h = 0; h < Battlefied.GetLength(0); h++)
-                for (int j = 0; j < Battlefied.GetLength(1); j++)
-                    foreach (var ff in Battlefied[h, j].Sprite)
-                    {
-                        if (item == Battlefied[h, j].tile.Position) ff.enabled = true;
-                        else ff.enabled = false;
-
-
-                    }
+                if (PathUI.Count < 0) break;
+                    PathUI.RemoveAt(PathUI.Count-1);
+                
         }
-         
-                       
- 
-     
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
+
+        for (int h = 0; h < Battlefied.GetLength(0); h++)
+            for (int j = 0; j < Battlefied.GetLength(1); j++)
+            {
+               
+               
+               
+                foreach (var ff in Battlefied[h, j].Sprite)
+                      ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
+                    
+               
+
+            }
+             
+
     }
 
+    public void OnCursorEnter(Map.Tile t)
+    {
+   
+    }
     public void OnCursorExit(Map.Tile t)
     {
- 
 
+   
 
     }
+   
     public void OnCursorUpdate(Map.Tile t)
     {
-        OnHover.gameObject.SetActive( ActorAtCursor != null);
-        CharacterInventory.gameObject.SetActive( ActorAtCursor !=null);
+
+        OnHover.gameObject.SetActive(ActorAtCursor != null);
+        CharacterInventory.gameObject.SetActive(ActorAtCursor != null);
         Cursor.SetBool("Hover", ActorAtCursor != null);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
+
+            if (ActorAtCursor != SelectedActor) ChangeGridColor(Color.red);
+
             OnHover.text =
-    ActorAtCursor.Name + " lv"
+     "* " + ActorAtCursor.Name + " *\n\nlvl"
     + ActorAtCursor.GetLevel.ToString("00") + "\n[ hp  "
     + ActorAtCursor.HP.ToString("00") + " ]\n[ mp "
     + ActorAtCursor.MP.ToString("00") + " ]\n[ sp  "
     + ActorAtCursor.SP.ToString("00") + " ]";
 
-             for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++)
             {
-                if(i < ActorAtCursor.inventory.items.Length )
+                if (i < ActorAtCursor.inventory.items.Length)
                 {
-                   
+
                     if (ActorAtCursor.inventory.items[i] != null)
                     {
                         Inventory[i].transform.parent.gameObject.SetActive(true);
                         Inventory[i].enabled = true;
-                   
+
                         if (Inventory[i].sprite == null)
                         {
                             Inventory[i].sprite = LoadSprite(ActorAtCursor.inventory.items[i].ResourcePath);
@@ -201,22 +293,22 @@ public class GameManager : MonoBehaviour {
                     }
                     else
                     {
-                        Inventory[i].sprite =  null;
+                        Inventory[i].sprite = null;
                         Inventory[i].enabled = false;
                     }
-                
+
                 }
                 else
                 {
                     Inventory[i].sprite = null;
                     Inventory[i].transform.parent.gameObject.SetActive(false);
                 }
-             
+
             }
 
         }
+        else { ChangeGridColor(GridColor); }
 
-        EstimathPath(CursorPos);
     }
 
     public static Sprite LoadSprite(string name)
@@ -245,26 +337,36 @@ public class GameManager : MonoBehaviour {
      
 
     }
+    public void CameraUpdate()
+    {
+        var curpos = Cursor.transform.position;  
+        if (SelectedActor != null)
+            curpos = GetInGameFromActor(SelectedActor).transform.position ;
+
+        curpos.z = Cam.transform.position.z;
+        Cam.transform.position = Vector3.Lerp(Cam.transform.position, curpos, 10 * Time.smoothDeltaTime);
+    }
     private void Update()
     {
-      
+
         CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
         var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
+   
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (timer >= .10f && inputs)
         {
-            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
 
+            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
             var u = new Vector(h, -v);
     
             CursorPos += u;
             timer = 0;
-
+            OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
         }
-  
+        EstimathPath(CursorPos);
         var curtile = CurrentBattle.map.AtPos(CursorPos);
         OnCursorUpdate(curtile);
         if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);
@@ -276,9 +378,22 @@ public class GameManager : MonoBehaviour {
         {
             print(CurrentBattle.map);
         }
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            ShowTabMenu();
+        }
+        CameraUpdate();
     }
  
-
+    public void ResetGrid()
+    {
+        foreach (var item in Battlefied)
+            foreach (var z in item.Sprite)
+                z.enabled = !GM.ShowGrid;
+        PathUI.Clear();
+     
+        
+    }
     public void ToggleGrid()
     {
         foreach (var item in Battlefied)
@@ -291,7 +406,26 @@ public class GameManager : MonoBehaviour {
         ShowGrid = !ShowGrid;
     }
     public bool ShowGrid;
+    public void ChangeGridColor(Color a)
+    {
 
+
+        foreach (var item in Battlefied)
+        {
+            foreach (var x in item.Sprite)
+            {
+                a.a = x.color.a;
+                x.color = a;
+            }
+
+        }
+    }
+    public void ShowTabMenu()
+    {
+        TabButtons.SetActive(!TabButtons.activeSelf);
+        TabButtons.gameObject.SetActive(!MiniMenu.gameObject.activeSelf);
+
+    }
     public void GenerateMap(Map t)
     {
        

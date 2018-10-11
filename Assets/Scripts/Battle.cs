@@ -7,7 +7,7 @@ public class Battle{
     //Console Mode
 
     public delegate void OnBattleEndHandler();
-    public event OnBattleEndHandler BattlEnd;
+    public event OnBattleEndHandler BattlEnd, OnTurnEnd;
 
     public void Run()
     {
@@ -79,7 +79,7 @@ public class Battle{
          ThisTurn.Order[0].Turn(this);
 
 
-
+        OnTurnEnd();
 
     }
     public Map map;
@@ -186,7 +186,7 @@ public class Map
         {
             get { return (int)Position.y; }
         }
-        public void Enter(Actor a)
+        public void Enter(Actor a )
         {
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
             if (Items.Count >= 0)
@@ -199,17 +199,27 @@ public class Map
                    
             }
             Actor = a;
-            Actor.tilewalked++;
-            if(Actor.tilewalked > Actor.GetStats.AGI)
-            {
-                Actor.tilewalked = 0;
-                Actor.SP--;
-            }
 
+           
+           a.TileWalkedThisTurn++;
+          
         }
         public  void OnQuitting()
         {
-            if(Actor!=null)
+            if(Actor != null)
+            {
+               
+                Actor.tilewalked++;
+                if (Actor.tilewalked >= Actor.GetStats.AGI)
+                {
+                    Actor.tilewalked = 0;
+                    Actor.SP--;
+
+                }
+
+            }
+           
+            
            // UnityEngine.Debug.Log(Actor.ToString() + " exits " + Position.ToString());
             Actor = null;
         }
