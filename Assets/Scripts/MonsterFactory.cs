@@ -5,28 +5,27 @@ using System.Text;
 
 namespace Assets.Scripts
 {
-    class MonsterFactory
+    class MonsterFactory : Actor
     {
-        
-        public string name;
-        public int hp;
-        public int mp;
-        public int sp;
-        public enum MonsterType
-        {
-            goblin, orc
-        }
-        public enum MonsterClass
-        {
-            warrior, mage, rogue
-        }
 
-        public MonsterFactory(string name, int hp, int mp, int sp)
+        public string monsterName;
+        protected stat monsterStats = new stat();
+        public bool monsterControllable = false;
+
+        //public enum MonsterType
+        //{
+        //    goblin, orc, bandit, pirate
+        //}
+        //public enum MonsterClass
+        //{
+        //    warrior, mage, rogue
+        //}
+
+        public MonsterFactory(string monsterName, stat monsterStats, bool monsterControllable)
         {
-            this.name = name;
-            this.hp = hp;
-            this.mp = mp;
-            this.sp = sp;
+            this.monsterName = monsterName;
+            this.monsterStats = monsterStats;
+            this.monsterControllable = monsterControllable;
         }
 
         public void ScaleOnPlayerLevel()
