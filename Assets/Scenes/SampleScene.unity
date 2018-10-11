@@ -163,7 +163,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -118.29999, y: 31}
+  m_AnchoredPosition: {x: -118.299805, y: 31}
   m_SizeDelta: {x: 358.5, y: 281.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &42816929
@@ -2163,7 +2163,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 20
+  m_SortingOrder: 30
   m_Sprite: {fileID: 21300000, guid: 785b71088c846db4385af0b5a8ffb0d6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2690,6 +2690,181 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1001 &753194883
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 6.785022
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: -6.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_RootOrder
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513790760221964, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_Name
+      value: Red Blight (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: Speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: StepDuration
+      value: 0.354
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+  m_IsPrefabAsset: 0
+--- !u!114 &753194884 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+    type: 2}
+  m_PrefabInternal: {fileID: 753194883}
+  m_Script: {fileID: 11500000, guid: 181af5daffc2dbd428a83238dca27be1, type: 3}
+--- !u!1001 &770305617
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 6.785022
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: -6.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_RootOrder
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513790760221964, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_Name
+      value: Red Blight (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: Speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: StepDuration
+      value: 0.354
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+  m_IsPrefabAsset: 0
+--- !u!114 &770305618 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+    type: 2}
+  m_PrefabInternal: {fileID: 770305617}
+  m_Script: {fileID: 11500000, guid: 181af5daffc2dbd428a83238dca27be1, type: 3}
+--- !u!1001 &872741111
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 6.785022
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: -6.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_RootOrder
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513790760221964, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_Name
+      value: Red Blight (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: Speed
+      value: 26
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+  m_IsPrefabAsset: 0
 --- !u!1 &876222240
 GameObject:
   m_ObjectHideFlags: 0
@@ -2815,7 +2990,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: -1, y: -1, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 151, y: 94.7}
+  m_AnchoredPosition: {x: 151, y: 94.700195}
   m_SizeDelta: {x: 255.1, y: 248.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &892138362
@@ -3013,6 +3188,12 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 910280269}
   m_CullTransparentMesh: 0
+--- !u!114 &988857824 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+    type: 2}
+  m_PrefabInternal: {fileID: 1984864227}
+  m_Script: {fileID: 11500000, guid: 181af5daffc2dbd428a83238dca27be1, type: 3}
 --- !u!1001 &1001180978
 Prefab:
   m_ObjectHideFlags: 0
@@ -7021,6 +7202,68 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1001 &1718110458
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 6.785022
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: -6.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_RootOrder
+      value: 19
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513790760221964, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_Name
+      value: Red Blight (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: Speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: StepDuration
+      value: 0.354
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+  m_IsPrefabAsset: 0
+--- !u!114 &1718110459 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+    type: 2}
+  m_PrefabInternal: {fileID: 1718110458}
+  m_Script: {fileID: 11500000, guid: 181af5daffc2dbd428a83238dca27be1, type: 3}
 --- !u!1 &1727302274
 GameObject:
   m_ObjectHideFlags: 0
@@ -7058,7 +7301,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 124.70001, y: 217.97}
+  m_AnchoredPosition: {x: 124.700195, y: 217.97}
   m_SizeDelta: {x: 243.56, y: 232.38}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1727302276
@@ -7370,6 +7613,12 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 23
   m_TargetDisplay: 0
+--- !u!114 &1874859433 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+    type: 2}
+  m_PrefabInternal: {fileID: 872741111}
+  m_Script: {fileID: 11500000, guid: 181af5daffc2dbd428a83238dca27be1, type: 3}
 --- !u!1 &1876772677
 GameObject:
   m_ObjectHideFlags: 0
@@ -7676,6 +7925,62 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1980207866}
   m_CullTransparentMesh: 0
+--- !u!1001 &1984864227
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 6.785022
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: -6.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4021555346515006, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_RootOrder
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1513790760221964, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+      propertyPath: m_Name
+      value: Red Blight (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: Speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114749657860894980, guid: d997ae3aafde99840bd4d2da9c34b645,
+        type: 2}
+      propertyPath: StepDuration
+      value: 0.354
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d997ae3aafde99840bd4d2da9c34b645, type: 2}
+  m_IsPrefabAsset: 0
 --- !u!1 &1995336350
 GameObject:
   m_ObjectHideFlags: 0
@@ -8197,7 +8502,16 @@ MonoBehaviour:
   - {fileID: 527735659}
   Foes:
   - {fileID: 260023858}
+  - {fileID: 1874859433}
+  - {fileID: 988857824}
+  - {fileID: 753194884}
+  - {fileID: 770305618}
+  - {fileID: 1718110459}
   ShowGrid: 0
+  MiniMenuBTN:
+  - {fileID: 1253917971}
+  - {fileID: 1552465050}
+  - {fileID: 910280269}
 --- !u!4 &2141045167
 Transform:
   m_ObjectHideFlags: 0

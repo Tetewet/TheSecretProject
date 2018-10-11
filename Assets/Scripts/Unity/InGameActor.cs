@@ -37,7 +37,6 @@ public class InGameActor : MonoBehaviour {
     private void Start()
     {
 
-        
     }
     bool attacking = false;
 
@@ -45,6 +44,12 @@ public class InGameActor : MonoBehaviour {
     public void AI(Battle.Turn Turn = null)
     {
         Attack(GameManager.GM.Actors[0].actor, Skill.Base);
+
+
+
+
+
+ 
     }
     public void OnTurn(Battle.Turn Turn)
     {
@@ -90,6 +95,9 @@ public class InGameActor : MonoBehaviour {
        
         
     }
+    /// <summary>
+    /// Ends the turn officially. Do not use _OnTurn
+    /// </summary>
     private void EndTurn( )
     {
         MyTurn = false;
@@ -98,7 +106,8 @@ public class InGameActor : MonoBehaviour {
     private IEnumerator _EndTurn()
     {
         yield return new WaitForSeconds(1);
-
+        if (IsFoe) yield return new WaitForSeconds(.5f);
+      
         actor.Path.Clear();
      
         GameManager.CurrentBattle.EndTurn();
@@ -193,7 +202,10 @@ public class InGameActor : MonoBehaviour {
             {
              
                 actor.CantMove(actor.Path.Peek());
-         
+
+
+                //Since PathFinding Is dumb, AI skip turn on stuck
+                if (IsFoe && MyTurn) EndTurn();
                     timer = 0;
                 return;
             }
@@ -274,4 +286,6 @@ public class InGameActor : MonoBehaviour {
         if (MyTurn && timeSinceTurn > 1 && TimeSincedAttack > 1) if (actor.SP <= 0) EndTurn();
          
     }
+
+
 }

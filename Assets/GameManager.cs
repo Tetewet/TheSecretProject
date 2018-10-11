@@ -78,7 +78,7 @@ public class GameManager : MonoBehaviour {
         CurrentBattle.StartNewTurn();
         CurrentBattle.OnTurnEnd += OnTurnEnd;
         //14 6
-        CurrentBattle.map = new Map(new Vector(18, 9));
+        CurrentBattle.map = new Map(new Vector(38, 9));
         InitializeUI();
         GenerateMap(CurrentBattle.map);
         OnHover.enabled = true;
@@ -124,6 +124,7 @@ public class GameManager : MonoBehaviour {
     private void FixedUpdate()
     {
         timer += Time.fixedDeltaTime;
+       
     }
 
 
@@ -220,11 +221,15 @@ public class GameManager : MonoBehaviour {
                 
                 }
         }
+
+
+
+        if(PathUI.Count != 0)
        
         if(PathUI.Count > maximumtile && PathUI.Count > 0)
         while (PathUI.Count > maximumtile)
         {
-                if (PathUI.Count < 0) break;
+               
                     PathUI.RemoveAt(PathUI.Count-1);
                 
         }
@@ -248,21 +253,21 @@ public class GameManager : MonoBehaviour {
 
     public void OnCursorEnter(Map.Tile t)
     {
-   
+    
     }
     public void OnCursorExit(Map.Tile t)
     {
 
-   
+       
 
     }
    
     public void OnCursorUpdate(Map.Tile t)
     {
-
-        OnHover.gameObject.SetActive(ActorAtCursor != null);
+       
+        OnHover.gameObject.SetActive(ActorAtCursor != null || Tabmenu);
         CharacterInventory.gameObject.SetActive(ActorAtCursor != null);
-        Cursor.SetBool("Hover", ActorAtCursor != null);
+        Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
@@ -309,6 +314,7 @@ public class GameManager : MonoBehaviour {
         }
         else { ChangeGridColor(GridColor); }
 
+        TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
     }
 
     public static Sprite LoadSprite(string name)
@@ -323,6 +329,14 @@ public class GameManager : MonoBehaviour {
         //Debug
         print("Tiles: " + curtile.Position + " Unity: " + CursorPos + " Actor: " + curtile.Actor);
 
+
+
+        if (Tabmenu)
+        {
+
+
+            return;
+        }
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
@@ -343,20 +357,28 @@ public class GameManager : MonoBehaviour {
         if (SelectedActor != null)
             curpos = GetInGameFromActor(SelectedActor).transform.position ;
 
+        if (Tabmenu) curpos = Cam.transform.position;
         curpos.z = Cam.transform.position.z;
+        
         Cam.transform.position = Vector3.Lerp(Cam.transform.position, curpos, 10 * Time.smoothDeltaTime);
     }
     private void Update()
     {
 
         CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
-        var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
-        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
+        var Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
+        if (Tabmenu)
+            Position = MiniMenuBTN[TabChoice].transform.position + Vector3.right * 2;
+        if (inventorySelected)
+            Position = Inventory[invUIItem].transform.position;
+
+        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position  + CursorOffset, 9 * Time.smoothDeltaTime);
+
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
    
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
-        if (timer >= .10f && inputs)
+        if (timer >= .10f && inputs && !Tabmenu)
         {
 
             OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
@@ -382,6 +404,7 @@ public class GameManager : MonoBehaviour {
         {
             ShowTabMenu();
         }
+        MiniMenuLogic();
         CameraUpdate();
     }
  
@@ -420,10 +443,17 @@ public class GameManager : MonoBehaviour {
 
         }
     }
+    bool Tabmenu = false;
     public void ShowTabMenu()
     {
-        TabButtons.SetActive(!TabButtons.activeSelf);
-        TabButtons.gameObject.SetActive(!MiniMenu.gameObject.activeSelf);
+      
+        Tabmenu = !Tabmenu;
+        if (SelectedActor == null) Tabmenu = false;
+            TabButtons.SetActive(!Tabmenu && SelectedActor!= null );
+        MiniMenu.gameObject.SetActive(Tabmenu);
+        inventorySelected = false;
+        SkillsSelected = false;
+        TabChoice = 0;
 
     }
     public void GenerateMap(Map t)
@@ -438,7 +468,7 @@ public class GameManager : MonoBehaviour {
                 var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
                 e.tile = t.Tiles[x, y];
                 foreach (var item in e.Sprite)
-                {
+                {   
                     var z = GridColor;
                     z.a = item.color.a;
 
@@ -452,5 +482,58 @@ public class GameManager : MonoBehaviour {
         }
         MapName = t.ToString();
     }
-  
+    int TabChoice = 0;
+    public GameObject[] MiniMenuBTN;
+    bool inventorySelected, SkillsSelected;
+    int invUIItem = 0;
+    Item SelectedItem;
+    
+    void MiniMenuLogic()
+    {
+        if (!Tabmenu || SelectedActor == null) return;
+        if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--; }
+        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; }
+        if (Input.GetKeyDown(KeyCode.A)) invUIItem--;
+        if (Input.GetKeyDown(KeyCode.D)) invUIItem++;
+
+            if (TabChoice > 2) TabChoice = 0;
+        if (TabChoice < 0) TabChoice = 2;
+
+
+        invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length-1);
+        
+   
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null &&  SelectedItem == null)
+            {
+                var e = SelectedActor.inventory.items[invUIItem];
+                SelectedItem = e;
+                print(SelectedItem.Name + "is Selected");
+                return;
+            }
+            if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
+            
+        
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab)){
+            if (SelectedItem == null)
+                StopInventory();
+            else SelectedItem = null;
+
+
+        }
+        //Inventory
+      
+
+
+
+    }
+    void StopInventory()
+    {
+        inventorySelected = false;
+        invUIItem = 0;
+    }
+
 }
