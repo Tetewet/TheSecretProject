@@ -122,6 +122,7 @@ public abstract class Actor : IComparable<Actor> {
     {
         HP = GetStats.MaximumHP;
         MP = GetStats.MaximumMP;
+        
         SP = 0;
     }
 
@@ -133,6 +134,7 @@ public abstract class Actor : IComparable<Actor> {
     {
         get { return Class.GetBase + baseStats; }
     }
+
     public int RemainingPoint
     {
         get {
@@ -169,18 +171,23 @@ public abstract class Actor : IComparable<Actor> {
     }
     public virtual void Use(Item i, Actor[] T)
     {
+        i.Uses--;
         foreach (var item in T)
         {
-           if(i.Uses >0) i.OnUse(item);
-           else
+          i.UseOn(item);
+            if (i.Uses <= 0)
             {
                 for (int x = 0; x < inventory.items.Length; x++)
-                    inventory.items[x] = null;
+                   if(inventory.items[x] == i) inventory.items[x] = null;
                 i.Dispose();
                 break;
             }
         } 
          
+    }
+    public void Use(Item i, Actor T)
+    {
+        Use(i, new Actor[1] { T });
     }
     public void TakeDamage(float x)
     {
@@ -221,6 +228,10 @@ public abstract class Actor : IComparable<Actor> {
     {
         SP -= x;
         if (SP < 0) SP = 0;
+        if(x > 0)
+        {
+            SpAvaillableThisTurn += x;
+        }
     }
 
      public int tilewalked = 0;
@@ -249,15 +260,18 @@ public abstract class Actor : IComparable<Actor> {
         get { return CurrentTile.Position; }
     }
     //Act for one turn. Must be in a battle
+
+    public int SpAvaillableThisTurn = 3;
     public virtual void Turn(Battle battle)
     {
         if (IsDefeat) return;
         //This turn
-        SP += 3;
+        SP +=  3;
         this.TileWalkedThisTurn = 0;
         
         if (SP > 10) SP = 10;
         Battle.Turn ThisTurn = battle.ThisTurn;
+        SpAvaillableThisTurn = SP;
        if(OnTurn!=null) OnTurn(ThisTurn);
         //Act Here - Add logic for monster here             
         
@@ -596,10 +610,10 @@ public class Skill
         {
             var e = new Skill();
             e.Name = "Attack";
-            e.SpCost = 1;
+            e.SpCost = 2;
             e.Reach = 1;
             e.Type = DamageType.Physical;
-            e.Damage = .25f;
+            e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             return e;
         }
@@ -710,7 +724,7 @@ public struct stat : IComparable<stat>
         e.STR = a.STR + b.STR;
         e.INT = a.INT + b.INT;
         e.AGI = a.AGI + b.AGI;
-        e.WIS = a.WIS + b.AGI;
+        e.WIS = a.WIS + b.WIS;
         e.END = a.END + b.END;
         e.LUC = a.LUC + b.LUC;
         e.OnGainStats += a.OnGainStats + b.OnGainStats;

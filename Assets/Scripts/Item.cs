@@ -19,7 +19,7 @@ public abstract class Item : IDisposable
     {
         OnDispose();
     }
-    public static List<Item> Inventory;
+    public static List<Item> Inventory = new List<Item>();
     public Skill.TargetType targetType;
     public Map.Tile CurrentTile = new Map.Tile();
     public Vector TilePosition
@@ -46,15 +46,11 @@ public abstract class Item : IDisposable
     /// Use on
     /// </summary>
     /// <param name="a">Use the item on this actor</param>
-    public virtual void OnUse(Actor a = null)
+    public virtual void UseOn(Actor a = null)
     {
-        Uses--;
-        if (Uses <= 1)
-        {
-            //It Dispose of it after it has being remove from every inventory
-           // Dispose();
-            return;
-        }
+        UnityEngine.Debug.Log(Name + "is used on " + a.Name);
+     
+ 
        
     }
 
@@ -122,11 +118,11 @@ public class Consumeable : Item
     {
     }
 
-    public override void OnUse(Actor a)
+    public override void UseOn(Actor a)
     {
         if(HPregen!=0)a.TakeDamage(-HPregen);
         if (MPregen != 0) a.ConsumeMP(-MPregen);
         if (SPregen != 0) a.ConsumeSP(-SPregen);
-        base.OnUse(a);
+        base.UseOn(a);
     }
 }
