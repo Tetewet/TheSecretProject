@@ -199,7 +199,10 @@ public class InGameActor : MonoBehaviour {
 
     private void OnDamage(float z, Skill x)
     {
-        anim[0].SetTrigger("Attacked");
+        if(!actor.IsDefeat)
+        anim[0].SetTrigger("Attacked");          
+        else anim[0].SetTrigger("Death");
+
     }
 
     public void InitializedActor(Actor a, string path = "")
@@ -270,6 +273,8 @@ public class InGameActor : MonoBehaviour {
         var e = GameManager.Battlefied[(int)actor.TilePosition.x, (int)actor.TilePosition.y];
 
         var walking = DistanceToPos > 0f;
+
+    
         foreach (var item in anim)
             item.SetBool("Walking", walking);
         var g = transform.position.x - e.transform.position.x;

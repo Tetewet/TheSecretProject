@@ -92,7 +92,15 @@ public class Battle{
             return;
         }
         else
-         ThisTurn.Order[0].Turn(this);
+        {
+            if (!ActingThisTurn.IsDefeat) ActingThisTurn.Turn(this);
+            else
+            {
+                OnTurnEnd();
+                EndTurn();
+            }
+        }
+    
 
 
         OnTurnEnd();
@@ -295,6 +303,8 @@ public class WinCondition
 
         foreach (var item in b.Players) if (!item.IsDefeat) PlayerStillAlive = true;
         foreach (var item in b.Foes) if (!item.IsDefeat) FoeStillAlive = true;
+
+
         if (FoeStillAlive && PlayerStillAlive) return Result.OnGoing;
         else if (!PlayerStillAlive) return Result.Lose;
         else return Result.Win;
