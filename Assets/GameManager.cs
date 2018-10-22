@@ -143,7 +143,7 @@ public class GameManager : MonoBehaviour {
         if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
         {
             GM.ResetGrid();
-            return 0;
+            return -1;
         }
         
         PathUI.Clear();
@@ -162,7 +162,7 @@ public class GameManager : MonoBehaviour {
       
         if (SelectedActor == null || SelectedActor != ThisTurnPlayer   )
 
-        { GM.ResetGrid(); return 0; }
+        { GM.ResetGrid(); return -1; }
  
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
