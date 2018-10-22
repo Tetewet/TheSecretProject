@@ -91,14 +91,17 @@ public class GameManager : MonoBehaviour {
         //Debug
         for (int i = 0; i < Actors.Length; i++)
         {
-            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(8+ i, 3));
+            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(11+ i, 4));
         }
         for (int i = 0; i < Foes.Length; i++)
         {
            Foes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
         }
         CursorPos = new Vector(9, 4);
-        CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+
         ToggleGrid();
 
         foreach (var item in Actors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
@@ -131,7 +134,7 @@ public class GameManager : MonoBehaviour {
 
 
     public static List<Vector> PathUI = new List<Vector>( );
-    public static void EstimathPath( Vector where)
+    public static int EstimathPath( Vector where)
     {
 
 
@@ -140,7 +143,7 @@ public class GameManager : MonoBehaviour {
         if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
         {
             GM.ResetGrid();
-            return;
+            return 0;
         }
         
         PathUI.Clear();
@@ -154,12 +157,12 @@ public class GameManager : MonoBehaviour {
                 for (int j = 0; j < Battlefied.GetLength(1); j++)
                     foreach (var ff in Battlefied[h, j].Sprite)               
                         ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
-            return;
+            return ThisTurnPlayer.Path.Count;
         }
       
         if (SelectedActor == null || SelectedActor != ThisTurnPlayer   )
 
-        { GM.ResetGrid(); return; }
+        { GM.ResetGrid(); return 0; }
  
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
@@ -228,7 +231,7 @@ public class GameManager : MonoBehaviour {
         }
 
 
-
+      
         if(PathUI.Count != 0)
        
         if(PathUI.Count > maximumtile && PathUI.Count > 0)
@@ -252,8 +255,8 @@ public class GameManager : MonoBehaviour {
                
 
             }
-             
 
+        return PathUI.Count;
     }
 
     public void OnCursorEnter(Map.Tile t)
@@ -301,7 +304,10 @@ public class GameManager : MonoBehaviour {
             else ChangeGridColor(Color.cyan + Color.blue);
 
         }
-        else {   ChangeGridColor(GridColor); }
+        else
+        {
+            if(SelectedActor != null) ShowUI(SelectedActor);
+            ChangeGridColor(GridColor); }
 
         TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
     }

@@ -13,6 +13,7 @@ public class InGameActor : MonoBehaviour {
     public Actor actor;
     public Animator[] anim;
     public SpriteRenderer[] sprity;
+    public Image ExpBar;
     public float StepDuration = 0.1f;
     public float Speed = 5;
     public Vector2 offset;
@@ -20,7 +21,7 @@ public class InGameActor : MonoBehaviour {
     public float DistanceToPos;
     public bool isAI = false;
 
-   public bool MyTurn = false;
+    public bool MyTurn = false;
     // private Skill SkillToUse = null;
 
     float AITImer = 0;
@@ -40,7 +41,9 @@ public class InGameActor : MonoBehaviour {
             LUC = s.LUC;
             WIS = s.WIS;
             END = s.END;
+            EXPGain = 0;
         }
+        public float EXPGain;
     }
 
 
@@ -49,7 +52,17 @@ public class InGameActor : MonoBehaviour {
         //Debug
         if (OverrideStats)
         {
-            InitializedActor(new Player(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS },isAI),"");
+
+            if (!isAI)
+                InitializedActor(new Player(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS }, isAI), "");
+            else
+            {
+                var e = new Monster(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS }, isAI);
+                InitializedActor(e, "");
+                e.ExpGain = ActorStats.EXPGain;
+
+            }
+
         }
         else
         {
@@ -66,7 +79,7 @@ public class InGameActor : MonoBehaviour {
 
     private void Start()
     {
-
+        StartCoroutine(UpDateEXP());
     }
     bool attacking = false;
 
@@ -74,31 +87,31 @@ public class InGameActor : MonoBehaviour {
     {
         if (!isAI || !MyTurn) return;
         AITImer += Time.fixedDeltaTime;
-        if (AITImer > 1) EndTurn() ;
-        
+        if (AITImer > 1) EndTurn();
+
     }
     //Action and Attack
     public void AI(Battle.Turn Turn = null)
     {
         AITImer = 0;
         Attack(GameManager.GM.Actors[0].actor, Skill.Base);
- 
+
     }
- 
-   
+
+
     public void OnTurn(Battle.Turn Turn)
     {
-      
+
         actor.TileWalkedThisTurn = 0;
         sprity[0].color = Color.white;
         MyTurn = true;
-     
+
         if (!isAI)
         {
             GameManager.CursorPos = actor.TilePosition;
             GameManager.GM.OnPressed(actor.CurrentTile);
-           
-         
+
+
         }
         else AI(Turn);
 
@@ -106,36 +119,36 @@ public class InGameActor : MonoBehaviour {
     }
     public bool CanPerformAction(Skill s)
     {
-        if (actor.HP <  s.HpCost) { print("Not enough HP: " + actor.HP + "/" +s.HpCost); return false; } 
-        if (actor.MP <  s.MpCost) { print("Not enough MP: " + actor.MP + "/" + s.MpCost); return false; }
-        if (actor.SP <  s.SpCost) { print("Not enough SP: " + actor.SP + "/" + s.SpCost); return false; }
+        if (actor.HP < s.HpCost) { print("Not enough HP: " + actor.HP + "/" + s.HpCost); return false; }
+        if (actor.MP < s.MpCost) { print("Not enough MP: " + actor.MP + "/" + s.MpCost); return false; }
+        if (actor.SP < s.SpCost) { print("Not enough SP: " + actor.SP + "/" + s.SpCost); return false; }
 
         return true;
     }
     public void Attack(Actor a, Skill b)
     {
-       if( MyTurn) StartCoroutine(InitiateAttack(a, b));       
+        if (MyTurn) StartCoroutine(InitiateAttack(a, b));
     }
     /// <summary>
     /// Used by the Animation. Will Ends the Turn
     /// </summary>
-   public void AnimatedAttack()
+    public void AnimatedAttack()
     {
         if (!MyTurn) return;
         AITImer = 0;
         Actor[] e = new Actor[1];
         e[0] = temptarget;
-       
+
         actor.Use(tempattack, e);
         TimeSincedAttack = 0;
-       if (actor.SP <= 0 ) EndTurn();
-       
-        
+        if (actor.SP <= 0) EndTurn();
+
+
     }
     /// <summary>
     /// Ends the turn officially. Do not use _OnTurn
     /// </summary>
-    private void EndTurn( )
+    private void EndTurn()
     {
         MyTurn = false;
         StartCoroutine(_EndTurn());
@@ -144,16 +157,34 @@ public class InGameActor : MonoBehaviour {
     {
         yield return new WaitForSeconds(1);
         if (isAI) yield return new WaitForSeconds(.5f);
-      
+
         actor.Path.Clear();
-     
+
         GameManager.CurrentBattle.EndTurn();
         GameManager.SelectedActor = null;
         sprity[0].color = Color.gray;
         timeSinceTurn = 0;
         attacking = false;
         print(actor.Name + " " + " ends his turn.");
-        yield  break;
+        yield break;
+    }
+    IEnumerator UpDateEXP()
+    {
+
+        var e = 0f;
+        ExpBar.transform.parent.gameObject.SetActive(true);
+       
+        while (e < 2 )
+        {
+            ExpBar.fillAmount = Mathf.Lerp(ExpBar.fillAmount, (actor.GetEXP / actor.RequiredEXP) + .05f, 10 * Time.smoothDeltaTime);
+
+      
+            e += Time.fixedDeltaTime;
+            yield return null;
+        }
+        print(actor.Name + " lvl" + actor.GetLevel + " "+ actor.GetEXP + " / " + actor.RequiredEXP);
+        ExpBar.transform.parent.gameObject.SetActive(false);
+        yield break;
     }
     private Skill tempattack;
     Actor temptarget;
@@ -184,17 +215,31 @@ public class InGameActor : MonoBehaviour {
 
 
     //Actor Related - Can Swap Actor on a whim
-    public void InitializedActor(Actor a, RuntimeAnimatorController b =null)
+    public void InitializedActor(Actor a, RuntimeAnimatorController b =null )
     {
         actor = a;
         a.OnTurn += OnTurn;
+        a.OnExpGain += OnExpGain;
         a.OnDamage += OnDamage;
+        a.OnKillActor += OnKillingSomone;
         Indicator.color = ActorColor;
         this.name = actor.Name;
  
         if (b) foreach (var item in anim) item.runtimeAnimatorController = b;
         
         actor.Heal();
+    }
+
+    private void OnKillingSomone(Actor a)
+    {
+        GameManager.CursorPos = a.TilePosition;
+
+        if (GameManager.CurrentBattle.Foes.Count == 0) EndTurn();
+    }
+
+    private void OnExpGain(float x)
+    {
+        StartCoroutine(UpDateEXP());
     }
 
     private void OnDamage(float z, Skill x)
@@ -263,8 +308,9 @@ public class InGameActor : MonoBehaviour {
                     timer = 0;
                 return;
             }
-        
-            if (actor.SP > 0)
+
+            var c = GameManager.CurrentBattle.map.AtPos(actor.Path.Peek());
+            if (actor.SP > 0 && c.Actor == null)
             {
                 
                 actor.CurrentTile.OnQuitting();

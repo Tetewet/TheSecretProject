@@ -74,16 +74,22 @@ public struct Vector
     }
 }
 
-public abstract class Actor : IComparable<Actor>  {
+public abstract class Actor : IComparable<Actor> {
 
     public bool IsInPlayerTeam
     {
         get { return GameManager.CurrentBattle.Players.Contains(this); }
     }
-    public const float BASEEXP = 100;
+    public const float BASEEXP = 10;
     public string Name;
     public bool Controllable = true;
+
+
     //Level
+    public delegate void OnGainEXP(float x);
+    public event OnGainEXP OnExpGain;
+    public delegate void OnKillHandler(Actor a);
+    public event OnKillHandler OnKillActor;
     public int GetLevel
     {
         get { return Level; }
@@ -96,11 +102,14 @@ public abstract class Actor : IComparable<Actor>  {
     }
     public virtual float RequiredEXP
     {
-        get { return BASEEXP * (2 * (float)Math.Exp(Level)); }
+        get { return BASEEXP * ((float)Math.Exp(Math.Abs(Level - 1))); }
     }
+
     public virtual void AddExp(float exp)
     {
         EXP += exp;
+        UnityEngine.Debug.Log(Name + " gained " + exp + " exp.");
+        if (OnExpGain != null) OnExpGain(exp);
         if (EXP >= RequiredEXP) LevelUP();
     }
     public virtual void LevelUP()
@@ -114,18 +123,28 @@ public abstract class Actor : IComparable<Actor>  {
         this.Name = Name;
         this.baseStats = BaseStats;
         this.Controllable = Controllable;
-        
+
     }
 
+    //Oy Vey Goyim
+    protected int Gold = 0;
+    public void AddGold(int g)
+    {
+        Gold += g;
+    }
+    public void RemoveGold(int g)
+    {
+        Gold -= g;
+    }
     //Status
     public float HP = 10;
-     public float MP = 10;
+    public float MP = 10;
     public int SP = 10;
     public void Heal()
     {
         HP = GetStats.MaximumHP;
         MP = GetStats.MaximumMP;
-        
+
         SP = 0;
     }
 
@@ -150,17 +169,17 @@ public abstract class Actor : IComparable<Actor>  {
             return (Level + 1) * 5 - (baseStats.STR + baseStats.AGI + baseStats.END + baseStats.WIS + baseStats.INT); }
     }
 
-    
+
     //Action
-    public delegate void DamageHandler(float z,Skill x );
+    public delegate void DamageHandler(float z, Skill x);
 
     public event DamageHandler OnAttack, OnDamage, OnBlocked;
-    
+
     public virtual void Use(Skill s, Actor[] Target)
     {
 
-        if (HP >= s.HpCost) { if (s.HpCost != 0) TakeDamage(s.HpCost); } 
-            else { UnityEngine.Debug.Log(Name + " not enough HP :" + HP +"/" + s.HpCost ); return; }
+        if (HP >= s.HpCost) { if (s.HpCost != 0) TakeDamage(s.HpCost); }
+        else { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return; }
 
         if (MP >= s.MpCost) { if (s.MpCost != 0) ConsumeMP(s.MpCost); }
         else { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return; }
@@ -169,7 +188,7 @@ public abstract class Actor : IComparable<Actor>  {
         else { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return; }
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
-        foreach (var item in Target) s.Activate(item, GetStats);
+        foreach (var item in Target) s.Activate(item, GetStats, this);
 
     }
     public virtual void Use(Item i, Actor[] T)
@@ -177,16 +196,20 @@ public abstract class Actor : IComparable<Actor>  {
         i.Uses--;
         foreach (var item in T)
         {
-          i.UseOn(item);
+            i.UseOn(item);
             if (i.Uses <= 0)
             {
                 for (int x = 0; x < inventory.items.Length; x++)
-                   if(inventory.items[x] == i) inventory.items[x] = null;
+                    if (inventory.items[x] == i) inventory.items[x] = null;
                 i.Dispose();
                 break;
             }
-        } 
-         
+        }
+
+    }
+    public void OnMurder(Actor a)
+    {
+        if (OnKillActor != null) OnKillActor(a);
     }
     public void Use(Item i, Actor T)
     {
@@ -250,6 +273,13 @@ public abstract class Actor : IComparable<Actor>  {
 
         for (int i = 0; i < inventory.items.Length; i++)
         {
+
+            if(a is Gold)
+            {
+                a.OnGrab(this);
+                a.Dispose();
+            }
+            else 
             if (inventory.items[i] == null)
             {   
                 inventory.items[i] = a;
@@ -631,7 +661,7 @@ public class Skill
             return e;
         }
     }
-    public virtual void Activate(Actor Target, stat Stats = new stat())
+    public virtual void Activate(Actor Target, stat Stats = new stat(), Actor f = null)
     {
      
         var x = Damage;
@@ -640,9 +670,9 @@ public class Skill
         
         if ((Stats.LUC * 2 + BaseCritChance) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
 
-            Target.TakeDamage(x,this);
+            Target.TakeDamage(x,this,f);
     }
-    public void Activate(Actor[] a)
+    public void Activate(Actor[] a, Actor f = null)
     {
         foreach (var item in a) { Activate(item);  } 
     }

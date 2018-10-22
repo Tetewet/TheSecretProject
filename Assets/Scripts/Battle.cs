@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
 
 [System.Serializable]
 public class Battle{
@@ -146,7 +146,9 @@ public class Battle{
 
             foreach (var item in TeamA) e.Add(item);
             foreach (var item in TeamB) e.Add(item);
+ 
             e.Sort();
+
             Order = e;
             History = Order.ToArray();
 
