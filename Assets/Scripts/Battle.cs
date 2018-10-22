@@ -204,6 +204,7 @@ public class Map
         public Actor Actor;
         public List<Item> Items = new List<Item>();
         public Vector Position;
+        public int Heigth = 0;
         public int x
         {
             get { return (int)Position.x; }
@@ -214,20 +215,31 @@ public class Map
         }
         public void Enter(Actor a )
         {
+            Actor = a;           
+            a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
+
             if (Items.Count >= 0)
             {
                 for (int i = 0; i < Items.Count; i++)
                 {
-                    if (!a.inventory.IsFull) { UnityEngine.Debug.Log(a.ToString() + " takes  " + Items[i].ToString()); a.Grab(Items[i]);Items.Remove(Items[i]); }
+                    if(Items[i] != null)
+                    if (!a.inventory.IsFull) {
+
+                        a.Grab(Items[i]);
+                            if ( i== Items.Count) continue;
+
+                                Items.Remove(Items[i]);
+
+                      
+                        UnityEngine.Debug.Log(a.ToString() + " takes  " + Items[i].ToString());
+
+                    }
                 }
 
                    
             }
-            Actor = a;
-
-           
-           a.TileWalkedThisTurn++;
+        
           
         }
         public  void OnQuitting()
@@ -256,6 +268,7 @@ public class Map
         public void AddItem(Item a)
         {
             Items.Add(a);
+            if(a!= null)
             a.CurrentTile = this;
         }
         public override string ToString()

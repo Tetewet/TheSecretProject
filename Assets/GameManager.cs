@@ -235,6 +235,105 @@ public class GameManager : MonoBehaviour {
         return PathUI.Count;
     }
 
+    public static int EstimathPath(Actor from,Vector where)
+    {
+
+
+        var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
+        if (from == null && CurrentBattle.ThisTurn.Order[0] == null)
+        {
+            GM.ResetGrid();
+            return -1;
+        }
+
+        PathUI.Clear();
+        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1)
+        {
+
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)
+                        ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
+            return ThisTurnPlayer.Path.Count;
+        }
+
+        if (from == null || from != ThisTurnPlayer)
+
+        { GM.ResetGrid(); return -1; }
+
+        int x = (int)(where.x - from.TilePosition.x);
+        int y = (int)(where.y - from.TilePosition.y);
+        var a = 1;
+        var b = 1;
+        if (x < 0) a = -1;
+        if (y < 0) b = -1;
+
+        var fs = from.TileWalkedThisTurn;
+
+        var maximumtile = (from.GetStats.AGI * from.SpAvaillableThisTurn) - fs;
+
+        var xc = PathUI.Count <= maximumtile;
+        var e = (int)(PathUI.Count / from.GetStats.AGI);
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(from.TilePosition + Vector.up * b).Actor != null)
+        {
+
+            var lastxpos = from.TilePosition + Vector.right * x;
+            for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
+            {
+
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastxpos = from.TilePosition + Vector.right * i * a;
+                    break;
+                }
+                PathUI.Add(from.TilePosition + Vector.right * i * a);
+            }
+            for (int i = 1; i <= Mathf.Abs(y); i++)
+            {
+                PathUI.Add(lastxpos + Vector.up * i * b);
+            }
+
+        }
+        else
+        {
+            var lastypos = from.TilePosition + Vector.up * y;
+
+            for (int i = 1; i <= Mathf.Abs(y) && xc; i++)
+            {
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastypos = from.TilePosition + Vector.up * i * b;
+                    break;
+                }
+                PathUI.Add(from.TilePosition + Vector.up * i * b);
+
+            }
+            // if (PathUI.Count < maximumtile)
+            for (int i = 1; i <= Mathf.Abs(x); i++)
+            {
+
+                PathUI.Add(lastypos + Vector.right * i * a);
+
+            }
+        }
+
+
+
+        if (PathUI.Count != 0)
+            if (PathUI.Count > maximumtile && PathUI.Count > 0)
+                while (PathUI.Count > maximumtile)
+                    if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
+
+
+        GM.SpCostUI.text = ((int)(PathUI.Count / from.GetStats.AGI)).ToString("00") + " sp";
+
+        for (int h = 0; h < Battlefied.GetLength(0); h++)
+            for (int j = 0; j < Battlefied.GetLength(1); j++)
+                foreach (var ff in Battlefied[h, j].Sprite)
+                    ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
+
+        return PathUI.Count;
+    }
     public void OnCursorEnter(Map.Tile t)
     {
     
@@ -512,6 +611,7 @@ public class GameManager : MonoBehaviour {
         {
             for (int y = 0; y < t.Tiles.GetLength(1); y++)
             {
+               
                 var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
                 e.tile = t.Tiles[x, y];
                 foreach (var item in e.Sprite)
@@ -523,7 +623,8 @@ public class GameManager : MonoBehaviour {
                 }
                 var v = t.Tiles[x, y].Position;
                 Battlefied[x, y] = e;
-                e.Value = new Vector2(v.x, v.y);
+                //if (y < 5) e.tile.Heigth = 5;
+                    e.Value = new Vector2(v.x, v.y);
             }
       
         }

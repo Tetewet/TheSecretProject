@@ -39,7 +39,7 @@ public abstract class Item : IDisposable
     public static Item Gold
     {
         get {
-            var g = new Gold("Gold", "Items/gold");
+            var g = new Gold("Gold", "Items/GOLD");
             g.rarity = Rarity.Common;
             g.GoldValue = 5;
             g.Uses = 0;
@@ -60,8 +60,6 @@ public abstract class Item : IDisposable
         UnityEngine.Debug.Log(Name + "is used on " + a.Name);
 
     }
-
-
 
     public override string ToString()
     {
@@ -147,6 +145,9 @@ public class Gold: Item
     public override void OnGrab(Actor a)
     {
         a.AddGold(GoldValue);
+        UnityEngine.Debug.Log(a.Name + " gains " +  GoldValue + " gold pieces.");
+
+        if (a.CurrentTile != null) a.CurrentTile.Items.Remove(this);
         base.OnGrab(a);
     }
 }

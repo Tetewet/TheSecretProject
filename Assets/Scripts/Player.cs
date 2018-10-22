@@ -29,8 +29,13 @@ public class Monster : Actor
         {
             a.AddExp(ExpGain);
             a.OnMurder(this);
-            foreach (var item in inventory.items)      
-                GameManager.CreateNewItemOnField(item, TilePosition);
+            foreach (var item in inventory.items)
+            { 
+
+                if (item != null)
+                    GameManager.CreateNewItemOnField(item, TilePosition);
+             
+            }    
 
             GameManager.CreateNewItemOnField(Item.Gold, TilePosition);
 

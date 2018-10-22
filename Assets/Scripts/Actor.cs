@@ -271,6 +271,9 @@ public abstract class Actor : IComparable<Actor> {
     public void Grab( Item a)
     {
 
+        if (IsDefeat) return;
+
+
         for (int i = 0; i < inventory.items.Length; i++)
         {
 
@@ -394,7 +397,8 @@ public abstract class Actor : IComparable<Actor> {
                int x = (int)(where.x -TilePosition.x );
                int y = (int)(where.y - TilePosition.y );
         UnityEngine.Debug.Log(Name + ": Creating Path : from "+TilePosition.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y +"}" );
-               var a = 1;
+
+                var a = 1;
                var b = 1;
                if (x < 0) a = -1;
                if (y < 0) b = -1;
