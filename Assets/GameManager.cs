@@ -147,9 +147,6 @@ public class GameManager : MonoBehaviour {
         }
         
         PathUI.Clear();
-        // if (ThisTurnPlayer == SelectedActor && ThisTurnPlayer.Path.Count == 1 && ThisTurnPlayer.Path.Peek() == SelectedActor.TilePosition) GM.ResetGrid();
-
-
         if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1 )
         {
       
@@ -176,18 +173,11 @@ public class GameManager : MonoBehaviour {
         var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SpAvaillableThisTurn ) - fs  ;
 
         var xc = PathUI.Count <= maximumtile;
-
-      /* 
-       * if (SelectedActor.GetStats.AGI * SelectedActor.SP < SelectedActor.TileWalkedThisTurn && SelectedActor.SP > 0)
-            maximumtile++;
-            */
-
         var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
         if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition + Vector.up * b).Actor != null)
         {
-            //for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <   maximumtile; i++)
-            var lastxpos = SelectedActor.TilePosition + Vector.right * x;
 
+            var lastxpos = SelectedActor.TilePosition + Vector.right * x;
             for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
             {
 
@@ -198,12 +188,9 @@ public class GameManager : MonoBehaviour {
                 }
                 PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
             }
-          //  if (PathUI.Count < maximumtile)
-
                 for (int i = 1; i <= Mathf.Abs(y); i++)
                 {
                     PathUI.Add(lastxpos + Vector.up * i * b);
-                    //if (PathUI.Count > maximumtile) break;
                 }
 
         }
@@ -232,29 +219,18 @@ public class GameManager : MonoBehaviour {
 
 
       
-        if(PathUI.Count != 0)
-       
+        if(PathUI.Count != 0)  
         if(PathUI.Count > maximumtile && PathUI.Count > 0)
         while (PathUI.Count > maximumtile)
-        {
-               
-                    if(PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count-1);
-                
-        }
+                    if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
+
+
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
-            {
-               
-               
-               
                 foreach (var ff in Battlefied[h, j].Sprite)
-                      ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
-                    
-               
-
-            }
+                    ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
 
         return PathUI.Count;
     }
