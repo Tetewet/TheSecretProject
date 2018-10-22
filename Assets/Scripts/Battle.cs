@@ -8,7 +8,22 @@ public class Battle{
 
     public delegate void OnBattleEndHandler();
     public event OnBattleEndHandler BattlEnd, OnTurnEnd;
+    public Actor ActingThisTurn
+    {
+        get {
+            if (ThisTurn.Order.Count == 0) return null;
+            return ThisTurn.Order[0]; }
+    }
+    public bool IsPlayerTurn
+    {
+        get {  
 
+            if (Foes.Count > 0)
+                if (Foes.Contains(ActingThisTurn)) return false;
+            return true;
+
+        }
+    }
     public void Run()
     {
         while (OnGoing)
@@ -29,6 +44,7 @@ public class Battle{
         foreach (var item in Foe)
             Foes.Add(item);
     }
+    public float BattleTime = 0;
 
     public Battle(InGameActor[] Player, InGameActor[] Foe)
     {

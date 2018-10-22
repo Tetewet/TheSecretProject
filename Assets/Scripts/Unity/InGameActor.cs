@@ -18,41 +18,82 @@ public class InGameActor : MonoBehaviour {
     public Vector2 offset;
     public bool InverseSprite = false;
     public float DistanceToPos;
-    public bool IsFoe = false;
+    public bool isAI = false;
 
    public bool MyTurn = false;
-   // private Skill SkillToUse = null;
-  
+    // private Skill SkillToUse = null;
+
+    float AITImer = 0;
+
+    public bool OverrideStats = false;
+    public InGameActorStats ActorStats;
+    [System.Serializable]
+    public struct InGameActorStats
+    {
+
+        public int AGI, STR, INT, LUC, WIS, END;
+        public InGameActorStats(stat s)
+        {
+            AGI = s.AGI;
+            STR = s.STR;
+            INT = s.INT;
+            LUC = s.LUC;
+            WIS = s.WIS;
+            END = s.END;
+        }
+    }
+
+
     private void Awake()
     {
         //Debug
-        if(!IsFoe)
-       InitializedActor(new Player(Name, new stat { AGI = 2, STR = 6, INT = 5, LUC = 5, WIS = 5, END = 1 },IsFoe),"");
-     else
-            InitializedActor(new Monster(Name, new stat { AGI = 4, STR = 1, INT = 1, LUC = 1, WIS = 1, END = 1 }, IsFoe), "");
+        if (OverrideStats)
+        {
+            InitializedActor(new Player(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS },isAI),"");
+        }
+        else
+        {
 
+            if (!isAI)
+                InitializedActor(new Player(Name, new stat { AGI = 2, STR = 6, INT = 5, LUC = 5, WIS = 5, END = 1 }, isAI), "");
+            else
+                InitializedActor(new Monster(Name, new stat { AGI = 4, STR = 1, INT = 1, LUC = 1, WIS = 1, END = 1 }, isAI), "");
+
+
+        }
 
     }
 
     private void Start()
     {
 
-        
     }
     bool attacking = false;
 
+    void StupidAI()
+    {
+        if (!isAI || !MyTurn) return;
+        AITImer += Time.fixedDeltaTime;
+        if (AITImer > 1) EndTurn() ;
+        
+    }
     //Action and Attack
     public void AI(Battle.Turn Turn = null)
     {
+        AITImer = 0;
         Attack(GameManager.GM.Actors[0].actor, Skill.Base);
+ 
     }
+ 
+   
     public void OnTurn(Battle.Turn Turn)
     {
+      
         actor.TileWalkedThisTurn = 0;
         sprity[0].color = Color.white;
         MyTurn = true;
      
-        if (!IsFoe)
+        if (!isAI)
         {
             GameManager.CursorPos = actor.TilePosition;
             GameManager.GM.OnPressed(actor.CurrentTile);
@@ -81,6 +122,7 @@ public class InGameActor : MonoBehaviour {
    public void AnimatedAttack()
     {
         if (!MyTurn) return;
+        AITImer = 0;
         Actor[] e = new Actor[1];
         e[0] = temptarget;
        
@@ -90,6 +132,9 @@ public class InGameActor : MonoBehaviour {
        
         
     }
+    /// <summary>
+    /// Ends the turn officially. Do not use _OnTurn
+    /// </summary>
     private void EndTurn( )
     {
         MyTurn = false;
@@ -98,13 +143,15 @@ public class InGameActor : MonoBehaviour {
     private IEnumerator _EndTurn()
     {
         yield return new WaitForSeconds(1);
-
+        if (isAI) yield return new WaitForSeconds(.5f);
+      
         actor.Path.Clear();
      
         GameManager.CurrentBattle.EndTurn();
         GameManager.SelectedActor = null;
         sprity[0].color = Color.gray;
         timeSinceTurn = 0;
+        attacking = false;
         print(actor.Name + " " + " ends his turn.");
         yield  break;
     }
@@ -119,7 +166,7 @@ public class InGameActor : MonoBehaviour {
             yield break;
         }
 
-
+        AITImer = 0;
         attacking = true;
         tempattack = b;
         temptarget = a;
@@ -143,7 +190,8 @@ public class InGameActor : MonoBehaviour {
         a.OnTurn += OnTurn;
         a.OnDamage += OnDamage;
         Indicator.color = ActorColor;
-        this.name = actor.Name;    
+        this.name = actor.Name;
+ 
         if (b) foreach (var item in anim) item.runtimeAnimatorController = b;
         
         actor.Heal();
@@ -171,8 +219,10 @@ public class InGameActor : MonoBehaviour {
             timeSinceTurn += Time.fixedDeltaTime;
         }
         TimeSincedAttack += Time.fixedDeltaTime;
-     
-        
+  
+        if(MyTurn)
+        StupidAI();
+        ActorStats = new InGameActorStats(actor.GetStats);
     }
 
     public void OnEnterTile()
@@ -185,6 +235,7 @@ public class InGameActor : MonoBehaviour {
         {
 
             if (timer < .14f) return;
+            AITImer = 0;
             var target = GameManager.CurrentBattle.map.AtPos(actor.Path.Peek());
 
 
@@ -193,7 +244,10 @@ public class InGameActor : MonoBehaviour {
             {
              
                 actor.CantMove(actor.Path.Peek());
-         
+
+
+                //Since PathFinding Is dumb, AI skip turn on stuck
+                if (isAI && MyTurn) EndTurn();
                     timer = 0;
                 return;
             }
@@ -219,7 +273,7 @@ public class InGameActor : MonoBehaviour {
         foreach (var item in anim)
             item.SetBool("Walking", walking);
         var g = transform.position.x - e.transform.position.x;
-    
+
         for (int i = 0; i < sprity.Length; i++)
         {
             var item = sprity[i];
@@ -233,16 +287,18 @@ public class InGameActor : MonoBehaviour {
                 if (g > 0) item.flipX = true;
                 if (g < 0) item.flipX = false;
             }
-          
 
-            if(i > 0)
+
+            if (i > 0)
             {
                 item.sprite = sprity[0].sprite;
             }
         }
         Position = new Vector2(actor.TilePosition.x, actor.TilePosition.y);
         DistanceToPos = (Vector3.Distance(transform.position, e.transform.position + new Vector3(offset.x, offset.y)) - 90.9f) * 100;
-        this.transform.position = Vector3.Lerp(transform.position, (Vector2)e.transform.position + offset, Speed * Time.smoothDeltaTime / (DistanceToPos + .1f));
+        var x = 1;
+        if (GameManager.InBattleMode && GameManager.CurrentBattle.BattleTime < 2) x = 5;
+        this.transform.position = Vector3.Lerp(transform.position, (Vector2)e.transform.position + offset, Speed * x* Time.smoothDeltaTime / (DistanceToPos + .1f));
         if (DistanceToPos <= 0.0025f) OnEnterTile();
 
 
@@ -270,8 +326,10 @@ public class InGameActor : MonoBehaviour {
         bar.text = actor.Name;
 
 
-        if (actor.SP > 0 && MyTurn && IsFoe && !attacking) AI();
+        if (actor.SP > 0 && MyTurn && isAI && !attacking) AI();
         if (MyTurn && timeSinceTurn > 1 && TimeSincedAttack > 1) if (actor.SP <= 0) EndTurn();
          
     }
+
+
 }

@@ -78,7 +78,7 @@ public class GameManager : MonoBehaviour {
         CurrentBattle.StartNewTurn();
         CurrentBattle.OnTurnEnd += OnTurnEnd;
         //14 6
-        CurrentBattle.map = new Map(new Vector(18, 9));
+        CurrentBattle.map = new Map(new Vector(38, 9));
         InitializeUI();
         GenerateMap(CurrentBattle.map);
         OnHover.enabled = true;
@@ -86,8 +86,8 @@ public class GameManager : MonoBehaviour {
             item.actor.Controllable = false;
         foreach (var item in Actors)
             item.actor.Controllable = true;
+        ShowTabMenu();
 
-     
         //Debug
         for (int i = 0; i < Actors.Length; i++)
         {
@@ -108,6 +108,7 @@ public class GameManager : MonoBehaviour {
 
     private void OnTurnEnd()
     {
+        SelectedActor = null;
         ResetGrid();
     }
 
@@ -124,6 +125,8 @@ public class GameManager : MonoBehaviour {
     private void FixedUpdate()
     {
         timer += Time.fixedDeltaTime;
+        if (CurrentBattle != null) CurrentBattle.BattleTime += Time.fixedDeltaTime;
+       
     }
 
 
@@ -153,10 +156,10 @@ public class GameManager : MonoBehaviour {
                         ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
             return;
         }
-        if (SelectedActor == null  && SelectedActor != ThisTurnPlayer   )
+        if (SelectedActor == null || SelectedActor != ThisTurnPlayer   )
 
         { GM.ResetGrid(); return; }
-
+ 
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
         var a = 1;
@@ -164,14 +167,16 @@ public class GameManager : MonoBehaviour {
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
-        var fs = SelectedActor.TileWalkedThisTurn  -1;
+        var fs = SelectedActor.TileWalkedThisTurn ;
         
-        var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SP   ) - fs  ;
+        var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SpAvaillableThisTurn ) - fs  ;
 
         var xc = PathUI.Count <= maximumtile;
 
-        if (SelectedActor.GetStats.AGI * SelectedActor.SP < SelectedActor.TileWalkedThisTurn && SelectedActor.SP > 0)
+      /* 
+       * if (SelectedActor.GetStats.AGI * SelectedActor.SP < SelectedActor.TileWalkedThisTurn && SelectedActor.SP > 0)
             maximumtile++;
+            */
 
         var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
         if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition + Vector.up * b).Actor != null)
@@ -220,12 +225,16 @@ public class GameManager : MonoBehaviour {
                 
                 }
         }
+
+
+
+        if(PathUI.Count != 0)
        
         if(PathUI.Count > maximumtile && PathUI.Count > 0)
         while (PathUI.Count > maximumtile)
         {
-                if (PathUI.Count < 0) break;
-                    PathUI.RemoveAt(PathUI.Count-1);
+               
+                    if(PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count-1);
                 
         }
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
@@ -248,69 +257,93 @@ public class GameManager : MonoBehaviour {
 
     public void OnCursorEnter(Map.Tile t)
     {
-   
+    
     }
     public void OnCursorExit(Map.Tile t)
     {
 
-   
+       
 
     }
    
     public void OnCursorUpdate(Map.Tile t)
     {
-
-        OnHover.gameObject.SetActive(ActorAtCursor != null);
-        CharacterInventory.gameObject.SetActive(ActorAtCursor != null);
-        Cursor.SetBool("Hover", ActorAtCursor != null);
+       
+        OnHover.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
+        CharacterInventory.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null);
+        Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
-
-            if (ActorAtCursor != SelectedActor) ChangeGridColor(Color.red);
-
-            OnHover.text =
-     "* " + ActorAtCursor.Name + " *\n\nlvl"
-    + ActorAtCursor.GetLevel.ToString("00") + "\n[ hp  "
-    + ActorAtCursor.HP.ToString("00") + " ]\n[ mp "
-    + ActorAtCursor.MP.ToString("00") + " ]\n[ sp  "
-    + ActorAtCursor.SP.ToString("00") + " ]";
-
-            for (int i = 0; i < 100; i++)
+            if(SelectedActor != null)
             {
-                if (i < ActorAtCursor.inventory.items.Length)
+                if(ActorAtCursor == SelectedActor)
                 {
+                    if (SelectedItem != null) ChangeGridColor(Color.magenta);
+                    else ChangeGridColor(Color.gray);
+                }
+                else if (ActorAtCursor != SelectedActor && !CurrentBattle.IsTeamWith(ActorAtCursor, SelectedActor)) ChangeGridColor(Color.red);
+                else if (CurrentBattle.IsTeamWith(ActorAtCursor, SelectedActor))
+                {
+                    if(SelectedItem != null) ChangeGridColor(Color.magenta);
+                    else ChangeGridColor(GridColor);
 
-                    if (ActorAtCursor.inventory.items[i] != null)
+                }
+            }
+            ShowUI(ActorAtCursor);
+ 
+        }
+        else if (SelectedItem != null) {
+            ShowUI(SelectedActor);
+            if (PathUI.Count ==1) ChangeGridColor(Color.cyan);
+            else ChangeGridColor(Color.cyan + Color.blue);
+
+        }
+        else {   ChangeGridColor(GridColor); }
+
+        TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
+    }
+
+    public void ShowUI(Actor a)
+    {
+        OnHover.text =
+"* " + a.Name + " *\n\nlvl"
++ a.GetLevel.ToString("00") + "\n[ hp  "
++ a.HP.ToString("00") + " ]\n[ mp "
++ a.MP.ToString("00") + " ]\n[ sp  "
++ a.SP.ToString("00") + " ]";
+
+        for (int i = 0; i < 100; i++)
+        {
+            if (i < a.inventory.items.Length)
+            {
+
+                if (a.inventory.items[i] != null)
+                {
+                    Inventory[i].transform.parent.gameObject.SetActive(true);
+                    Inventory[i].enabled = true;
+
+                    if (Inventory[i].sprite == null)
                     {
-                        Inventory[i].transform.parent.gameObject.SetActive(true);
-                        Inventory[i].enabled = true;
-
-                        if (Inventory[i].sprite == null)
-                        {
-                            Inventory[i].sprite = LoadSprite(ActorAtCursor.inventory.items[i].ResourcePath);
-                        }
+                        Inventory[i].sprite = LoadSprite(a.inventory.items[i].ResourcePath);
                     }
-                    else
-                    {
-                        Inventory[i].sprite = null;
-                        Inventory[i].enabled = false;
-                    }
-
                 }
                 else
                 {
                     Inventory[i].sprite = null;
-                    Inventory[i].transform.parent.gameObject.SetActive(false);
+                    Inventory[i].enabled = false;
                 }
 
             }
+            else
+            {
+                Inventory[i].sprite = null;
+                Inventory[i].transform.parent.gameObject.SetActive(false);
+            }
 
         }
-        else { ChangeGridColor(GridColor); }
 
     }
-
     public static Sprite LoadSprite(string name)
     {
         return Resources.Load<Sprite>("Sprites/" + name);
@@ -323,6 +356,23 @@ public class GameManager : MonoBehaviour {
         //Debug
         print("Tiles: " + curtile.Position + " Unity: " + CursorPos + " Actor: " + curtile.Actor);
 
+
+        
+        if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
+        {
+
+            SelectedActor.Use(SelectedItem,SelectedActor);
+            SelectedActor.ConsumeSP(1);
+           
+            if (SelectedActor.SP == 0 || SelectedItem == null || SelectedItem.Uses <= 0) StopInventory();
+        }
+
+        if (Tabmenu)
+        {
+
+
+            return;
+        }
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
@@ -334,29 +384,56 @@ public class GameManager : MonoBehaviour {
           if(curtile.Actor == null) SelectedActor.Move(curtile);
           else { if (gig) gig.Attack(curtile.Actor,Skill.Base ); }
         }
+
      
 
     }
     public void CameraUpdate()
     {
-        var curpos = Cursor.transform.position;  
-        if (SelectedActor != null)
-            curpos = GetInGameFromActor(SelectedActor).transform.position ;
+        var campos = Cursor.transform.position;  
+    /*    if (SelectedActor != null)
+            campos = GetInGameFromActor(SelectedActor).transform.position ;*/
 
-        curpos.z = Cam.transform.position.z;
-        Cam.transform.position = Vector3.Lerp(Cam.transform.position, curpos, 10 * Time.smoothDeltaTime);
+        if (Tabmenu) campos = Cam.transform.position;
+    
+        if(SelectedItem != null)
+            campos = Cursor.transform.position;
+
+
+
+        campos.z = Cam.transform.position.z;
+        Cam.transform.position = Vector3.Lerp(Cam.transform.position, campos, 10 * Time.smoothDeltaTime);
     }
+
+
+
     private void Update()
     {
 
         CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
-        var Position = GameManager.Battlefied[(int)CursorPos.x,(int)CursorPos.y ];
-        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position.transform.position + CursorOffset, 9 * Time.smoothDeltaTime);
+        var Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
+
+        if (CurrentBattle.IsPlayerTurn)
+        {
+            if (Tabmenu)
+                Position = MiniMenuBTN[TabChoice].transform.position + Vector3.right * 2;
+            if (inventorySelected)
+                Position = Inventory[invUIItem].transform.position;
+            if (SelectedItem != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
+        }
+        else CursorPos = CurrentBattle.ActingThisTurn.TilePosition;
+
+      
+        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position  + CursorOffset, 9 * Time.smoothDeltaTime);
+
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
    
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
-        if (timer >= .10f && inputs)
+
+ 
+
+        if(CurrentBattle.IsPlayerTurn)if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null))
         {
 
             OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
@@ -368,20 +445,27 @@ public class GameManager : MonoBehaviour {
         }
         EstimathPath(CursorPos);
         var curtile = CurrentBattle.map.AtPos(CursorPos);
+        if (CurrentBattle.IsPlayerTurn)
+        {
+
+
+            if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);
+            if (Input.GetKeyDown(KeyCode.G))
+            {
+                ToggleGrid();
+            }
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                print(CurrentBattle.map);
+            }
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                ShowTabMenu();
+            }
+        }
         OnCursorUpdate(curtile);
-        if (Input.GetKeyDown(KeyCode.Space)) OnPressed(curtile);
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            ToggleGrid();
-        }
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            print(CurrentBattle.map);
-        }
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            ShowTabMenu();
-        }
+
+        MiniMenuLogic();
         CameraUpdate();
     }
  
@@ -420,10 +504,19 @@ public class GameManager : MonoBehaviour {
 
         }
     }
+    bool Tabmenu = false;
     public void ShowTabMenu()
     {
-        TabButtons.SetActive(!TabButtons.activeSelf);
-        TabButtons.gameObject.SetActive(!MiniMenu.gameObject.activeSelf);
+      
+        Tabmenu = !Tabmenu;
+        if (SelectedActor == null) Tabmenu = false;
+            TabButtons.SetActive(!Tabmenu && SelectedActor!= null );
+        MiniMenu.gameObject.SetActive(Tabmenu);
+        inventorySelected = false;
+        SkillsSelected = false;
+        SelectedItem = null;
+        if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
+        TabChoice = 0;
 
     }
     public void GenerateMap(Map t)
@@ -438,7 +531,7 @@ public class GameManager : MonoBehaviour {
                 var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
                 e.tile = t.Tiles[x, y];
                 foreach (var item in e.Sprite)
-                {
+                {   
                     var z = GridColor;
                     z.a = item.color.a;
 
@@ -452,5 +545,63 @@ public class GameManager : MonoBehaviour {
         }
         MapName = t.ToString();
     }
-  
+    int TabChoice = 0;
+    public GameObject[] MiniMenuBTN;
+    bool inventorySelected, SkillsSelected;
+    int invUIItem = 0;
+    Item SelectedItem;
+    
+    void MiniMenuLogic()
+    {
+        if (!Tabmenu || SelectedActor == null) return;
+        if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--; }
+        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; }
+        if (Input.GetKeyDown(KeyCode.A)) invUIItem--;
+        if (Input.GetKeyDown(KeyCode.D)) invUIItem++;
+
+            if (TabChoice > 2) TabChoice = 0;
+        if (TabChoice < 0) TabChoice = 2;
+
+
+        invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length-1);
+        
+   
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null &&  SelectedItem == null)
+            {
+                var e = SelectedActor.inventory.items[invUIItem];
+                SelectedItem = e;
+                print(SelectedItem.Name + "is Selected");
+                return;
+            }
+            if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
+            
+        
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab)){
+            if (SelectedItem == null)
+                StopInventory();
+            else SelectedItem = null;
+
+
+        }
+        //Inventory
+      
+
+
+
+    }
+    void StopInventory()
+    {
+        SelectedItem = null;
+        inventorySelected = false;
+        invUIItem = 0;
+    }
+
+    public bool HasSelectedActor
+    {
+        get { return SelectedActor != null; }
+    }
 }
