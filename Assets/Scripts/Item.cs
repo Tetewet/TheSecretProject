@@ -6,30 +6,52 @@ using System.Collections.Generic;
 
 public abstract class Item : IDisposable
 {
-    public static List<Item> Inventory;
-    public Skill.TargetType targetType;
+    public delegate void OnGrabHandler(Actor a);
+    public event OnGrabHandler Ongrabbed;
 
+    public delegate void OnDisposeHandler();
+    public event OnDisposeHandler onDispose;
+    public void OnGrab(Actor a)
+    {
+        Ongrabbed( a);
+    }
+    public void OnDispose()
+    {
+        OnDispose();
+    }
+    public static List<Item> Inventory = new List<Item>();
+    public Skill.TargetType targetType;
+    public Map.Tile CurrentTile = new Map.Tile();
+    public Vector TilePosition
+    {
+        get { return CurrentTile.Position; }
+    }
     public enum Rarity
     {
         Trash = 0, Common = 1, Uncommon = 2, Rare = 3, Unique = 4, Legendary =5, WorldClass = 6
     }
-    public int Uses = 3;
+    public int Uses = 1;
     public string Name;
+    public string ResourcePath;
     public Rarity rarity = Rarity.Common;
     public int GoldValue = 0;
 
+    
+    public Item (string Name, string Path)
+    {
+        this.Name = Name;
+        ResourcePath = Path;
+    }
     /// <summary>
     /// Use on
     /// </summary>
     /// <param name="a">Use the item on this actor</param>
-    public virtual void On(Actor a)
+    public virtual void UseOn(Actor a = null)
     {
-        if(Uses <= 0)
-        {
-            Dispose();
-            return;
-        }
-        Uses--;
+        UnityEngine.Debug.Log(Name + "is used on " + a.Name);
+     
+ 
+       
     }
 
     public override string ToString()
@@ -39,6 +61,9 @@ public abstract class Item : IDisposable
 
     public void Dispose()
     {
+        if (Inventory.Contains(this)) Inventory.Remove(this);
+        if(CurrentTile!=null) CurrentTile.Items.Remove(this);
+        onDispose();
         GC.SuppressFinalize(this);
     }
 }
@@ -58,6 +83,10 @@ public class Equipement : Item
     public Slot slot;
     public float DEF = 0;
     public float MagDEF = 0;
+
+    public Equipement(string Name, string Path) : base(Name, Path)
+    {
+    }
 
     public bool Useable
     {
@@ -82,6 +111,18 @@ public class Equipement : Item
 public class Consumeable : Item
 {
     public stat StatsBonus;
-    public float HPregen, MPregen, SPregen;
-    
+    public float HPregen, MPregen;
+    public int SPregen;
+
+    public Consumeable(string Name, string Path) : base(Name, Path)
+    {
+    }
+
+    public override void UseOn(Actor a)
+    {
+        if(HPregen!=0)a.TakeDamage(-HPregen);
+        if (MPregen != 0) a.ConsumeMP(-MPregen);
+        if (SPregen != 0) a.ConsumeSP(-SPregen);
+        base.UseOn(a);
+    }
 }
