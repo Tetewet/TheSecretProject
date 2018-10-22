@@ -201,8 +201,17 @@ public class InGameActor : MonoBehaviour {
     {
         if(!actor.IsDefeat)
         anim[0].SetTrigger("Attacked");          
-        else anim[0].SetTrigger("Death");
+        else anim[0].SetTrigger("IsDeath");
 
+    }
+
+    public void SetDeath()
+    {
+        foreach (var item in sprity)
+            item.enabled = false;
+
+        this.gameObject.SetActive(false);
+        
     }
 
     public void InitializedActor(Actor a, string path = "")

@@ -74,9 +74,12 @@ public struct Vector
     }
 }
 
-public abstract class Actor : IComparable<Actor> {
+public abstract class Actor : IComparable<Actor>  {
 
-
+    public bool IsInPlayerTeam
+    {
+        get { return GameManager.CurrentBattle.Players.Contains(this); }
+    }
     public const float BASEEXP = 100;
     public string Name;
     public bool Controllable = true;
@@ -218,7 +221,13 @@ public abstract class Actor : IComparable<Actor> {
     
     public virtual void Ondeath(float x, Skill f , Actor a = null)
     {
-   
+        if (GameManager.CurrentBattle.Foes.Contains(this))
+            GameManager.CurrentBattle.Foes.Remove(this);
+        if (GameManager.CurrentBattle.Players.Contains(this))
+            GameManager.CurrentBattle.Players.Remove(this);
+
+        CurrentTile.OnQuitting();
+        UnityEngine.Debug.Log(this.Name + " is death");
     }
     public void ConsumeMP(float x )
     {
@@ -291,6 +300,8 @@ public abstract class Actor : IComparable<Actor> {
         _transform.position += position;
         
     }
+
+     
 
     //Move with bound and collision in mind 
     public virtual void Move(Vector v,bool bypass = false)
@@ -578,6 +589,8 @@ public abstract class Actor : IComparable<Actor> {
         if (t == x) (t + GetStats.LUC).CompareTo(x + other.GetStats.LUC);
         return t.CompareTo(x); 
     }
+ 
+ 
 }
 
 public class Skill

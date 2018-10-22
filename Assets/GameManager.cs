@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour {
         Inventory = new Image[100];
         for (int i = 0; i < Inventory.Length; i++)
             Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
-
+       
 
     }
     private void Awake()
@@ -156,6 +156,7 @@ public class GameManager : MonoBehaviour {
                         ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
             return;
         }
+      
         if (SelectedActor == null || SelectedActor != ThisTurnPlayer   )
 
         { GM.ResetGrid(); return; }
@@ -268,14 +269,15 @@ public class GameManager : MonoBehaviour {
    
     public void OnCursorUpdate(Map.Tile t)
     {
-       
+      
         OnHover.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
         CharacterInventory.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null);
         Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
-            if(SelectedActor != null)
+            if (ActorAtCursor.IsDefeat) ActorAtCursor = null;
+            if (SelectedActor != null)
             {
                 if(ActorAtCursor == SelectedActor)
                 {
