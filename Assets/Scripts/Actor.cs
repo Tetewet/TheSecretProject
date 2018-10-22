@@ -667,7 +667,7 @@ public struct stat : IComparable<stat>
     public int Threat;
     public float PhysDEF { get { return ( STR / 2 + END + AGI / 4)/2; } }
     public float MagDEF { get { return (INT + WIS * 2)/2; } }
-    public float MaximumHP { get { return END * 5; } }
+    public float MaximumHP { get { if (END == 0) return 1; return END * 2; } }
     public float MaximumMP { get { return WIS * 5; } }
 
     public int Magnitude { get { return (STR + AGI + END + WIS + INT + LUC) / 6; } }
