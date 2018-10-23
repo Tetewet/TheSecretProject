@@ -8,6 +8,11 @@ public class BattleTile : MonoBehaviour {
     public Map.Tile tile;
     public Image[] Sprite; 
     public Image ItemSlot;
-    
-    
+
+    public void FixedUpdate()
+    {
+
+      //  if(tile!=null)transform.localPosition = Vector3.up * tile.Heigth;
+    }
+
 }

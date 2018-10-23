@@ -11,7 +11,7 @@ public abstract class Item : IDisposable
 
     public delegate void OnDisposeHandler();
     public event OnDisposeHandler onDispose;
-    public void OnGrab(Actor a)
+    public virtual void OnGrab(Actor a)
     {
         Ongrabbed( a);
     }
@@ -36,6 +36,15 @@ public abstract class Item : IDisposable
     public Rarity rarity = Rarity.Common;
     public int GoldValue = 0;
 
+    public static Item Gold
+    {
+        get {
+            var g = new Gold("Gold", "Items/GOLD");
+            g.rarity = Rarity.Common;
+            g.GoldValue = 5;
+            g.Uses = 0;
+            return g; }
+    }
     
     public Item (string Name, string Path)
     {
@@ -49,9 +58,7 @@ public abstract class Item : IDisposable
     public virtual void UseOn(Actor a = null)
     {
         UnityEngine.Debug.Log(Name + "is used on " + a.Name);
-     
- 
-       
+
     }
 
     public override string ToString()
@@ -124,5 +131,23 @@ public class Consumeable : Item
         if (MPregen != 0) a.ConsumeMP(-MPregen);
         if (SPregen != 0) a.ConsumeSP(-SPregen);
         base.UseOn(a);
+    }
+}
+
+public class Gold: Item
+{
+   
+    public Gold(string Name, string Path):base (Name,Path)
+    {
+        this.Name = Name;
+        ResourcePath = Path;
+    }
+    public override void OnGrab(Actor a)
+    {
+        a.AddGold(GoldValue);
+        UnityEngine.Debug.Log(a.Name + " gains " +  GoldValue + " gold pieces.");
+
+        if (a.CurrentTile != null) a.CurrentTile.Items.Remove(this);
+        base.OnGrab(a);
     }
 }

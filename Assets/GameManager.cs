@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour {
         Inventory = new Image[100];
         for (int i = 0; i < Inventory.Length; i++)
             Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
-
+       
 
     }
     private void Awake()
@@ -91,14 +91,17 @@ public class GameManager : MonoBehaviour {
         //Debug
         for (int i = 0; i < Actors.Length; i++)
         {
-            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(8+ i, 3));
+            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(11+ i, 4));
         }
         for (int i = 0; i < Foes.Length; i++)
         {
            Foes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
         }
         CursorPos = new Vector(9, 4);
-        CreateNewItemOnField(new Consumeable("SpPotion", "Items/SP_POTION") { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+
         ToggleGrid();
 
         foreach (var item in Actors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
@@ -131,7 +134,7 @@ public class GameManager : MonoBehaviour {
 
 
     public static List<Vector> PathUI = new List<Vector>( );
-    public static void EstimathPath( Vector where)
+    public static int EstimathPath( Vector where)
     {
 
 
@@ -140,13 +143,10 @@ public class GameManager : MonoBehaviour {
         if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
         {
             GM.ResetGrid();
-            return;
+            return -1;
         }
         
         PathUI.Clear();
-        // if (ThisTurnPlayer == SelectedActor && ThisTurnPlayer.Path.Count == 1 && ThisTurnPlayer.Path.Peek() == SelectedActor.TilePosition) GM.ResetGrid();
-
-
         if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1 )
         {
       
@@ -154,11 +154,12 @@ public class GameManager : MonoBehaviour {
                 for (int j = 0; j < Battlefied.GetLength(1); j++)
                     foreach (var ff in Battlefied[h, j].Sprite)               
                         ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
-            return;
+            return ThisTurnPlayer.Path.Count;
         }
+      
         if (SelectedActor == null || SelectedActor != ThisTurnPlayer   )
 
-        { GM.ResetGrid(); return; }
+        { GM.ResetGrid(); return -1; }
  
         int x = (int)(where.x - SelectedActor.TilePosition.x);
         int y = (int)(where.y - SelectedActor.TilePosition.y);
@@ -172,18 +173,11 @@ public class GameManager : MonoBehaviour {
         var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SpAvaillableThisTurn ) - fs  ;
 
         var xc = PathUI.Count <= maximumtile;
-
-      /* 
-       * if (SelectedActor.GetStats.AGI * SelectedActor.SP < SelectedActor.TileWalkedThisTurn && SelectedActor.SP > 0)
-            maximumtile++;
-            */
-
         var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
         if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(SelectedActor.TilePosition + Vector.up * b).Actor != null)
         {
-            //for (int i = 1; i <= Mathf.Abs(x) && PathUI.Count <   maximumtile; i++)
-            var lastxpos = SelectedActor.TilePosition + Vector.right * x;
 
+            var lastxpos = SelectedActor.TilePosition + Vector.right * x;
             for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
             {
 
@@ -194,12 +188,9 @@ public class GameManager : MonoBehaviour {
                 }
                 PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
             }
-          //  if (PathUI.Count < maximumtile)
-
                 for (int i = 1; i <= Mathf.Abs(y); i++)
                 {
                     PathUI.Add(lastxpos + Vector.up * i * b);
-                    //if (PathUI.Count > maximumtile) break;
                 }
 
         }
@@ -227,34 +218,122 @@ public class GameManager : MonoBehaviour {
         }
 
 
-
-        if(PathUI.Count != 0)
-       
+      
+        if(PathUI.Count != 0)  
         if(PathUI.Count > maximumtile && PathUI.Count > 0)
         while (PathUI.Count > maximumtile)
-        {
-               
-                    if(PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count-1);
-                
-        }
+                    if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
+
+
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
-            {
-               
-               
-               
                 foreach (var ff in Battlefied[h, j].Sprite)
-                      ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
-                    
-               
+                    ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
 
-            }
-             
-
+        return PathUI.Count;
     }
 
+    public static int EstimathPath(Actor from,Vector where)
+    {
+
+
+        var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
+        if (from == null && CurrentBattle.ThisTurn.Order[0] == null)
+        {
+            GM.ResetGrid();
+            return -1;
+        }
+
+        PathUI.Clear();
+        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1)
+        {
+
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)
+                        ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
+            return ThisTurnPlayer.Path.Count;
+        }
+
+        if (from == null || from != ThisTurnPlayer)
+
+        { GM.ResetGrid(); return -1; }
+
+        int x = (int)(where.x - from.TilePosition.x);
+        int y = (int)(where.y - from.TilePosition.y);
+        var a = 1;
+        var b = 1;
+        if (x < 0) a = -1;
+        if (y < 0) b = -1;
+
+        var fs = from.TileWalkedThisTurn;
+
+        var maximumtile = (from.GetStats.AGI * from.SpAvaillableThisTurn) - fs;
+
+        var xc = PathUI.Count <= maximumtile;
+        var e = (int)(PathUI.Count / from.GetStats.AGI);
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(from.TilePosition + Vector.up * b).Actor != null)
+        {
+
+            var lastxpos = from.TilePosition + Vector.right * x;
+            for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
+            {
+
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastxpos = from.TilePosition + Vector.right * i * a;
+                    break;
+                }
+                PathUI.Add(from.TilePosition + Vector.right * i * a);
+            }
+            for (int i = 1; i <= Mathf.Abs(y); i++)
+            {
+                PathUI.Add(lastxpos + Vector.up * i * b);
+            }
+
+        }
+        else
+        {
+            var lastypos = from.TilePosition + Vector.up * y;
+
+            for (int i = 1; i <= Mathf.Abs(y) && xc; i++)
+            {
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastypos = from.TilePosition + Vector.up * i * b;
+                    break;
+                }
+                PathUI.Add(from.TilePosition + Vector.up * i * b);
+
+            }
+            // if (PathUI.Count < maximumtile)
+            for (int i = 1; i <= Mathf.Abs(x); i++)
+            {
+
+                PathUI.Add(lastypos + Vector.right * i * a);
+
+            }
+        }
+
+
+
+        if (PathUI.Count != 0)
+            if (PathUI.Count > maximumtile && PathUI.Count > 0)
+                while (PathUI.Count > maximumtile)
+                    if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
+
+
+        GM.SpCostUI.text = ((int)(PathUI.Count / from.GetStats.AGI)).ToString("00") + " sp";
+
+        for (int h = 0; h < Battlefied.GetLength(0); h++)
+            for (int j = 0; j < Battlefied.GetLength(1); j++)
+                foreach (var ff in Battlefied[h, j].Sprite)
+                    ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
+
+        return PathUI.Count;
+    }
     public void OnCursorEnter(Map.Tile t)
     {
     
@@ -268,14 +347,15 @@ public class GameManager : MonoBehaviour {
    
     public void OnCursorUpdate(Map.Tile t)
     {
-       
+      
         OnHover.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
         CharacterInventory.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null);
         Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
-            if(SelectedActor != null)
+            if (ActorAtCursor.IsDefeat) ActorAtCursor = null;
+            if (SelectedActor != null)
             {
                 if(ActorAtCursor == SelectedActor)
                 {
@@ -299,7 +379,10 @@ public class GameManager : MonoBehaviour {
             else ChangeGridColor(Color.cyan + Color.blue);
 
         }
-        else {   ChangeGridColor(GridColor); }
+        else
+        {
+            if(SelectedActor != null) ShowUI(SelectedActor);
+            ChangeGridColor(GridColor); }
 
         TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
     }
@@ -528,6 +611,7 @@ public class GameManager : MonoBehaviour {
         {
             for (int y = 0; y < t.Tiles.GetLength(1); y++)
             {
+               
                 var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
                 e.tile = t.Tiles[x, y];
                 foreach (var item in e.Sprite)
@@ -539,7 +623,8 @@ public class GameManager : MonoBehaviour {
                 }
                 var v = t.Tiles[x, y].Position;
                 Battlefied[x, y] = e;
-                e.Value = new Vector2(v.x, v.y);
+                //if (y < 5) e.tile.Heigth = 5;
+                    e.Value = new Vector2(v.x, v.y);
             }
       
         }
