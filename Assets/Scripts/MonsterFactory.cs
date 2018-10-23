@@ -5,12 +5,8 @@ using System.Text;
 
 namespace Assets.Scripts
 {
-    class MonsterFactory : Actor
+    abstract class MonsterFactory : Actor
     {
-
-        public string monsterName;
-        protected stat monsterStats = new stat();
-        public bool monsterControllable = false;
 
         //public enum MonsterType
         //{
@@ -21,16 +17,47 @@ namespace Assets.Scripts
         //    warrior, mage, rogue
         //}
 
-        public MonsterFactory(string monsterName, stat monsterStats, bool monsterControllable) : base(monsterName, monsterStats, monsterControllable)
+        public MonsterFactory(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
         {
-            this.monsterName = monsterName;
-            this.monsterStats = monsterStats;
-            this.monsterControllable = monsterControllable;
+            this.Name = Name;
+            this.baseStats = baseStats;
+            this.Controllable = Controllable;
+            ScaleOnPlayerLevel();
         }
 
         public void ScaleOnPlayerLevel()
         {
             //find a way to scale on player's level
+        }
+
+        // randomize the creation of monsters (later)
+        abstract public MonsterFactory CreateKuku();
+        abstract public MonsterFactory CreateKodama();
+        abstract public MonsterFactory CreateBandit();
+    }
+
+    class MonsterControllerFactory : MonsterFactory
+    {
+        public MonsterControllerFactory(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
+        {
+            base.Name = Name;
+            base.baseStats = baseStats;
+            base.Controllable = Controllable;
+        }
+
+        public override MonsterFactory CreateBandit()
+        {
+            return new Bandit(Name, baseStats, Controllable);
+        }
+
+        public override MonsterFactory CreateKodama()
+        {
+            return new Kodama(Name, baseStats, Controllable);
+        }
+
+        public override MonsterFactory CreateKuku()
+        {
+            return new Kuku(Name, baseStats, Controllable);
         }
     }
 }
