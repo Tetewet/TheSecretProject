@@ -93,11 +93,35 @@ public class InGameActor : MonoBehaviour {
     //Action and Attack
     public void AI(Battle.Turn Turn = null)
     {
+        if (!MyTurn) return;
+
         AITImer = 0;
         Attack(GameManager.GM.Actors[0].actor, Skill.Base);
 
     }
 
+
+    Actor cachedactor;Item cacheditem; public SpriteRenderer OnActorItem;
+    public void _useItem(Actor to, Item t)
+    {
+        if (anim[0].GetCurrentAnimatorStateInfo(0).IsName("UseItem")) return;
+
+        anim[0].SetTrigger("UseItem");
+
+        GameManager.GM.ToggleTabMenu();
+
+        cachedactor = to;
+        cacheditem = t;
+        if (OnActorItem != null) OnActorItem.sprite = GameManager.LoadSprite(t.ResourcePath);
+    }
+    public void AnimatorUseItem()
+    {
+        GameManager.GM.ShowUI(cachedactor);
+        actor.Use(cacheditem, cachedactor);
+        actor.ConsumeSP(1);
+        GameManager.SetActor(actor);
+        
+    }
 
     public void OnTurn(Battle.Turn Turn)
     {
