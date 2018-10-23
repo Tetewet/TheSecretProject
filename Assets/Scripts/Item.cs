@@ -13,6 +13,8 @@ public abstract class Item : IDisposable
     public event OnDisposeHandler onDispose;
     public virtual void OnGrab(Actor a)
     {
+
+        UnityEngine.Debug.Log(a.ToString() + " takes  " + Name);
         Ongrabbed( a);
     }
     public void OnDispose()

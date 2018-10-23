@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour {
     [Header("Templates")]
 
 
-    public Text SpCostUI;
+    public Text SpCostUI,InfoBar;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject panel, InventoryCeil, GameEnd;
@@ -39,23 +39,28 @@ public class GameManager : MonoBehaviour {
         CurrentBattle.map.AtPos(Position).AddItem(e.item);
         return e;
     }
-
     public static Battle CurrentBattle;
- 
     public string MapName;
 
     public InGameActor[] Actors;
     public InGameActor[] Foes;
-
     
-    public static InGameActor GetInGameFromActor(Actor a)
+    /// <summary>
+    /// Get the InGameActor from the Actor.
+    /// </summary>
+    /// <param name="actor">Actor to get the InGameActorFrom</param>
+    /// <returns></returns>
+    public static InGameActor GetInGameFromActor(Actor actor)
     {
         foreach (var item in GM.Actors)
-            if (item.actor == a) { return item;  }
+            if (item.actor == actor) { return item;  }
         foreach (var item in GM.Foes)
-            if (item.actor == a) { return item;   }
+            if (item.actor == actor) { return item;   }
         return null;
     }
+    /// <summary>
+    /// Initialize the UI
+    /// </summary>
     void InitializeUI()
     {
         Inventory = new Image[100];
@@ -86,7 +91,7 @@ public class GameManager : MonoBehaviour {
             item.actor.Controllable = false;
         foreach (var item in Actors)
             item.actor.Controllable = true;
-        ShowTabMenu();
+        ToggleTabMenu();
 
         //Debug
         for (int i = 0; i < Actors.Length; i++)
@@ -99,7 +104,7 @@ public class GameManager : MonoBehaviour {
         }
         CursorPos = new Vector(9, 4);
         CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(5,5));
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11,5));
         CreateNewItemOnField(Item.Gold, new Vector(2, 5));
 
         ToggleGrid();
@@ -109,16 +114,19 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Is called at the end of the turn
+    /// </summary>
     private void OnTurnEnd()
     {
         SelectedActor = null;
+        CloseInventory();
         ResetGrid();
     }
 
-    private void OnPathCleared()
-    {
-        ResetGrid();
-    }
+   /// <summary>
+   /// Called when the battle end
+   /// </summary>
     private void OnBattleEnd()
     {
         GameEnd.SetActive(true);
@@ -132,9 +140,32 @@ public class GameManager : MonoBehaviour {
        
     }
 
+    /// <summary>
+    /// Show a bar in the upper section of the screen
+    /// </summary>
+    /// <param name="Message">What to show</param>
+    public static void GiveInfo(string Message)
+    {
+        var e = GameManager.GM;
+
+        e.InfoBar.text = Message;
+
+    }
+    IEnumerator _ShowInfo()
+    {
+
+        yield return new WaitForSeconds(1);
+        yield  break;
+    }
 
     public static List<Vector> PathUI = new List<Vector>( );
-    public static int EstimathPath( Vector where)
+
+    /// <summary>
+    /// Create a path toward a certain position from SelectedActor
+    /// </summary>
+    /// <param name="Position">Where.</param>
+    /// <returns></returns>
+    public static int EstimathPath( Vector Position)
     {
 
 
@@ -161,8 +192,8 @@ public class GameManager : MonoBehaviour {
 
         { GM.ResetGrid(); return -1; }
  
-        int x = (int)(where.x - SelectedActor.TilePosition.x);
-        int y = (int)(where.y - SelectedActor.TilePosition.y);
+        int x = (int)(Position.x - SelectedActor.TilePosition.x);
+        int y = (int)(Position.y - SelectedActor.TilePosition.y);
         var a = 1;
         var b = 1;
         if (x < 0) a = -1;
@@ -234,13 +265,18 @@ public class GameManager : MonoBehaviour {
 
         return PathUI.Count;
     }
-
-    public static int EstimathPath(Actor from,Vector where)
+    /// <summary>
+    /// Create a tile-path from a actor toward a position
+    /// </summary>
+    /// <param name="Whom">The actor in question</param>
+    /// <param name="where">The position in question</param>
+    /// <returns></returns>
+    public static int EstimathPath(Actor Whom,Vector where)
     {
 
 
         var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
-        if (from == null && CurrentBattle.ThisTurn.Order[0] == null)
+        if (Whom == null && CurrentBattle.ThisTurn.Order[0] == null)
         {
             GM.ResetGrid();
             return -1;
@@ -257,36 +293,36 @@ public class GameManager : MonoBehaviour {
             return ThisTurnPlayer.Path.Count;
         }
 
-        if (from == null || from != ThisTurnPlayer)
+        if (Whom == null || Whom != ThisTurnPlayer)
 
         { GM.ResetGrid(); return -1; }
 
-        int x = (int)(where.x - from.TilePosition.x);
-        int y = (int)(where.y - from.TilePosition.y);
+        int x = (int)(where.x - Whom.TilePosition.x);
+        int y = (int)(where.y - Whom.TilePosition.y);
         var a = 1;
         var b = 1;
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
-        var fs = from.TileWalkedThisTurn;
+        var fs = Whom.TileWalkedThisTurn;
 
-        var maximumtile = (from.GetStats.AGI * from.SpAvaillableThisTurn) - fs;
+        var maximumtile = (Whom.GetStats.AGI * Whom.SpAvaillableThisTurn) - fs;
 
         var xc = PathUI.Count <= maximumtile;
-        var e = (int)(PathUI.Count / from.GetStats.AGI);
-        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(from.TilePosition + Vector.up * b).Actor != null)
+        var e = (int)(PathUI.Count / Whom.GetStats.AGI);
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(Whom.TilePosition + Vector.up * b).Actor != null)
         {
 
-            var lastxpos = from.TilePosition + Vector.right * x;
+            var lastxpos = Whom.TilePosition + Vector.right * x;
             for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
             {
 
                 if (PathUI.Count >= maximumtile)
                 {
-                    lastxpos = from.TilePosition + Vector.right * i * a;
+                    lastxpos = Whom.TilePosition + Vector.right * i * a;
                     break;
                 }
-                PathUI.Add(from.TilePosition + Vector.right * i * a);
+                PathUI.Add(Whom.TilePosition + Vector.right * i * a);
             }
             for (int i = 1; i <= Mathf.Abs(y); i++)
             {
@@ -296,16 +332,16 @@ public class GameManager : MonoBehaviour {
         }
         else
         {
-            var lastypos = from.TilePosition + Vector.up * y;
+            var lastypos = Whom.TilePosition + Vector.up * y;
 
             for (int i = 1; i <= Mathf.Abs(y) && xc; i++)
             {
                 if (PathUI.Count >= maximumtile)
                 {
-                    lastypos = from.TilePosition + Vector.up * i * b;
+                    lastypos = Whom.TilePosition + Vector.up * i * b;
                     break;
                 }
-                PathUI.Add(from.TilePosition + Vector.up * i * b);
+                PathUI.Add(Whom.TilePosition + Vector.up * i * b);
 
             }
             // if (PathUI.Count < maximumtile)
@@ -325,7 +361,7 @@ public class GameManager : MonoBehaviour {
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / from.GetStats.AGI)).ToString("00") + " sp";
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -334,10 +370,27 @@ public class GameManager : MonoBehaviour {
 
         return PathUI.Count;
     }
+
+    /// <summary>
+    /// Set the current SelectedActor
+    /// </summary>
+    /// <param name="Actor"></param>
+    public static void SetActor(Actor Actor)
+    {
+        SelectedActor = Actor;
+    }
+    /// <summary>
+    /// Called once When the cursor enter a tile
+    /// </summary>
+    /// <param name="t"> The tile in question</param>
     public void OnCursorEnter(Map.Tile t)
     {
     
     }
+    /// <summary>
+    /// Called once the cursor exited a tile
+    /// </summary>
+    /// <param name="t">The tile in question</param>
     public void OnCursorExit(Map.Tile t)
     {
 
@@ -345,6 +398,10 @@ public class GameManager : MonoBehaviour {
 
     }
    
+    /// <summary>
+    /// Is called on Update
+    /// </summary>
+    /// <param name="t">The cursor in question</param>
     public void OnCursorUpdate(Map.Tile t)
     {
       
@@ -387,6 +444,10 @@ public class GameManager : MonoBehaviour {
         TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
     }
 
+    /// <summary>
+    /// Show the On-Screen info about this actor
+    /// </summary>
+    /// <param name="a">Actor in question</param>
     public void ShowUI(Actor a)
     {
         OnHover.text =
@@ -427,10 +488,19 @@ public class GameManager : MonoBehaviour {
         }
 
     }
-    public static Sprite LoadSprite(string name)
+    /// <summary>
+    /// Load a sprite from the path
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static Sprite LoadSprite(string path)
     {
-        return Resources.Load<Sprite>("Sprites/" + name);
+        return Resources.Load<Sprite>("Sprites/" + path);
     }
+    /// <summary>
+    /// Is called once when the cursor activated
+    /// </summary>
+    /// <param name="t"></param>
     public void OnPressed(Map.Tile t)
     {
        
@@ -444,18 +514,16 @@ public class GameManager : MonoBehaviour {
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
 
-            SelectedActor.Use(SelectedItem,SelectedActor);
-            SelectedActor.ConsumeSP(1);
-           
-            if (SelectedActor.SP == 0 || SelectedItem == null || SelectedItem.Uses <= 0) StopInventory();
+            GetInGameFromActor(SelectedActor)._useItem(SelectedActor, SelectedItem);
+            CloseInventory();
+
+            //  SelectedActor.Use(SelectedItem,SelectedActor);
+            //  SelectedActor.ConsumeSP(1);
+            //if (SelectedActor.SP == 0 || SelectedItem == null || SelectedItem.Uses <= 0) StopInventory();
         }
 
-        if (Tabmenu)
-        {
+        if(Tabmenu) return;
 
-
-            return;
-        }
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
@@ -471,19 +539,18 @@ public class GameManager : MonoBehaviour {
      
 
     }
+    /// <summary>
+    /// Camera Update
+    /// </summary>
     public void CameraUpdate()
     {
         var campos = Cursor.transform.position;  
     /*    if (SelectedActor != null)
             campos = GetInGameFromActor(SelectedActor).transform.position ;*/
 
-        if (Tabmenu) campos = Cam.transform.position;
-    
+        if (Tabmenu) campos = Cam.transform.position;    
         if(SelectedItem != null)
             campos = Cursor.transform.position;
-
-
-
         campos.z = Cam.transform.position.z;
         Cam.transform.position = Vector3.Lerp(Cam.transform.position, campos, 10 * Time.smoothDeltaTime);
     }
@@ -543,7 +610,7 @@ public class GameManager : MonoBehaviour {
             }
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                ShowTabMenu();
+                ToggleTabMenu();
             }
         }
         OnCursorUpdate(curtile);
@@ -552,6 +619,9 @@ public class GameManager : MonoBehaviour {
         CameraUpdate();
     }
  
+    /// <summary>
+    /// Reset the Grid
+    /// </summary>
     public void ResetGrid()
     {
         foreach (var item in Battlefied)
@@ -561,6 +631,9 @@ public class GameManager : MonoBehaviour {
      
         
     }
+    /// <summary>
+    /// Toggle the grid
+    /// </summary>
     public void ToggleGrid()
     {
         foreach (var item in Battlefied)
@@ -573,7 +646,12 @@ public class GameManager : MonoBehaviour {
         ShowGrid = !ShowGrid;
     }
     public bool ShowGrid;
-    public void ChangeGridColor(Color a)
+
+    /// <summary>
+    /// Change the color of the grid
+    /// </summary>
+    /// <param name="c">the Color</param>
+    public void ChangeGridColor(Color c)
     {
 
 
@@ -581,14 +659,18 @@ public class GameManager : MonoBehaviour {
         {
             foreach (var x in item.Sprite)
             {
-                a.a = x.color.a;
-                x.color = a;
+                c.a = x.color.a;
+                x.color = c;
             }
 
         }
     }
     bool Tabmenu = false;
-    public void ShowTabMenu()
+
+    /// <summary>
+    /// ToggleTheTabMenu
+    /// </summary>
+    public void ToggleTabMenu()
     {
       
         Tabmenu = !Tabmenu;
@@ -602,6 +684,10 @@ public class GameManager : MonoBehaviour {
         TabChoice = 0;
 
     }
+    /// <summary>
+    /// Generate the map on the field from a Map object 
+    /// </summary>
+    /// <param name="t">The map to load</param>
     public void GenerateMap(Map t)
     {
        
@@ -630,12 +716,16 @@ public class GameManager : MonoBehaviour {
         }
         MapName = t.ToString();
     }
+
     int TabChoice = 0;
     public GameObject[] MiniMenuBTN;
     bool inventorySelected, SkillsSelected;
     int invUIItem = 0;
     Item SelectedItem;
     
+    /// <summary>
+    /// Logic about the menu - run on update
+    /// </summary>
     void MiniMenuLogic()
     {
         if (!Tabmenu || SelectedActor == null) return;
@@ -667,7 +757,7 @@ public class GameManager : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Tab)){
             if (SelectedItem == null)
-                StopInventory();
+                CloseInventory();
             else SelectedItem = null;
 
 
@@ -678,13 +768,20 @@ public class GameManager : MonoBehaviour {
 
 
     }
-    void StopInventory()
+
+    /// <summary>
+    /// Close the Inventory
+    /// </summary>
+    public void CloseInventory()
     {
         SelectedItem = null;
         inventorySelected = false;
         invUIItem = 0;
     }
 
+    /// <summary>
+    /// Return true if there is a actor selected
+    /// </summary>
     public bool HasSelectedActor
     {
         get { return SelectedActor != null; }

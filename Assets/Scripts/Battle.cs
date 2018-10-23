@@ -219,28 +219,18 @@ public class Map
             a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
 
-            if (Items.Count >= 0)
-            {
+            if (Items.Count >= 0)           
                 for (int i = 0; i < Items.Count; i++)
                 {
                     if(Items[i] != null)
-                    if (!a.inventory.IsFull) {
-
-                        a.Grab(Items[i]);
-                            if ( i== Items.Count) continue;
-
-                                Items.Remove(Items[i]);
-
-                      
-                        UnityEngine.Debug.Log(a.ToString() + " takes  " + Items[i].ToString());
-
-                    }
-                }
-
-                   
-            }
-        
-          
+                        if (Items[i] is Gold)
+                            a.Grab(Items[i]);
+                        else  if (!a.inventory.IsFull)
+                        {
+                            a.Grab(Items[i]);                        
+                            Items.Remove(Items[i]);
+                        }
+                }   
         }
         public  void OnQuitting()
         {
