@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
 
 [System.Serializable]
 public class Battle{
@@ -146,7 +146,9 @@ public class Battle{
 
             foreach (var item in TeamA) e.Add(item);
             foreach (var item in TeamB) e.Add(item);
+ 
             e.Sort();
+
             Order = e;
             History = Order.ToArray();
 
@@ -202,6 +204,7 @@ public class Map
         public Actor Actor;
         public List<Item> Items = new List<Item>();
         public Vector Position;
+        public int Heigth = 0;
         public int x
         {
             get { return (int)Position.x; }
@@ -212,21 +215,22 @@ public class Map
         }
         public void Enter(Actor a )
         {
+            Actor = a;           
+            a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
-            if (Items.Count >= 0)
-            {
+
+            if (Items.Count >= 0)           
                 for (int i = 0; i < Items.Count; i++)
                 {
-                    if (!a.inventory.IsFull) { UnityEngine.Debug.Log(a.ToString() + " takes  " + Items[i].ToString()); a.Grab(Items[i]);Items.Remove(Items[i]); }
-                }
-
-                   
-            }
-            Actor = a;
-
-           
-           a.TileWalkedThisTurn++;
-          
+                    if(Items[i] != null)
+                        if (Items[i] is Gold)
+                            a.Grab(Items[i]);
+                        else  if (!a.inventory.IsFull)
+                        {
+                            a.Grab(Items[i]);                        
+                            Items.Remove(Items[i]);
+                        }
+                }   
         }
         public  void OnQuitting()
         {
@@ -254,6 +258,7 @@ public class Map
         public void AddItem(Item a)
         {
             Items.Add(a);
+            if(a!= null)
             a.CurrentTile = this;
         }
         public override string ToString()

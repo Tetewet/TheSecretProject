@@ -24,7 +24,28 @@ public class Monster : Actor
 
     public override void Ondeath(float x, Skill f,  Actor a = null)
     {
-        base.Ondeath(x, f,  a);
-        if (a != null) a.AddExp(ExpGain);
+       
+        if (a != null)
+        {
+            a.AddExp(ExpGain);
+            a.OnMurder(this);
+            foreach (var item in inventory.items)
+            { 
+
+                if (item != null)
+                    GameManager.CreateNewItemOnField(item, TilePosition);
+             
+            }    
+
+            GameManager.CreateNewItemOnField(Item.Gold, TilePosition);
+
+
+
+
+        }
+        base.Ondeath(x, f, a);
+
+
+
     }
 }
