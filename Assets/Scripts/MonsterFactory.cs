@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Assets.Scripts
 {
-    abstract class MonsterFactory : Actor
+    abstract class MonsterFactory : Monster
     {
 
         //public enum MonsterType
@@ -22,13 +22,13 @@ namespace Assets.Scripts
             this.Name = Name;
             this.baseStats = baseStats;
             this.Controllable = Controllable;
-            ScaleOnPlayerLevel();
+            //ScaleOnPlayerLevel();
         }
 
-        public void ScaleOnPlayerLevel()
-        {
-            //find a way to scale on player's level
-        }
+        //public void ScaleOnPlayerLevel()
+        //{
+        //    //find a way to scale on player's level
+        //}
 
         // randomize the creation of monsters (later)
         abstract public MonsterFactory CreateKuku();
@@ -38,6 +38,8 @@ namespace Assets.Scripts
 
     class MonsterControllerFactory : MonsterFactory
     {
+        static Random random;
+
         public MonsterControllerFactory(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
         {
             base.Name = Name;
@@ -59,5 +61,40 @@ namespace Assets.Scripts
         {
             return new Kuku(Name, baseStats, Controllable);
         }
+
+        public static void SpawnMonsters()
+        {
+            // randomize here
+            int chances = random.Next(0, 100); // quels monstres ? = aleatoire
+            int number = random.Next(4, 6); // nombre de monstres a faire spawn
+            var factories = new List<MonsterControllerFactory>();
+            if (chances > 66)
+            {
+                for (int i = 0; i < number; i++) 
+                {
+                    factories.Add(new Kuku("Kuku " + i.ToString(), new stat(), false));
+                }
+            }
+            else if (chances < 33) 
+            {
+                for (int i = 0; i < number; i++)
+                {
+                    factories.Add(new Kodama("Kodama " + i.ToString(), new stat(), false));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < number; i++)
+                {
+                    factories.Add(new Bandit("Bandit " + i.ToString(), new stat(), false));
+                }
+            }
+            //SpawnMonsters(random.range(0, Monsterlist.count);
+
+            //MonsterControllerFactory factory = factories[random.Next(0, factories.Count)];
+            //factories.Remove(factory);
+
+        }
     }
+
 }
