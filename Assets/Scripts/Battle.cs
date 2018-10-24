@@ -219,6 +219,7 @@ public class Map
             a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
 
+         
             if (Items.Count >= 0)           
                 for (int i = 0; i < Items.Count; i++)
                 {

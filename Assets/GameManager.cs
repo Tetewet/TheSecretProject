@@ -19,22 +19,22 @@ public class GameManager : MonoBehaviour {
     [Header("Templates")]
 
 
-    public Text SpCostUI,InfoBar;
+    public Text SpCostUI, InfoBar;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject panel, InventoryCeil, GameEnd;
     public GameObject TabButtons, MiniMenu;
-    public Text OnHover; 
+    public Text OnHover;
     public Animator Cursor;
     public static Vector CursorPos;
     public Vector3 CursorOffset;
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
-    
+
     public static InGameItem CreateNewItemOnField(Item i, Vector Position)
     {
         var e = Instantiate(GM.ItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameItem>();
-
+        GM.InGameItems.Add(e);
         e.item = i;
         CurrentBattle.map.AtPos(Position).AddItem(e.item);
         return e;
@@ -42,9 +42,92 @@ public class GameManager : MonoBehaviour {
     public static Battle CurrentBattle;
     public string MapName;
 
-    public InGameActor[] Actors;
-    public InGameActor[] Foes;
+
+    /// <summary>
+    /// The Protagonists
+    /// </summary>
+    public static List<Actor> Protags = new List<Actor>
+    {
+        new Player("Nana",new stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"),
+        new Player("Mathew", new stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
+    };
+    public List<InGameActor> InGameActors = new List<InGameActor>(), InGameFoes = new List<InGameActor>();
+    public List<InGameItem> InGameItems = new List<InGameItem>();
     
+
+    public static InGameActor GenerateInGameActor(Actor f)
+    {
+        var e = Instantiate(GM.ActorPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameActor>();
+        e.InitializedActor(f, LoadAnimatorController(f.AnimatorPath));
+        return e;
+    }
+
+    public static void ClearBattle(Battle b)
+    {
+        
+        b.History.Clear();
+        b.Foes.Clear();
+        b.Players.Clear();
+        b.map = null;
+
+       
+    }
+    public static void StartBattle(Actor[] F , Map m)
+    {
+
+       
+        if (CurrentBattle != null)
+            ClearBattle(CurrentBattle);
+
+        CurrentBattle = null;
+        GM.GameEnd.SetActive(false);
+        GM.ShowTabMenu(false);
+
+        CurrentBattle = new Battle(Protags.ToArray(), F);
+        CurrentBattle.BattlEnd += GM.OnBattleEnd;
+        CurrentBattle.OnTurnEnd += GM.OnTurnEnd;
+        CurrentBattle.map = m;
+   
+        GM.GenerateMap(CurrentBattle.map);
+
+        GM.OnHover.enabled = true;
+ 
+ 
+        foreach (var item in GM.InGameActors)
+            Destroy(item.gameObject);
+        foreach (var item in GM.InGameFoes)
+            Destroy(item.gameObject);
+
+        GM.InGameActors.Clear();
+        GM.InGameFoes.Clear();
+
+        foreach (var item in Protags)
+            GM.InGameActors.Add(GenerateInGameActor(item));
+        foreach (var item in F)
+        {
+            GM.InGameFoes.Add(GenerateInGameActor(item));
+            item.AddGold(Random.Range(0, 5));
+        }
+           
+
+        for (int i = 0; i < GM.InGameActors.Count; i++)
+            GM.InGameActors[i].actor.Teleport(CurrentBattle.map.AtPos(11 + i, 4));
+        for (int i = 0; i < GM.InGameFoes.Count; i++)
+            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
+
+    
+
+        CursorPos = new Vector(9, 4);
+        GM.ShowGrid = false;
+        GM.ToggleGrid();
+
+        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
+        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
+
+        CurrentBattle.StartNewTurn();
+        CurrentBattle.ActingThisTurn.Turn(CurrentBattle);
+    }
+
     /// <summary>
     /// Get the InGameActor from the Actor.
     /// </summary>
@@ -52,9 +135,9 @@ public class GameManager : MonoBehaviour {
     /// <returns></returns>
     public static InGameActor GetInGameFromActor(Actor actor)
     {
-        foreach (var item in GM.Actors)
+        foreach (var item in GM.InGameActors)
             if (item.actor == actor) { return item;  }
-        foreach (var item in GM.Foes)
+        foreach (var item in GM.InGameFoes)
             if (item.actor == actor) { return item;   }
         return null;
     }
@@ -73,44 +156,31 @@ public class GameManager : MonoBehaviour {
     {
         if (!GM) GM = this;
         else Destroy(this.gameObject);
-        DontDestroyOnLoad(this.gameObject);
+      //  DontDestroyOnLoad(this.gameObject);
  
     }
     public void Start()
     {
-        CurrentBattle = new Battle(Actors, Foes);
-        CurrentBattle.BattlEnd += OnBattleEnd;
-        CurrentBattle.StartNewTurn();
-        CurrentBattle.OnTurnEnd += OnTurnEnd;
+        GM.InitializeUI();
+
         //14 6
-        CurrentBattle.map = new Map(new Vector(38, 9));
-        InitializeUI();
-        GenerateMap(CurrentBattle.map);
-        OnHover.enabled = true;
-        foreach (var item in Foes)      
-            item.actor.Controllable = false;
-        foreach (var item in Actors)
-            item.actor.Controllable = true;
-        ToggleTabMenu();
+        StartBattle(new Monster[3] {
+            new Monster("Polka", new stat { AGI = 1 }, false, "Kuku~"){ },
+            new Monster("Jotu", new stat { AGI = 1 }, false, "Kuku~"),
+            new Monster("Dino", new stat { AGI = 1 }, false, "Kuku~") }     
+        , new Map(new Vector(38, 9)));
+        
+     
+ 
 
         //Debug
-        for (int i = 0; i < Actors.Length; i++)
-        {
-            Actors[i].actor.Teleport(CurrentBattle.map.AtPos(11+ i, 4));
-        }
-        for (int i = 0; i < Foes.Length; i++)
-        {
-           Foes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
-        }
-        CursorPos = new Vector(9, 4);
+
+   
         CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
         { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11,5));
         CreateNewItemOnField(Item.Gold, new Vector(2, 5));
 
-        ToggleGrid();
-
-        foreach (var item in Actors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
-        foreach (var item in Foes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 2; ;
+       
 
     }
 
@@ -129,9 +199,34 @@ public class GameManager : MonoBehaviour {
    /// </summary>
     private void OnBattleEnd()
     {
-        GameEnd.SetActive(true);
+        StartCoroutine(BattleEndTransition());
+
     }
 
+    IEnumerator BattleEndTransition()
+    {
+        GameEnd.SetActive(true);
+    
+        
+        yield return new WaitForSeconds(3);
+        for (int i = 0; i < InGameItems.Count; i++)
+        {
+            Item.Inventory.Add(InGameItems[i].item);
+            Destroy(InGameItems[i].gameObject);
+        }
+        InGameItems.Clear();
+
+
+        StartBattle(new Monster[3] {
+            new Monster("Polka", new stat { AGI = 1 }, false, "Kuku~"),
+            new Monster("Jotu", new stat { AGI = 1 }, false, "Kuku~"),
+            new Monster("Dino", new stat { AGI = 1 }, false, "Kuku~") }
+       , new Map(new Vector(38, 9)));
+
+       
+        GameEnd.SetActive(false);
+        yield break;
+    }
     float timer = 0;
     private void FixedUpdate()
     {
@@ -149,13 +244,16 @@ public class GameManager : MonoBehaviour {
         var e = GameManager.GM;
 
         e.InfoBar.text = Message;
+        e.StartCoroutine(e._ShowInfo());
 
     }
     IEnumerator _ShowInfo()
     {
-
+        InfoBar.transform.parent.gameObject.SetActive(true);
         yield return new WaitForSeconds(1);
-        yield  break;
+        InfoBar.transform.parent.gameObject.SetActive(false);
+
+        yield break;
     }
 
     public static List<Vector> PathUI = new List<Vector>( );
@@ -450,6 +548,12 @@ public class GameManager : MonoBehaviour {
     /// <param name="a">Actor in question</param>
     public void ShowUI(Actor a)
     {
+        
+        if(a == null)
+        {
+            print(a);
+            return;
+        }
         OnHover.text =
 "* " + a.Name + " *\n\nlvl"
 + a.GetLevel.ToString("00") + "\n[ hp  "
@@ -497,6 +601,11 @@ public class GameManager : MonoBehaviour {
     {
         return Resources.Load<Sprite>("Sprites/" + path);
     }
+    public static RuntimeAnimatorController LoadAnimatorController(string path)
+    {
+        return Resources.Load<RuntimeAnimatorController>("Animators/" + path);
+    }
+
     /// <summary>
     /// Is called once when the cursor activated
     /// </summary>
@@ -514,7 +623,7 @@ public class GameManager : MonoBehaviour {
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
 
-            GetInGameFromActor(SelectedActor)._useItem(SelectedActor, SelectedItem);
+            GetInGameFromActor(SelectedActor).UseItem(SelectedActor, SelectedItem);
             CloseInventory();
 
             //  SelectedActor.Use(SelectedItem,SelectedActor);
@@ -666,7 +775,21 @@ public class GameManager : MonoBehaviour {
         }
     }
     bool Tabmenu = false;
-
+    /// <summary>
+    /// Close or Open Tab Menu
+    /// </summary>
+    public void ShowTabMenu(bool a )
+    {
+        Tabmenu = a;
+        if (!HasSelectedActor) Tabmenu = false;
+        TabButtons.SetActive(!Tabmenu && SelectedActor != null);
+        MiniMenu.gameObject.SetActive(Tabmenu);
+        inventorySelected = false;
+        SkillsSelected = false;
+        SelectedItem = null;
+        if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
+        TabChoice = 0;
+    }
     /// <summary>
     /// ToggleTheTabMenu
     /// </summary>
@@ -674,23 +797,23 @@ public class GameManager : MonoBehaviour {
     {
       
         Tabmenu = !Tabmenu;
-        if (SelectedActor == null) Tabmenu = false;
-            TabButtons.SetActive(!Tabmenu && SelectedActor!= null );
-        MiniMenu.gameObject.SetActive(Tabmenu);
-        inventorySelected = false;
-        SkillsSelected = false;
-        SelectedItem = null;
-        if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
-        TabChoice = 0;
+        ShowTabMenu(Tabmenu);
 
     }
+
     /// <summary>
     /// Generate the map on the field from a Map object 
     /// </summary>
     /// <param name="t">The map to load</param>
     public void GenerateMap(Map t)
     {
-       
+        var q = grid.GetComponentsInChildren<Transform>();
+
+        for (int i = 0; i < q.Length; i++)
+            if (q[i] != grid.transform) Destroy(q[i].gameObject);
+        
+
+
         grid.constraintCount = t.Tiles.GetLength(0);
         Battlefied = new BattleTile[t.Tiles.GetLength(0), t.Tiles.GetLength(1)];
         for (int x = 0; x < t.Tiles.GetLength(0); x++)

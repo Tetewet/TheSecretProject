@@ -26,7 +26,7 @@ public class InGameItem : MonoBehaviour {
     public void Update()
     { 
             
-        if(item != null)
+        if(item != null && GameManager.Battlefied[(int)Position.x, (int)Position.y])
         {
             Position = new Vector2(item.TilePosition.x, item.TilePosition.y);
             this.transform.position = GameManager.Battlefied[(int)Position.x, (int)Position.y].transform.position + new Vector3(Offset.x, Offset.y) ;

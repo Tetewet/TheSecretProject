@@ -43,7 +43,7 @@ public abstract class Item : IDisposable
         get {
             var g = new Gold("Gold", "Items/GOLD");
             g.rarity = Rarity.Common;
-            g.GoldValue = 5;
+            g.GoldValue = 1;
             g.Uses = 0;
             return g; }
     }
