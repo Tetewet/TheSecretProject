@@ -81,7 +81,7 @@ public abstract class Actor : IComparable<Actor> {
         get { return GameManager.CurrentBattle.Players.Contains(this); }
     }
     public const float BASEEXP = 10;
-    public string Name;
+    public string Name, AnimatorPath;
     public bool Controllable = true;
 
 
@@ -118,11 +118,14 @@ public abstract class Actor : IComparable<Actor> {
 
         Level++;
     }
-    public Actor(string Name, stat BaseStats, bool Controllable)
+
+    public Vector DefaultPos = new Vector(5, 2);
+    public Actor(string Name, stat BaseStats, bool Controllable, string AnimatorPath)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
         this.Controllable = Controllable;
+        this.AnimatorPath = AnimatorPath;
 
     }
 
@@ -210,6 +213,7 @@ public abstract class Actor : IComparable<Actor> {
     public void OnMurder(Actor a)
     {
         if (OnKillActor != null) OnKillActor(a);
+
     }
     public void Use(Item i, Actor T)
     {

@@ -46,13 +46,19 @@ public class InGameActor : MonoBehaviour {
         public float EXPGain;
     }
 
-
+    public static Actor[] ToActors(InGameActor[] s)
+    {
+        var e = new Actor[s.Length];
+        for (int i = 0; i < e.Length; i++)       
+            e[i] = s[i].actor;
+        return e;
+        
+    }
     private void Awake()
     {
         //Debug
-        if (OverrideStats)
+       /* if (OverrideStats)
         {
-
             if (!isAI)
                 InitializedActor(new Player(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS }, isAI), "");
             else
@@ -60,26 +66,23 @@ public class InGameActor : MonoBehaviour {
                 var e = new Monster(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS }, isAI);
                 InitializedActor(e, "");
                 e.ExpGain = ActorStats.EXPGain;
-
             }
-
         }
         else
         {
-
             if (!isAI)
                 InitializedActor(new Player(Name, new stat { AGI = 2, STR = 6, INT = 5, LUC = 5, WIS = 5, END = 1 }, isAI), "");
             else
                 InitializedActor(new Monster(Name, new stat { AGI = 4, STR = 1, INT = 1, LUC = 1, WIS = 1, END = 1 }, isAI), "");
-
-
-        }
+        }*/
 
     }
 
     private void Start()
     {
-        StartCoroutine(UpDateEXP());
+        ExpBar.transform.parent.gameObject.SetActive(false);
+        ExpBar.fillAmount = 0;
+        //StartCoroutine(UpDateEXP());
     }
     bool attacking = false;
 
@@ -96,20 +99,28 @@ public class InGameActor : MonoBehaviour {
         if (!MyTurn) return;
 
         AITImer = 0;
-        Attack(GameManager.GM.Actors[0].actor, Skill.Base);
+        Attack(GameManager.GM.InGameActors[0].actor, Skill.Base);
 
     }
 
 
     Actor cachedactor;Item cacheditem; public SpriteRenderer OnActorItem;
-    public void _useItem(Actor to, Item t)
+
+    public void UseItem(Actor to, Item t)
     {
         if (anim[0].GetCurrentAnimatorStateInfo(0).IsName("UseItem")) return;
 
         anim[0].SetTrigger("UseItem");
 
-        GameManager.GM.ToggleTabMenu();
+        GameManager.GM.ShowTabMenu(false);
 
+
+        /* SHOW, DONT TELL.  THIS SHOULD BE REMOVE 
+         * 
+         * 
+         * 
+        if(to == actor)  GameManager.GiveInfo(actor.Name + " uses " + t.Name + " on itself.");
+        else GameManager.GiveInfo(actor.Name + " uses " + t.Name + " on " + to.Name);*/
         cachedactor = to;
         cacheditem = t;
         if (OnActorItem != null) OnActorItem.sprite = GameManager.LoadSprite(t.ResourcePath);
@@ -127,6 +138,8 @@ public class InGameActor : MonoBehaviour {
     {
 
         actor.TileWalkedThisTurn = 0;
+
+       if(sprity[0]!= null)
         sprity[0].color = Color.white;
         MyTurn = true;
 
@@ -184,12 +197,15 @@ public class InGameActor : MonoBehaviour {
 
         actor.Path.Clear();
 
-        GameManager.CurrentBattle.EndTurn();
-        GameManager.SelectedActor = null;
+        if (actor.IsDefeat) yield break;
+    
         sprity[0].color = Color.gray;
         timeSinceTurn = 0;
         attacking = false;
         print(actor.Name + " " + " ends his turn.");
+        GameManager.SelectedActor = null;
+        GameManager.CurrentBattle.EndTurn();
+    
         yield break;
     }
     IEnumerator UpDateEXP()
@@ -216,7 +232,7 @@ public class InGameActor : MonoBehaviour {
     {
         if (!CanPerformAction(b) || attacking) yield break;
        
-        if (!MyTurn) {
+        if (!MyTurn ||  actor.IsDefeat) {
             attacking = false;
             yield break;
         }
@@ -247,18 +263,27 @@ public class InGameActor : MonoBehaviour {
         a.OnDamage += OnDamage;
         a.OnKillActor += OnKillingSomone;
         Indicator.color = ActorColor;
+
+        isAI = !actor.Controllable;
+        if (a.AnimatorPath.Contains("~")) InverseSprite = true;
         this.name = actor.Name;
- 
+        Name = actor.Name;
         if (b) foreach (var item in anim) item.runtimeAnimatorController = b;
         
         actor.Heal();
     }
 
+    private void OnDestroy()
+    {
+        actor.OnTurn -= OnTurn;
+        actor.OnExpGain -= OnExpGain;
+        actor.OnDamage -= OnDamage;
+        actor.OnKillActor -= OnKillingSomone;
+    }
     private void OnKillingSomone(Actor a)
     {
         GameManager.CursorPos = a.TilePosition;
 
-        if (GameManager.CurrentBattle.Foes.Count == 0) EndTurn();
     }
 
     private void OnExpGain(float x)
@@ -280,7 +305,9 @@ public class InGameActor : MonoBehaviour {
             item.enabled = false;
 
         this.gameObject.SetActive(false);
-        
+        if (GameManager.CurrentBattle.Foes.Count == 0) GameManager.CurrentBattle.EndTurn();
+
+
     }
 
     public void InitializedActor(Actor a, string path = "")
