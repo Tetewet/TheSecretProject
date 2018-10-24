@@ -13,6 +13,7 @@ public class InGameItem : MonoBehaviour {
     }
     public void OnDisposed()
     {
+        GameManager.GM.InGameItems.Remove(this);
         Destroy(this.gameObject);
     }
     private void Start()

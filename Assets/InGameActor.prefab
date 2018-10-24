@@ -181,7 +181,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1891695873294512}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.01, y: -6.63, z: 0}
+  m_LocalPosition: {x: -8.962532, y: -6.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4678993137952010}
@@ -309,6 +309,7 @@ MonoBehaviour:
     END: 1
     EXPGain: 0
   OnActorItem: {fileID: 212504019604083746}
+  UIPrefab: {fileID: 1121437313290120, guid: e5aee91ed702015478fe9f6471be9791, type: 2}
 --- !u!114 &114332419729820768
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -342,7 +343,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1934368038603362}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
