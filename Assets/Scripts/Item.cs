@@ -43,7 +43,7 @@ public abstract class Item : IDisposable
         get {
             var g = new Gold("Gold", "Items/GOLD");
             g.rarity = Rarity.Common;
-            g.GoldValue = 5;
+            g.GoldValue = 1;
             g.Uses = 0;
             return g; }
     }
@@ -116,7 +116,14 @@ public class Equipement : Item
         return slot + " " + Name.ToString();
     }
 }
-
+public class Weapon : Equipement
+{
+    public Weapon(string Name, string Path) : base(Name, Path)
+    {
+    }
+    public DamageType DamageType;
+   
+}
 public class Consumeable : Item
 {
     public stat StatsBonus;

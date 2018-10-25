@@ -81,7 +81,7 @@ public abstract class Actor : IComparable<Actor> {
         get { return GameManager.CurrentBattle.Players.Contains(this); }
     }
     public const float BASEEXP = 10;
-    public string Name;
+    public string Name, AnimatorPath;
     public bool Controllable = true;
 
 
@@ -118,11 +118,14 @@ public abstract class Actor : IComparable<Actor> {
 
         Level++;
     }
-    public Actor(string Name, stat BaseStats, bool Controllable)
+
+    public Vector DefaultPos = new Vector(5, 2);
+    public Actor(string Name, stat BaseStats, bool Controllable, string AnimatorPath)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
         this.Controllable = Controllable;
+        this.AnimatorPath = AnimatorPath;
 
     }
 
@@ -139,22 +142,37 @@ public abstract class Actor : IComparable<Actor> {
     //Status
     public float HP = 10;
     public float MP = 10;
-    public int SP = 10;
+    public int SP = 10; 
+    public bool Defending = false;
     public void Heal()
     {
         HP = GetStats.MaximumHP;
         MP = GetStats.MaximumMP;
-
-        SP = 0;
+        Defending = false;
+        SP = 0;                     
     }
 
 
     //Stats
     protected stat baseStats = new stat();
-    public Profession Class = new Profession(new stat());
+    public Profession Class = new Profession(new stat()) { Skills = new Skill[3] {
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
+    }
+    };
     public stat GetStats
     {
-        get { return Class.GetBase + baseStats; }
+        get {
+            var t = Class.GetBase + baseStats;
+            if (inventory.Slot.Length > 0)        
+                foreach (var x in inventory.Slot)
+                {
+                    if (x.item != null)
+                        t += x.item.StatsBonus;
+                }
+ 
+            return t; }
     }
 
     public int RemainingPoint
@@ -207,9 +225,18 @@ public abstract class Actor : IComparable<Actor> {
         }
 
     }
+
+    public virtual void Equip(Equipement q)
+    {
+        foreach (var g in inventory.Slot)
+            if(g.item == null && g.SlotType == q.slot)
+                g.Equip(q);
+
+    }
     public void OnMurder(Actor a)
     {
         if (OnKillActor != null) OnKillActor(a);
+
     }
     public void Use(Item i, Actor T)
     {
@@ -225,6 +252,7 @@ public abstract class Actor : IComparable<Actor> {
         var i = x;
         if(f != null) 
         {
+            if (Defending) x *= .5f;
             if (f.Type == DamageType.Magical) x -= GetStats.MagDEF;
             else if (f.Type == DamageType.Physical) x -= GetStats.PhysDEF;
             if (x <= 0 && f.Type != DamageType.None)
@@ -267,6 +295,7 @@ public abstract class Actor : IComparable<Actor> {
     }
 
      public int tilewalked = 0;
+
     public int TileWalkedThisTurn = 0;
     public void Grab( Item a)
     {
@@ -307,14 +336,23 @@ public abstract class Actor : IComparable<Actor> {
     public virtual void Turn(Battle battle)
     {
         if (IsDefeat) return;
+        if (SP < 0) SP = 0;
+        if (Defending)
+        {
+            Defending = false;
+            battle.EndTurn();
+            return;
+        }
+       
+    
         //This turn
-        SP +=  3;
+        SP = GetStats.MaximumSP;
         this.TileWalkedThisTurn = 0;
         
-        if (SP > 10) SP = 10;
-        Battle.Turn ThisTurn = battle.ThisTurn;
+        if (SP > GetStats.MaximumSP) SP = GetStats.MaximumSP;
+       
         SpAvaillableThisTurn = SP;
-       if(OnTurn!=null) OnTurn(ThisTurn);
+       if(OnTurn!=null) OnTurn(battle.ThisTurn);
         //Act Here - Add logic for monster here             
         
     }
@@ -646,7 +684,7 @@ public class Skill
     public float Damage  = 1;
     protected float BaseCritChance = 5;
     public TargetType Targets;
-    
+    public bool Unlocked = false;
 
     //Requirement    
     public float MpCost =0, HpCost = 0;
@@ -665,14 +703,28 @@ public class Skill
             return e;
         }
     }
+    public static Skill Weapon(Weapon w)
+    {
+        
+            var e = new Skill();
+            e.Name = "Attack";
+            e.SpCost = 2;
+            e.Reach = 1;
+            e.Type = w.DamageType;
+            e.Damage = .5f;
+            e.Targets = TargetType.OneEnemy;
+            return e;
+        
+    }
     public virtual void Activate(Actor Target, stat Stats = new stat(), Actor f = null)
     {
      
         var x = Damage;
         if (Type == DamageType.Magical) x *=  Stats.INT;
         else if (Type == DamageType.Physical) x *= Stats.STR;
-        
-        if ((Stats.LUC * 2 + BaseCritChance) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
+
+     
+        if ((Stats.LUC * 2 + BaseCritChance + Stats.CriticalHitPercentage) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
 
             Target.TakeDamage(x,this,f);
     }
@@ -713,10 +765,20 @@ public struct stat : IComparable<stat>
     public int Priority;
     //For fine tuning targeting
     public int Threat;
+    public int DamageBonus, DefenseBonus;
     public float PhysDEF { get { return ( STR / 2 + END + AGI / 4)/2; } }
     public float MagDEF { get { return (INT + WIS * 2)/2; } }
     public float MaximumHP { get { if (END == 0) return 1; return END * 2; } }
     public float MaximumMP { get { return WIS * 5; } }
+    public float CriticalHitPercentage { get { return CriticalHitFlat + LUC; } }
+    public float CriticalHitFlat;
+    public int MaximumSP { get {
+
+            int a = 2;
+            a += (int)((STR + AGI + END + WIS + INT + LUC) / 22.8571428571);
+            if (a > 7) a = 7;
+            return a;
+        } }
 
     public int Magnitude { get { return (STR + AGI + END + WIS + INT + LUC) / 6; } }
 
@@ -808,8 +870,19 @@ public class Profession
     protected stat BaseStats;
     protected float ClassEXP = 0;
 
-    public Skill[] SkillList;
     
+    public Skill[] UsableSkill
+    {
+        get
+        {
+            var a = new List<Skill>();
+            foreach (var item in Skills)
+                if (item.Unlocked) a.Add(item);
+
+            return a.ToArray();
+        }
+    }
+    public Skill[] Skills;
     public void AddExp(float exp)
     {
         ClassEXP += exp;
