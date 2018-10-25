@@ -13,16 +13,18 @@ public class GameManager : MonoBehaviour {
     }
     public static BattleTile[,] Battlefied;
 
-    Image[] Inventory;
+    Image[] Inventory;GameObject[] Skills;
     public GridLayoutGroup grid, CharacterInventory;
     public Color GridColor;
     [Header("Templates")]
 
-
+    public BattleField[] Battlefields;
     public Text SpCostUI, InfoBar;
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
-    public GameObject panel, InventoryCeil, GameEnd;
+    public GameObject SkillsPrefab;
+    public GameObject panel, InventoryCeil;
+    public RectTransform GameEnd;
     public GameObject TabButtons, MiniMenu;
     public Text OnHover;
     public Animator Cursor;
@@ -30,6 +32,19 @@ public class GameManager : MonoBehaviour {
     public Vector3 CursorOffset;
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
+
+
+    AudioSource audi;
+
+    [System.Serializable]
+    public struct BattleField
+    {
+
+        public AudioClip[] Sounds;
+        public GameObject Map;
+
+    }
+
 
     public static InGameItem CreateNewItemOnField(Item i, Vector Position)
     {
@@ -53,7 +68,7 @@ public class GameManager : MonoBehaviour {
     };
     public List<InGameActor> InGameActors = new List<InGameActor>(), InGameFoes = new List<InGameActor>();
     public List<InGameItem> InGameItems = new List<InGameItem>();
-    
+
 
     public static InGameActor GenerateInGameActor(Actor f)
     {
@@ -64,58 +79,80 @@ public class GameManager : MonoBehaviour {
 
     public static void ClearBattle(Battle b)
     {
-        
+
         b.History.Clear();
         b.Foes.Clear();
         b.Players.Clear();
         b.map = null;
 
-       
+
     }
-    public static void StartBattle(Actor[] F , Map m)
+
+    void ClearActor()
+    {
+        foreach (var h in GM.InGameActors)
+            Destroy(h.gameObject);
+        foreach (var l in GM.InGameFoes)
+            Destroy(l.gameObject);
+
+        GM.InGameActors.Clear();
+        GM.InGameFoes.Clear();
+    }
+    public static void StartBattle(Actor[] F, Map m, int Map = 0)
     {
 
-       
+        Map = Mathf.Clamp(Map, 0, GM.Battlefields.Length - 1);
+        for (int i = 0; i < GM.Battlefields.Length; i++)
+            GM.Battlefields[i].Map.SetActive(false);
+        GM.Battlefields[Map].Map.SetActive(true);
+
+        GM.audi.clip = GM.Battlefields[Map].Sounds[0];
+        GM.audi.Play();
+
+
         if (CurrentBattle != null)
             ClearBattle(CurrentBattle);
 
         CurrentBattle = null;
-        GM.GameEnd.SetActive(false);
+        GM.GameEnd.gameObject.SetActive(false);
         GM.ShowTabMenu(false);
-
+        GM.GameEnd.transform.gameObject.SetActive(false);
         CurrentBattle = new Battle(Protags.ToArray(), F);
         CurrentBattle.BattlEnd += GM.OnBattleEnd;
         CurrentBattle.OnTurnEnd += GM.OnTurnEnd;
         CurrentBattle.map = m;
-   
+
         GM.GenerateMap(CurrentBattle.map);
 
         GM.OnHover.enabled = true;
- 
- 
-        foreach (var item in GM.InGameActors)
-            Destroy(item.gameObject);
-        foreach (var item in GM.InGameFoes)
-            Destroy(item.gameObject);
 
-        GM.InGameActors.Clear();
-        GM.InGameFoes.Clear();
+        GM.ClearActor();
+ 
 
-        foreach (var item in Protags)
-            GM.InGameActors.Add(GenerateInGameActor(item));
-        foreach (var item in F)
+        foreach (var h in Protags)
         {
-            GM.InGameFoes.Add(GenerateInGameActor(item));
-            item.AddGold(Random.Range(0, 5));
+            GM.InGameActors.Add(GenerateInGameActor(h));
+            h.SP = 0;
+        }
+           
+        foreach (var q in F)
+        {
+            GM.InGameFoes.Add(GenerateInGameActor(q));
+            q.AddGold(Random.Range(0, 5));
+        }
+
+
+        for (int i = 0; i < GM.InGameActors.Count; i++)
+            GM.InGameActors[i].actor.Teleport(CurrentBattle.map.AtPos(6 + i, 4));
+        for (int i = 0; i < GM.InGameFoes.Count; i++)
+        {
+            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3 + Random.Range(-2, 2)));
+            GM.InGameFoes[i].actor.Heal();
         }
            
 
-        for (int i = 0; i < GM.InGameActors.Count; i++)
-            GM.InGameActors[i].actor.Teleport(CurrentBattle.map.AtPos(11 + i, 4));
-        for (int i = 0; i < GM.InGameFoes.Count; i++)
-            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3));
 
-    
+
 
         CursorPos = new Vector(9, 4);
         GM.ShowGrid = false;
@@ -123,11 +160,22 @@ public class GameManager : MonoBehaviour {
 
         foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
         foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-
         CurrentBattle.StartNewTurn();
-        CurrentBattle.ActingThisTurn.Turn(CurrentBattle);
-    }
 
+
+        GM.StartCoroutine(GM.BattleStart());
+
+    }
+    IEnumerator BattleStart()
+    {
+        yield return new WaitForSeconds(.1f);
+        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
+        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
+        yield return new WaitForSeconds(1);
+        CurrentBattle.Paused = false;
+        CurrentBattle.Proceed();
+        yield break;
+    }
     /// <summary>
     /// Get the InGameActor from the Actor.
     /// </summary>
@@ -136,9 +184,9 @@ public class GameManager : MonoBehaviour {
     public static InGameActor GetInGameFromActor(Actor actor)
     {
         foreach (var item in GM.InGameActors)
-            if (item.actor == actor) { return item;  }
+            if (item.actor == actor) { return item; }
         foreach (var item in GM.InGameFoes)
-            if (item.actor == actor) { return item;   }
+            if (item.actor == actor) { return item; }
         return null;
     }
     /// <summary>
@@ -149,38 +197,45 @@ public class GameManager : MonoBehaviour {
         Inventory = new Image[100];
         for (int i = 0; i < Inventory.Length; i++)
             Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
-       
+
+        Skills = new GameObject[100];
+        for (int i = 0; i < Skills.Length; i++)
+            Skills[i] = Instantiate(SkillsPrefab,SkillList.transform);
 
     }
     private void Awake()
     {
         if (!GM) GM = this;
         else Destroy(this.gameObject);
-      //  DontDestroyOnLoad(this.gameObject);
- 
+       DontDestroyOnLoad(this.gameObject);
+        audi = GetComponent<AudioSource>();
+
     }
     public void Start()
     {
         GM.InitializeUI();
 
+        foreach (var item in Protags)
+        {
+            item.Heal();
+        }
         //14 6
-        StartBattle(new Monster[3] {
-            new Monster("Polka", new stat { AGI = 1 }, false, "Kuku~"){ },
-            new Monster("Jotu", new stat { AGI = 1 }, false, "Kuku~"),
-            new Monster("Dino", new stat { AGI = 1 }, false, "Kuku~") }     
-        , new Map(new Vector(38, 9)));
-        
-     
- 
+        var nGroup = new List<Monster>();
+        for (int i = 0; i < Random.Range(1, 5); i++)
+            nGroup.Add(new Monster("Kuku " + i, new stat { AGI = 1 }, false, "Kuku~"));
+        StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
+
+
+
 
         //Debug
 
-   
+
         CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11,5));
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
         CreateNewItemOnField(Item.Gold, new Vector(2, 5));
 
-       
+
 
     }
 
@@ -194,45 +249,122 @@ public class GameManager : MonoBehaviour {
         ResetGrid();
     }
 
-   /// <summary>
-   /// Called when the battle end
-   /// </summary>
+    /// <summary>
+    /// Called when the battle end
+    /// </summary>
     private void OnBattleEnd()
     {
         StartCoroutine(BattleEndTransition());
 
     }
 
+    public GridLayoutGroup Spoils;
+   List<GameObject> spoils_Inventory = new List<GameObject>();
+    public Text spoils_Gold, spoils_grade, spoils_BattleTime;
+
+    //THE END
     IEnumerator BattleEndTransition()
     {
-        GameEnd.SetActive(true);
-    
-        
-        yield return new WaitForSeconds(3);
+        GameEnd.anchorMax = new Vector2(0.5f,1);
+        GameEnd.anchorMin = new Vector2(0.5f,1);
+        GameEnd.anchoredPosition = Vector2.zero + Vector2.up * 25;
+ 
+        GameEnd.gameObject.SetActive(true);
+ 
+
+        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold"    ;
+        var s = CurrentBattle.BattleTime; var m = 0;
+        while ((s -60) > 0)
+        {
+            s -= 60;
+            m++;
+        }
+        spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");
+        spoils_BattleTime.enabled = false;
+        spoils_Gold.enabled = false;
+        spoils_grade.text = CurrentBattle.Grade;
+        spoils_grade.enabled = false;
+
+        ///Clean the inventory - We should spawn 100 at the start of 'em instead of doing this
+        var vx = spoils_Inventory;
+        for (int i = 0; i < vx.Count; i++)
+        {
+            if (vx[i] == Spoils.transform) continue;
+            Destroy(vx[i].gameObject);
+        }
+        spoils_Inventory.Clear();
+
+        for (int i = 0; i < 20; i++)
+        {
+
+            if (spoils_Inventory.Count >= 20) break;
+            if (i < InGameItems.Count && InGameItems[i])
+            {
+                Item.Inventory.Add(InGameItems[i].item);
+                var h = Instantiate(InventoryCeil, Spoils.transform).GetComponentInChildren<Image>();
+                h.sprite = LoadSprite(InGameItems[i].item.ResourcePath);
+                h.enabled = true;
+            
+                spoils_Inventory.Add(h.transform.parent.gameObject);
+                yield return new WaitForSeconds(.5f);
+                continue;
+            }
+            else
+            {
+     
+                var h = Instantiate(InventoryCeil, Spoils.transform);
+                spoils_Inventory.Add(h);
+                yield return new WaitForSeconds(.1f);
+            }
+
+        }
+        while (!Input.anyKey)
+        {
+            yield return new WaitForSeconds(.5f);
+            spoils_BattleTime.enabled = true;
+            yield return new WaitForSeconds(.5f);
+            spoils_Gold.enabled = true;
+            yield return new WaitForSeconds(1f);
+            spoils_grade.enabled = true;
+
+            break;
+        }
+        spoils_BattleTime.enabled = true;
+        spoils_Gold.enabled = true;
+        spoils_grade.enabled = true;
+        yield return new WaitForSeconds(2.5f);
+
         for (int i = 0; i < InGameItems.Count; i++)
         {
-            Item.Inventory.Add(InGameItems[i].item);
             Destroy(InGameItems[i].gameObject);
         }
+
+
+        GameEnd.gameObject.SetActive(false);
+    
         InGameItems.Clear();
+         
 
+        foreach (var item in Battlefields)
+            item.Map.gameObject.SetActive(false);
 
-        StartBattle(new Monster[3] {
-            new Monster("Polka", new stat { AGI = 1 }, false, "Kuku~"),
-            new Monster("Jotu", new stat { AGI = 1 }, false, "Kuku~"),
-            new Monster("Dino", new stat { AGI = 1 }, false, "Kuku~") }
-       , new Map(new Vector(38, 9)));
+        ClearActor();
+        //------------------------------------------------------
 
-       
-        GameEnd.SetActive(false);
+        var nGroup = new List<Monster>();
+        for (int i = 0; i < Random.Range(2, 5); i++)
+        {
+            nGroup.Add(new Monster("Kuku " + i, new stat { AGI = 1 }, false, "Kuku~"));
+        }
+        StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
         yield break;
     }
     float timer = 0;
     private void FixedUpdate()
     {
         timer += Time.fixedDeltaTime;
-        if (CurrentBattle != null) CurrentBattle.BattleTime += Time.fixedDeltaTime;
-       
+        if (CurrentBattle != null) CurrentBattle.BattleTime += Time.fixedUnscaledDeltaTime;
+
     }
 
     /// <summary>
@@ -256,40 +388,40 @@ public class GameManager : MonoBehaviour {
         yield break;
     }
 
-    public static List<Vector> PathUI = new List<Vector>( );
+    public static List<Vector> PathUI = new List<Vector>();
 
     /// <summary>
     /// Create a path toward a certain position from SelectedActor
     /// </summary>
     /// <param name="Position">Where.</param>
     /// <returns></returns>
-    public static int EstimathPath( Vector Position)
+    public static int EstimathPath(Vector Position)
     {
 
 
         var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
         GM.SpCostUI.enabled = SelectedActor != null;
-        if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null )
+        if (SelectedActor == null && CurrentBattle.ThisTurn.Order[0] == null)
         {
             GM.ResetGrid();
             return -1;
         }
-        
+
         PathUI.Clear();
-        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1 )
+        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1)
         {
-      
+
             for (int h = 0; h < Battlefied.GetLength(0); h++)
                 for (int j = 0; j < Battlefied.GetLength(1); j++)
-                    foreach (var ff in Battlefied[h, j].Sprite)               
+                    foreach (var ff in Battlefied[h, j].Sprite)
                         ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
             return ThisTurnPlayer.Path.Count;
         }
-      
-        if (SelectedActor == null || SelectedActor != ThisTurnPlayer   )
+
+        if (SelectedActor == null || SelectedActor != ThisTurnPlayer)
 
         { GM.ResetGrid(); return -1; }
- 
+
         int x = (int)(Position.x - SelectedActor.TilePosition.x);
         int y = (int)(Position.y - SelectedActor.TilePosition.y);
         var a = 1;
@@ -297,9 +429,9 @@ public class GameManager : MonoBehaviour {
         if (x < 0) a = -1;
         if (y < 0) b = -1;
 
-        var fs = SelectedActor.TileWalkedThisTurn ;
-        
-        var maximumtile =   (SelectedActor.GetStats.AGI * SelectedActor.SpAvaillableThisTurn ) - fs  ;
+        var fs = SelectedActor.TileWalkedThisTurn;
+
+        var maximumtile = (SelectedActor.GetStats.AGI * SelectedActor.SpAvaillableThisTurn) - fs;
 
         var xc = PathUI.Count <= maximumtile;
         var e = (int)(PathUI.Count / SelectedActor.GetStats.AGI);
@@ -317,10 +449,10 @@ public class GameManager : MonoBehaviour {
                 }
                 PathUI.Add(SelectedActor.TilePosition + Vector.right * i * a);
             }
-                for (int i = 1; i <= Mathf.Abs(y); i++)
-                {
-                    PathUI.Add(lastxpos + Vector.up * i * b);
-                }
+            for (int i = 1; i <= Mathf.Abs(y); i++)
+            {
+                PathUI.Add(lastxpos + Vector.up * i * b);
+            }
 
         }
         else
@@ -337,24 +469,24 @@ public class GameManager : MonoBehaviour {
                 PathUI.Add(SelectedActor.TilePosition + Vector.up * i * b);
 
             }
-           // if (PathUI.Count < maximumtile)
-                for (int i = 1; i <= Mathf.Abs(x); i++)
-                {
+            // if (PathUI.Count < maximumtile)
+            for (int i = 1; i <= Mathf.Abs(x); i++)
+            {
 
-                    PathUI.Add(lastypos + Vector.right * i * a);
-                
-                }
+                PathUI.Add(lastypos + Vector.right * i * a);
+
+            }
         }
 
 
-      
-        if(PathUI.Count != 0)  
-        if(PathUI.Count > maximumtile && PathUI.Count > 0)
-        while (PathUI.Count > maximumtile)
+
+        if (PathUI.Count != 0)
+            if (PathUI.Count > maximumtile && PathUI.Count > 0)
+                while (PathUI.Count > maximumtile)
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp" ;
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -369,7 +501,7 @@ public class GameManager : MonoBehaviour {
     /// <param name="Whom">The actor in question</param>
     /// <param name="where">The position in question</param>
     /// <returns></returns>
-    public static int EstimathPath(Actor Whom,Vector where)
+    public static int EstimathPath(Actor Whom, Vector where)
     {
 
 
@@ -483,7 +615,7 @@ public class GameManager : MonoBehaviour {
     /// <param name="t"> The tile in question</param>
     public void OnCursorEnter(Map.Tile t)
     {
-    
+
     }
     /// <summary>
     /// Called once the cursor exited a tile
@@ -492,17 +624,17 @@ public class GameManager : MonoBehaviour {
     public void OnCursorExit(Map.Tile t)
     {
 
-       
+
 
     }
-   
+
     /// <summary>
     /// Is called on Update
     /// </summary>
     /// <param name="t">The cursor in question</param>
     public void OnCursorUpdate(Map.Tile t)
     {
-      
+
         OnHover.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
         CharacterInventory.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null);
         Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
@@ -512,7 +644,7 @@ public class GameManager : MonoBehaviour {
             if (ActorAtCursor.IsDefeat) ActorAtCursor = null;
             if (SelectedActor != null)
             {
-                if(ActorAtCursor == SelectedActor)
+                if (ActorAtCursor == SelectedActor)
                 {
                     if (SelectedItem != null) ChangeGridColor(Color.magenta);
                     else ChangeGridColor(Color.gray);
@@ -520,23 +652,23 @@ public class GameManager : MonoBehaviour {
                 else if (ActorAtCursor != SelectedActor && !CurrentBattle.IsTeamWith(ActorAtCursor, SelectedActor)) ChangeGridColor(Color.red);
                 else if (CurrentBattle.IsTeamWith(ActorAtCursor, SelectedActor))
                 {
-                    if(SelectedItem != null) ChangeGridColor(Color.magenta);
+                    if (SelectedItem != null) ChangeGridColor(Color.magenta);
                     else ChangeGridColor(GridColor);
 
                 }
             }
             ShowUI(ActorAtCursor);
- 
+
         }
         else if (SelectedItem != null) {
             ShowUI(SelectedActor);
-            if (PathUI.Count ==1) ChangeGridColor(Color.cyan);
+            if (PathUI.Count == 1) ChangeGridColor(Color.cyan);
             else ChangeGridColor(Color.cyan + Color.blue);
 
         }
         else
         {
-            if(SelectedActor != null) ShowUI(SelectedActor);
+            if (SelectedActor != null) ShowUI(SelectedActor);
             ChangeGridColor(GridColor); }
 
         TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
@@ -548,8 +680,8 @@ public class GameManager : MonoBehaviour {
     /// <param name="a">Actor in question</param>
     public void ShowUI(Actor a)
     {
-        
-        if(a == null)
+
+        if (a == null)
         {
             print(a);
             return;
@@ -612,14 +744,14 @@ public class GameManager : MonoBehaviour {
     /// <param name="t"></param>
     public void OnPressed(Map.Tile t)
     {
-       
+
         var curtile = t;
 
         //Debug
         print("Tiles: " + curtile.Position + " Unity: " + CursorPos + " Actor: " + curtile.Actor);
 
 
-        
+
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
 
@@ -631,21 +763,21 @@ public class GameManager : MonoBehaviour {
             //if (SelectedActor.SP == 0 || SelectedItem == null || SelectedItem.Uses <= 0) StopInventory();
         }
 
-        if(Tabmenu) return;
+        if (Tabmenu) return;
 
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
-        if(SelectedActor != null)
-            if( CurrentBattle.ThisTurn.Order.Count > 0)
-        if(GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
-        {
-                var gig = GetInGameFromActor(SelectedActor);
-          if(curtile.Actor == null) SelectedActor.Move(curtile);
-          else { if (gig) gig.Attack(curtile.Actor,Skill.Base ); }
-        }
+        if (SelectedActor != null)
+            if (CurrentBattle.ThisTurn.Order.Count > 0)
+                if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
+                {
+                    var gig = GetInGameFromActor(SelectedActor);
+                    if (curtile.Actor == null) SelectedActor.Move(curtile);
+                    else { if (gig) gig.Attack(curtile.Actor, Skill.Base); }
+                }
 
-     
+
 
     }
     /// <summary>
@@ -653,14 +785,16 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     public void CameraUpdate()
     {
-        var campos = Cursor.transform.position;  
-    /*    if (SelectedActor != null)
-            campos = GetInGameFromActor(SelectedActor).transform.position ;*/
+        var campos = Cursor.transform.position;
+        /*    if (SelectedActor != null)
+                campos = GetInGameFromActor(SelectedActor).transform.position ;*/
 
-        if (Tabmenu) campos = Cam.transform.position;    
-        if(SelectedItem != null)
+        if (Tabmenu) campos = Cam.transform.position;
+        if (SelectedItem != null)
             campos = Cursor.transform.position;
         campos.z = Cam.transform.position.z;
+
+        if (freezeCam) campos = Cam.transform.position;
         Cam.transform.position = Vector3.Lerp(Cam.transform.position, campos, 10 * Time.smoothDeltaTime);
     }
 
@@ -678,30 +812,32 @@ public class GameManager : MonoBehaviour {
                 Position = MiniMenuBTN[TabChoice].transform.position + Vector3.right * 2;
             if (inventorySelected)
                 Position = Inventory[invUIItem].transform.position;
+            if (SkillsSelected)
+                Position = Skills[skillUI].transform.position;
             if (SelectedItem != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
         }
         else CursorPos = CurrentBattle.ActingThisTurn.TilePosition;
 
-      
-        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position  + CursorOffset, 9 * Time.smoothDeltaTime);
+
+        Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position + CursorOffset, 9 * Time.smoothDeltaTime);
 
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
-   
+
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
 
- 
 
-        if(CurrentBattle.IsPlayerTurn)if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null))
-        {
 
-            OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
-            var u = new Vector(h, -v);
-    
-            CursorPos += u;
-            timer = 0;
-            OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
-        }
+        if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null))
+            {
+
+                OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
+                var u = new Vector(h, -v);
+
+                CursorPos += u;
+                timer = 0;
+                OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
+            }
         EstimathPath(CursorPos);
         var curtile = CurrentBattle.map.AtPos(CursorPos);
         if (CurrentBattle.IsPlayerTurn)
@@ -727,7 +863,7 @@ public class GameManager : MonoBehaviour {
         MiniMenuLogic();
         CameraUpdate();
     }
- 
+
     /// <summary>
     /// Reset the Grid
     /// </summary>
@@ -737,8 +873,8 @@ public class GameManager : MonoBehaviour {
             foreach (var z in item.Sprite)
                 z.enabled = !GM.ShowGrid;
         PathUI.Clear();
-     
-        
+
+
     }
     /// <summary>
     /// Toggle the grid
@@ -778,7 +914,7 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Close or Open Tab Menu
     /// </summary>
-    public void ShowTabMenu(bool a )
+    public void ShowTabMenu(bool a)
     {
         Tabmenu = a;
         if (!HasSelectedActor) Tabmenu = false;
@@ -786,16 +922,19 @@ public class GameManager : MonoBehaviour {
         MiniMenu.gameObject.SetActive(Tabmenu);
         inventorySelected = false;
         SkillsSelected = false;
+        SkillList.SetActive(false);
         SelectedItem = null;
         if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
         TabChoice = 0;
+
+        if (!a) StartCoroutine(FreezeCamera(.5f));
     }
     /// <summary>
     /// ToggleTheTabMenu
     /// </summary>
     public void ToggleTabMenu()
     {
-      
+
         Tabmenu = !Tabmenu;
         ShowTabMenu(Tabmenu);
 
@@ -811,7 +950,7 @@ public class GameManager : MonoBehaviour {
 
         for (int i = 0; i < q.Length; i++)
             if (q[i] != grid.transform) Destroy(q[i].gameObject);
-        
+
 
 
         grid.constraintCount = t.Tiles.GetLength(0);
@@ -820,11 +959,11 @@ public class GameManager : MonoBehaviour {
         {
             for (int y = 0; y < t.Tiles.GetLength(1); y++)
             {
-               
+
                 var e = Instantiate(panel, grid.transform).GetComponent<BattleTile>();
                 e.tile = t.Tiles[x, y];
                 foreach (var item in e.Sprite)
-                {   
+                {
                     var z = GridColor;
                     z.a = item.color.a;
 
@@ -833,36 +972,55 @@ public class GameManager : MonoBehaviour {
                 var v = t.Tiles[x, y].Position;
                 Battlefied[x, y] = e;
                 //if (y < 5) e.tile.Heigth = 5;
-                    e.Value = new Vector2(v.x, v.y);
+                e.Value = new Vector2(v.x, v.y);
             }
-      
+
         }
         MapName = t.ToString();
     }
 
     int TabChoice = 0;
     public GameObject[] MiniMenuBTN;
+    public GameObject SkillList;
+    Skill SelectedSkill;
+    int skillUI = 0;
+    
     bool inventorySelected, SkillsSelected;
     int invUIItem = 0;
     Item SelectedItem;
+
+    bool freezeCam = false;
+    IEnumerator FreezeCamera(float f)
+    {
+        freezeCam = true;
+        yield return new WaitForSeconds(f);
+        freezeCam = false;
+        yield break;
+    }
+    
+    
     
     /// <summary>
     /// Logic about the menu - run on update
     /// </summary>
     void MiniMenuLogic()
     {
-        if (!Tabmenu || SelectedActor == null) return;
-        if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--; }
-        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; }
-        if (Input.GetKeyDown(KeyCode.A)) invUIItem--;
-        if (Input.GetKeyDown(KeyCode.D)) invUIItem++;
 
-            if (TabChoice > 2) TabChoice = 0;
-        if (TabChoice < 0) TabChoice = 2;
+        if (!Tabmenu || SelectedActor == null) return;
+        if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--;
+           skillUI--; }
+        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; skillUI++; }
+        if (Input.GetKeyDown(KeyCode.A)) { invUIItem--; if (TabChoice == 3) TabChoice = 0; }
+        if (Input.GetKeyDown(KeyCode.D)) { invUIItem++; if (TabChoice < 3) TabChoice = 3; ; } 
+
+            if (TabChoice > 3) TabChoice = 0;
+        if (TabChoice < 0) TabChoice = 3;
+        if (skillUI < 0) skillUI = SelectedActor.Class.UsableSkill.Length - 1;
+        if (skillUI > SelectedActor.Class.UsableSkill.Length - 1) skillUI = 0;
 
 
         invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length-1);
-        
+        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length);     
    
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -870,12 +1028,47 @@ public class GameManager : MonoBehaviour {
             {
                 var e = SelectedActor.inventory.items[invUIItem];
                 SelectedItem = e;
-                print(SelectedItem.Name + "is Selected");
+            
                 return;
             }
-            if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
-            
-        
+
+            if(SkillsSelected && SelectedActor.Class.UsableSkill[skillUI] != null && SelectedSkill == null )
+            {
+                var e  = SelectedActor.Class.UsableSkill[skillUI];
+                SelectedSkill = e;
+                return;
+            }
+            if (TabChoice == 0)
+            {
+                skillUI = 0;
+                SkillList.SetActive(true);
+                SkillsSelected = true;
+                for (int i = 0; i < Skills.Length; i++)
+                {
+                    if (i < SelectedActor.Class.UsableSkill.Length)
+                    {
+                        Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.Class.UsableSkill[i]);
+                        Skills[i].gameObject.SetActive(true);
+                    }
+                    else Skills[i].gameObject.SetActive(false);
+                }
+                SkillList.SetActive(true);
+            }
+            else if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
+            else if (TabChoice == 2 && SelectedActor.SP > 0) {
+              
+                GetInGameFromActor(SelectedActor).EnterDefenseMode();
+                ShowTabMenu(false);
+             
+            }
+            if (TabChoice == 3 && SelectedActor.SP > 0)
+            {
+
+                GetInGameFromActor(SelectedActor).EndTurn();
+                ShowTabMenu(false);
+            }
+
+
         }
 
         if (Input.GetKeyDown(KeyCode.Tab)){
@@ -892,6 +1085,7 @@ public class GameManager : MonoBehaviour {
 
     }
 
+    
     /// <summary>
     /// Close the Inventory
     /// </summary>

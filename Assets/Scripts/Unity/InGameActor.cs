@@ -20,6 +20,7 @@ public class InGameActor : MonoBehaviour {
     public bool InverseSprite = false;
     public float DistanceToPos;
     public bool isAI = false;
+    private Canvas cv;
 
     public bool MyTurn = false;
     // private Skill SkillToUse = null;
@@ -56,6 +57,7 @@ public class InGameActor : MonoBehaviour {
     }
     private void Awake()
     {
+        cv = GetComponentInChildren<Canvas>();
         //Debug
        /* if (OverrideStats)
         {
@@ -90,7 +92,7 @@ public class InGameActor : MonoBehaviour {
     {
         if (!isAI || !MyTurn) return;
         AITImer += Time.fixedDeltaTime;
-        if (AITImer > 1) EndTurn();
+        if (AITImer > .4f) EndTurn();
 
     }
     //Action and Attack
@@ -99,7 +101,7 @@ public class InGameActor : MonoBehaviour {
         if (!MyTurn) return;
 
         AITImer = 0;
-        Attack(GameManager.GM.InGameActors[0].actor, Skill.Base);
+        Attack(GameManager.GM.InGameActors[Random.Range(0,GameManager.Protags.Count)].actor, Skill.Base);
 
     }
 
@@ -185,10 +187,19 @@ public class InGameActor : MonoBehaviour {
     /// <summary>
     /// Ends the turn officially. Do not use _OnTurn
     /// </summary>
-    private void EndTurn()
+
+    public void EndTurn()
     {
         MyTurn = false;
         StartCoroutine(_EndTurn());
+    }
+
+    public void EnterDefenseMode()
+    {
+
+        actor.SP--;
+        actor.Defending = true;
+        EndTurn();
     }
     private IEnumerator _EndTurn()
     {
@@ -242,12 +253,18 @@ public class InGameActor : MonoBehaviour {
         tempattack = b;
         temptarget = a;
         actor.Move(a.TilePosition, true);
-        while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
+        // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
+        while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
         {
+            if (!MyTurn)
+            {
+                attacking = false;
+                yield break;
+            }
             yield return null;
         }
         TurnSprite((temptarget.TilePosition - actor.TilePosition).x < 0);
-        yield return new WaitForSeconds(.1f);
+        yield return new WaitForSeconds(.3f);
         foreach (var item in anim) item.SetTrigger(b.Type.ToString());
         attacking = false;
         yield break;
@@ -270,7 +287,8 @@ public class InGameActor : MonoBehaviour {
         Name = actor.Name;
         if (b) foreach (var item in anim) item.runtimeAnimatorController = b;
         
-        actor.Heal();
+ 
+     
     }
 
     private void OnDestroy()
@@ -291,12 +309,36 @@ public class InGameActor : MonoBehaviour {
         StartCoroutine(UpDateEXP());
     }
 
+    public GameObject UIPrefab;
     private void OnDamage(float z, Skill x)
     {
         if(!actor.IsDefeat)
         anim[0].SetTrigger("Attacked");          
         else anim[0].SetTrigger("IsDeath");
 
+        StartCoroutine(ShowDamage(z));
+
+    }
+    IEnumerator ShowDamage(float z)
+    {
+        float x = 0;
+        var b = Instantiate(UIPrefab, cv.transform ).GetComponent<Text>();
+
+        b.transform.position += Vector3.down;
+        
+        if (z > 0) b.color = Color.red;
+        else if (z < 0) b.color = Color.green;
+        else b.color = Color.white;
+        b.text = z.ToString("0");
+        while (x < 1f)
+        {
+            b.transform.position += Vector3.up * Time.smoothDeltaTime;
+            x += Time.fixedDeltaTime;
+            yield return null;
+        }
+        yield return new WaitForSeconds(.5f);
+        Destroy(b);
+        yield break;
     }
 
     public void SetDeath()
@@ -330,6 +372,8 @@ public class InGameActor : MonoBehaviour {
   
         if(MyTurn)
         StupidAI();
+
+        if(actor!=null)
         ActorStats = new InGameActorStats(actor.GetStats);
     }
 
@@ -383,6 +427,7 @@ public class InGameActor : MonoBehaviour {
     
         foreach (var item in anim)
             item.SetBool("Walking", walking);
+        anim[0].SetBool("Defend",actor.Defending);
         var g = transform.position.x - e.transform.position.x;
 
         for (int i = 0; i < sprity.Length; i++)

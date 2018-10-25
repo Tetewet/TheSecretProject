@@ -116,7 +116,14 @@ public class Equipement : Item
         return slot + " " + Name.ToString();
     }
 }
-
+public class Weapon : Equipement
+{
+    public Weapon(string Name, string Path) : base(Name, Path)
+    {
+    }
+    public DamageType DamageType;
+   
+}
 public class Consumeable : Item
 {
     public stat StatsBonus;
