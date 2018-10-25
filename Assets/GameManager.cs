@@ -101,6 +101,7 @@ public class GameManager : MonoBehaviour {
     public static void StartBattle(Actor[] F, Map m, int Map = 0)
     {
 
+        GM.Cursor.gameObject.SetActive(true);
         Map = Mathf.Clamp(Map, 0, GM.Battlefields.Length - 1);
         for (int i = 0; i < GM.Battlefields.Length; i++)
             GM.Battlefields[i].Map.SetActive(false);
@@ -210,6 +211,9 @@ public class GameManager : MonoBehaviour {
        DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
+
+        Protags[0].Class = Profession.Madoshi;
+
     }
     public void Start()
     {
@@ -254,6 +258,7 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     private void OnBattleEnd()
     {
+        GM.Cursor.gameObject.SetActive(false);
         StartCoroutine(BattleEndTransition());
 
     }
@@ -294,17 +299,18 @@ public class GameManager : MonoBehaviour {
         }
         spoils_Inventory.Clear();
 
+        var e = InGameItems.Count;
         for (int i = 0; i < 20; i++)
         {
 
             if (spoils_Inventory.Count >= 20) break;
-            if (i < InGameItems.Count && InGameItems[i])
+            if (i < e && InGameItems[i])
             {
                 Item.Inventory.Add(InGameItems[i].item);
                 var h = Instantiate(InventoryCeil, Spoils.transform).GetComponentInChildren<Image>();
                 h.sprite = LoadSprite(InGameItems[i].item.ResourcePath);
                 h.enabled = true;
-            
+                InGameItems[i].gameObject.SetActive(false);
                 spoils_Inventory.Add(h.transform.parent.gameObject);
                 yield return new WaitForSeconds(.5f);
                 continue;
@@ -337,7 +343,7 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < InGameItems.Count; i++)
         {
             Destroy(InGameItems[i].gameObject);
-        }
+        } 
 
 
         GameEnd.gameObject.SetActive(false);
@@ -382,7 +388,8 @@ public class GameManager : MonoBehaviour {
     IEnumerator _ShowInfo()
     {
         InfoBar.transform.parent.gameObject.SetActive(true);
-        yield return new WaitForSeconds(1);
+        StartCoroutine(_freezecam(.5f));
+        yield return new WaitForSeconds(1f);
         InfoBar.transform.parent.gameObject.SetActive(false);
 
         yield break;
@@ -600,6 +607,104 @@ public class GameManager : MonoBehaviour {
 
         return PathUI.Count;
     }
+    public static int EstimathPath(Actor Whom, Vector where, int maximum)
+    {
+
+
+        var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
+        if (Whom == null && CurrentBattle.ThisTurn.Order[0] == null)
+        {
+            GM.ResetGrid();
+            return -1;
+        }
+
+        PathUI.Clear();
+        if (ThisTurnPlayer != null && ThisTurnPlayer.Path.Count > 1)
+        {
+
+            for (int h = 0; h < Battlefied.GetLength(0); h++)
+                for (int j = 0; j < Battlefied.GetLength(1); j++)
+                    foreach (var ff in Battlefied[h, j].Sprite)
+                        ff.enabled = ThisTurnPlayer.Path.Contains(Battlefied[h, j].tile.Position);
+            return ThisTurnPlayer.Path.Count;
+        }
+
+        if (Whom == null || Whom != ThisTurnPlayer)
+
+        { GM.ResetGrid(); return -1; }
+
+        int x = (int)(where.x - Whom.TilePosition.x);
+        int y = (int)(where.y - Whom.TilePosition.y);
+        var a = 1;
+        var b = 1;
+        if (x < 0) a = -1;
+        if (y < 0) b = -1;
+ 
+
+        var maximumtile = maximum;
+
+        var xc = PathUI.Count <= maximumtile;
+        var e = (int)(PathUI.Count / Whom.GetStats.AGI);
+        if (Mathf.Abs(x) > Mathf.Abs(y) || CurrentBattle.map.AtPos(Whom.TilePosition + Vector.up * b).Actor != null)
+        {
+
+            var lastxpos = Whom.TilePosition + Vector.right * x;
+            for (int i = 1; i <= Mathf.Abs(x) && xc; i++)
+            {
+
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastxpos = Whom.TilePosition + Vector.right * i * a;
+                    break;
+                }
+                PathUI.Add(Whom.TilePosition + Vector.right * i * a);
+            }
+            for (int i = 1; i <= Mathf.Abs(y); i++)
+            {
+                PathUI.Add(lastxpos + Vector.up * i * b);
+            }
+
+        }
+        else
+        {
+            var lastypos = Whom.TilePosition + Vector.up * y;
+
+            for (int i = 1; i <= Mathf.Abs(y) && xc; i++)
+            {
+                if (PathUI.Count >= maximumtile)
+                {
+                    lastypos = Whom.TilePosition + Vector.up * i * b;
+                    break;
+                }
+                PathUI.Add(Whom.TilePosition + Vector.up * i * b);
+
+            }
+            // if (PathUI.Count < maximumtile)
+            for (int i = 1; i <= Mathf.Abs(x); i++)
+            {
+
+                PathUI.Add(lastypos + Vector.right * i * a);
+
+            }
+        }
+
+
+
+        if (PathUI.Count != 0)
+            if (PathUI.Count > maximumtile && PathUI.Count > 0)
+                while (PathUI.Count > maximumtile)
+                    if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
+
+
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
+
+        for (int h = 0; h < Battlefied.GetLength(0); h++)
+            for (int j = 0; j < Battlefied.GetLength(1); j++)
+                foreach (var ff in Battlefied[h, j].Sprite)
+                    ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
+
+        return PathUI.Count;
+    }
 
     /// <summary>
     /// Set the current SelectedActor
@@ -647,6 +752,7 @@ public class GameManager : MonoBehaviour {
                 if (ActorAtCursor == SelectedActor)
                 {
                     if (SelectedItem != null) ChangeGridColor(Color.magenta);
+
                     else ChangeGridColor(Color.gray);
                 }
                 else if (ActorAtCursor != SelectedActor && !CurrentBattle.IsTeamWith(ActorAtCursor, SelectedActor)) ChangeGridColor(Color.red);
@@ -665,6 +771,11 @@ public class GameManager : MonoBehaviour {
             if (PathUI.Count == 1) ChangeGridColor(Color.cyan);
             else ChangeGridColor(Color.cyan + Color.blue);
 
+        }
+        else if (SelectedSkill != null)
+        {
+            ShowUI(SelectedActor);
+            ChangeGridColor(Color.yellow);
         }
         else
         {
@@ -754,13 +865,29 @@ public class GameManager : MonoBehaviour {
 
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
-
-            GetInGameFromActor(SelectedActor).UseItem(SelectedActor, SelectedItem);
+            GetInGameFromActor(SelectedActor).UseItem(curtile.Actor, SelectedItem);
             CloseInventory();
+        }
+        else
+        if (HasSelectedActor && curtile.Actor != null && SelectedSkill != null)
+        {
+            if (GameManager.EstimathPath(SelectedActor, GameManager.CursorPos, 99) > SelectedSkill.Reach)
+            {
+                GiveInfo("Can't reach there");
+                return;}
+            else
+            {
+                GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
+                CloseInventory();
+            }
+            
 
-            //  SelectedActor.Use(SelectedItem,SelectedActor);
-            //  SelectedActor.ConsumeSP(1);
-            //if (SelectedActor.SP == 0 || SelectedItem == null || SelectedItem.Uses <= 0) StopInventory();
+            
+        }
+        else if(HasSelectedActor && SelectedSkill != null)
+        {
+            GiveInfo("No targets!");
+            return;
         }
 
         if (Tabmenu) return;
@@ -770,7 +897,7 @@ public class GameManager : MonoBehaviour {
 
         if (SelectedActor != null)
             if (CurrentBattle.ThisTurn.Order.Count > 0)
-                if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
+                if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable && Actor.CanUseSkill(Skill.Base,SelectedActor))
                 {
                     var gig = GetInGameFromActor(SelectedActor);
                     if (curtile.Actor == null) SelectedActor.Move(curtile);
@@ -790,7 +917,7 @@ public class GameManager : MonoBehaviour {
                 campos = GetInGameFromActor(SelectedActor).transform.position ;*/
 
         if (Tabmenu) campos = Cam.transform.position;
-        if (SelectedItem != null)
+        if (SelectedItem != null || SelectedSkill != null)
             campos = Cursor.transform.position;
         campos.z = Cam.transform.position.z;
 
@@ -814,7 +941,8 @@ public class GameManager : MonoBehaviour {
                 Position = Inventory[invUIItem].transform.position;
             if (SkillsSelected)
                 Position = Skills[skillUI].transform.position;
-            if (SelectedItem != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
+                
+            if (SelectedItem != null || SelectedSkill != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
         }
         else CursorPos = CurrentBattle.ActingThisTurn.TilePosition;
 
@@ -828,7 +956,7 @@ public class GameManager : MonoBehaviour {
 
 
 
-        if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null))
+        if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
 
                 OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
@@ -838,7 +966,12 @@ public class GameManager : MonoBehaviour {
                 timer = 0;
                 OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
             }
-        EstimathPath(CursorPos);
+
+        if(SelectedSkill != null)
+            EstimathPath(SelectedActor,CursorPos, 99);
+        else 
+            EstimathPath(CursorPos);
+
         var curtile = CurrentBattle.map.AtPos(CursorPos);
         if (CurrentBattle.IsPlayerTurn)
         {
@@ -853,7 +986,7 @@ public class GameManager : MonoBehaviour {
             {
                 print(CurrentBattle.map);
             }
-            if (Input.GetKeyDown(KeyCode.Tab))
+            if (Input.GetKeyDown(KeyCode.Tab) && (!inventorySelected && !SkillsSelected))
             {
                 ToggleTabMenu();
             }
@@ -917,7 +1050,7 @@ public class GameManager : MonoBehaviour {
     public void ShowTabMenu(bool a)
     {
         Tabmenu = a;
-        if (!HasSelectedActor) Tabmenu = false;
+        if (!HasSelectedActor || (HasSelectedActor && SelectedActor != CurrentBattle.ActingThisTurn) ) Tabmenu = false;
         TabButtons.SetActive(!Tabmenu && SelectedActor != null);
         MiniMenu.gameObject.SetActive(Tabmenu);
         inventorySelected = false;
@@ -927,7 +1060,7 @@ public class GameManager : MonoBehaviour {
         if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
         TabChoice = 0;
 
-        if (!a) StartCoroutine(FreezeCamera(.5f));
+        if (!a) StartCoroutine(_freezecam(.5f));
     }
     /// <summary>
     /// ToggleTheTabMenu
@@ -990,7 +1123,7 @@ public class GameManager : MonoBehaviour {
     Item SelectedItem;
 
     bool freezeCam = false;
-    IEnumerator FreezeCamera(float f)
+    IEnumerator _freezecam(float f)
     {
         freezeCam = true;
         yield return new WaitForSeconds(f);
@@ -998,8 +1131,11 @@ public class GameManager : MonoBehaviour {
         yield break;
     }
     
-    
-    
+    public void ActionFreeze()
+    {
+        StartCoroutine(_freezecam(1.2f));
+    }
+
     /// <summary>
     /// Logic about the menu - run on update
     /// </summary>
@@ -1008,20 +1144,48 @@ public class GameManager : MonoBehaviour {
 
         if (!Tabmenu || SelectedActor == null) return;
         if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--;
-           skillUI--; }
+            skillUI--; }
         if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; skillUI++; }
         if (Input.GetKeyDown(KeyCode.A)) { invUIItem--; if (TabChoice == 3) TabChoice = 0; }
-        if (Input.GetKeyDown(KeyCode.D)) { invUIItem++; if (TabChoice < 3) TabChoice = 3; ; } 
+        if (Input.GetKeyDown(KeyCode.D)) { invUIItem++; if (TabChoice < 3) TabChoice = 3; ; }
 
-            if (TabChoice > 3) TabChoice = 0;
+        if (TabChoice > 3) TabChoice = 0;
         if (TabChoice < 0) TabChoice = 3;
         if (skillUI < 0) skillUI = SelectedActor.Class.UsableSkill.Length - 1;
         if (skillUI > SelectedActor.Class.UsableSkill.Length - 1) skillUI = 0;
 
 
-        invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length-1);
-        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length);     
-   
+        invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length);
+
+
+
+        if(Tabmenu)
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            if (inventorySelected)
+            {
+                    
+
+                    if (SelectedItem != null) SelectedItem = null;
+                else if (inventorySelected) inventorySelected = false;
+                else CloseInventory();
+            }
+            else if ( SkillsSelected)
+            {
+
+
+                    if (SelectedSkill != null) { SkillList.SetActive(true); SelectedSkill = null; } 
+                else if (SkillsSelected) SkillsSelected = false;
+                else CloseInventory();
+
+            }
+
+
+        }
+
+
+        if(SelectedSkill == null && SelectedItem == null)
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null &&  SelectedItem == null)
@@ -1031,17 +1195,21 @@ public class GameManager : MonoBehaviour {
             
                 return;
             }
-
+            else
             if(SkillsSelected && SelectedActor.Class.UsableSkill[skillUI] != null && SelectedSkill == null )
             {
                 var e  = SelectedActor.Class.UsableSkill[skillUI];
+                if (PathUI.Count > 0)
+                    PathUI.Clear();
+
+                StartCoroutine(_freezecam(.4f));
                 SelectedSkill = e;
                 return;
             }
             if (TabChoice == 0)
             {
                 skillUI = 0;
-                SkillList.SetActive(true);
+           
                 SkillsSelected = true;
                 for (int i = 0; i < Skills.Length; i++)
                 {
@@ -1071,13 +1239,7 @@ public class GameManager : MonoBehaviour {
 
         }
 
-        if (Input.GetKeyDown(KeyCode.Tab)){
-            if (SelectedItem == null)
-                CloseInventory();
-            else SelectedItem = null;
-
-
-        }
+ 
         //Inventory
       
 
@@ -1089,13 +1251,18 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// Close the Inventory
     /// </summary>
-    public void CloseInventory()
+    void CloseInventory()
     {
+        StartCoroutine(_freezecam(.2f));
+        skillUI = 0;
+        SkillsSelected = false;
+        SelectedSkill = null;
         SelectedItem = null;
         inventorySelected = false;
         invUIItem = 0;
     }
-
+    
+ 
     /// <summary>
     /// Return true if there is a actor selected
     /// </summary>

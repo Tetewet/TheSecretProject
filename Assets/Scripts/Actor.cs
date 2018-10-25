@@ -209,6 +209,33 @@ public abstract class Actor : IComparable<Actor> {
         foreach (var item in Target) s.Activate(item, GetStats, this);
 
     }
+
+    public static bool CanUseSkill(Skill s,Actor t)
+    {
+        if (t.HP < s.HpCost)
+        { UnityEngine.Debug.Log(t.Name + " not enough HP :" + t.HP + "/" + s.HpCost); return false; }
+
+        if (t.MP < s.MpCost)  
+          { UnityEngine.Debug.Log(t.Name + " not enough MP: " + t.MP + "/" + s.MpCost); return false; }
+
+        if (t.SP < s.SpCost) 
+        { UnityEngine.Debug.Log(t.Name + " not enough SP: " + t.SP + "/" + s.SpCost); return false; }
+        return true;
+
+    }
+    public virtual void Use(Skill s, Actor Target)
+    {
+
+        if (!CanUseSkill(s,this)) return;
+
+        if (s.HpCost > 0) TakeDamage(s.HpCost);
+        if (s.MpCost > 0) ConsumeMP(s.MpCost);
+        if (s.SpCost > 0) ConsumeSP(s.SpCost);
+
+        UnityEngine.Debug.Log(Name + " uses " + s.Name);
+         s.Activate(Target, GetStats, this);
+
+    }
     public virtual void Use(Item i, Actor[] T)
     {
         i.Uses--;
@@ -445,7 +472,7 @@ public abstract class Actor : IComparable<Actor> {
         for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
         for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
         */
-
+        
 
         if (Math.Abs(x) > Math.Abs(y) || GameManager.CurrentBattle.map.AtPos(TilePosition + Vector.up * b).Actor != null)
         {
@@ -677,6 +704,7 @@ public class Skill
     }
 
     static Random SkillRandom = new Random();
+    public string EffectPath = "" ;
     public string Name ="";
     public DamageType Type;
     public int Reach = 1;
@@ -687,6 +715,10 @@ public class Skill
     public bool Unlocked = false;
 
     //Requirement    
+    public Skill(string path = "")
+    {
+        EffectPath = path;
+    }
     public float MpCost =0, HpCost = 0;
     public int SpCost = 0;
     public static Skill Base {
@@ -869,12 +901,34 @@ public class Profession
     protected stat BaseStats;
     protected float ClassEXP = 0;
 
-    
+    public static Profession Madoshi
+    {
+        get
+        {
+            var p = new Profession(new stat { INT = 2, WIS = 1, Threat = 5, DefenseBonus = -1 }, "Madoshi");
+            p.Skills = 
+                new Skill[1] {
+                    new Skill
+                    { Name = "Fireball",
+                        Damage = .25f,
+                        Type = DamageType.Magical,
+                        SpCost = 2, Reach = 5,
+                        Unlocked = true, MpCost = 15,
+                        Targets = Skill.TargetType.OneEnemy }
+                };
+
+            return p;
+
+        }
+
+
+    }
     public Skill[] UsableSkill
     {
         get
         {
             var a = new List<Skill>();
+            
             foreach (var item in Skills)
                 if (item.Unlocked) a.Add(item);
 
