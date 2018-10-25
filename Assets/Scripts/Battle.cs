@@ -10,7 +10,6 @@ public class Battle{
     public event OnBattleEndHandler BattlEnd, OnTurnEnd;
     public float BattleTime = 0;
     public int GoldEarnedThisBattle = 0;
-    bool Ended = false;
     public virtual string Grade
     {
         get
@@ -112,7 +111,6 @@ public class Battle{
    
     public void EndTurn()
     {
-        if (Ended) return;
         if (!OnGoing)
         {
             OnBattleEnd();
@@ -152,13 +150,7 @@ public class Battle{
     }
     public void OnBattleEnd()
     {
-        if (!Ended)
-        {
-            BattlEnd();
-            Ended = true;
-        }
-       
-
+        BattlEnd();
         UnityEngine.Debug.Log("Battle ended");
     }
     public bool OnGoing
