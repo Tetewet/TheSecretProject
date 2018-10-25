@@ -677,7 +677,8 @@ public enum DamageType
     Physical =1,
     Magical =2,
     Pierce = 3,
-    
+    Slashing = 4,
+    Blunt = 5
 }
 /// <summary>
 /// Stats of any living being.
