@@ -98,6 +98,8 @@ public class InGameActor : MonoBehaviour {
     //Action and Attack
     public void AI(Battle.Turn Turn = null)
     {
+
+        
         if (!MyTurn) return;
 
         AITImer = 0;
@@ -127,6 +129,26 @@ public class InGameActor : MonoBehaviour {
         cacheditem = t;
         if (OnActorItem != null) OnActorItem.sprite = GameManager.LoadSprite(t.ResourcePath);
     }
+    public void UseSkill(Actor to, Skill s)
+    {
+        var r = s.Targets;
+        if (!Actor.CanUseSkill(s, actor)) { Error("Not enough ressource");return; }
+
+        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
+        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
+        if (r == Skill.TargetType.Self && to != null) { Error("Can only target yourself"); return; }
+
+
+        TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
+        GameManager.GM.ActionFreeze();
+        actor.Use(s, to);
+        GameManager.GM.ShowTabMenu(false);
+    }
+    void Error(string s)
+    {
+        GameManager.GiveInfo(s);
+    }
+
     public void AnimatorUseItem()
     {
         GameManager.GM.ShowUI(cachedactor);
@@ -135,7 +157,11 @@ public class InGameActor : MonoBehaviour {
         GameManager.SetActor(actor);
         
     }
-
+    
+    /// <summary>
+    /// Is called once at the start of the turn
+    /// </summary>
+    /// <param name="Turn"></param>
     public void OnTurn(Battle.Turn Turn)
     {
 
@@ -153,9 +179,11 @@ public class InGameActor : MonoBehaviour {
 
         }
         else AI(Turn);
-
+        
 
     }
+
+    
     public bool CanPerformAction(Skill s)
     {
         if (actor.HP < s.HpCost) { print("Not enough HP: " + actor.HP + "/" + s.HpCost); return false; }
@@ -166,7 +194,13 @@ public class InGameActor : MonoBehaviour {
     }
     public void Attack(Actor a, Skill b)
     {
-        if (MyTurn) StartCoroutine(InitiateAttack(a, b));
+        if (MyTurn)
+        {
+            normattack = InitiateAttack(a, b);
+            StartCoroutine(normattack);
+        }
+
+          
     }
     /// <summary>
     /// Used by the Animation. Will Ends the Turn
@@ -184,6 +218,17 @@ public class InGameActor : MonoBehaviour {
 
 
     }
+
+    void StopAttacking()
+    {
+        if (normattack != null)
+        {
+            StopCoroutine(normattack);
+            attacking = false;
+            tempattack = null;
+            temptarget = null;
+        }
+    }
     /// <summary>
     /// Ends the turn officially. Do not use _OnTurn
     /// </summary>
@@ -191,6 +236,8 @@ public class InGameActor : MonoBehaviour {
     public void EndTurn()
     {
         MyTurn = false;
+
+        StopAttacking();
         StartCoroutine(_EndTurn());
     }
 
@@ -203,7 +250,7 @@ public class InGameActor : MonoBehaviour {
     }
     private IEnumerator _EndTurn()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(.5f);
         if (isAI) yield return new WaitForSeconds(.5f);
 
         actor.Path.Clear();
@@ -239,6 +286,8 @@ public class InGameActor : MonoBehaviour {
     }
     private Skill tempattack;
     Actor temptarget;
+
+    IEnumerator normattack;
     public IEnumerator InitiateAttack(Actor a, Skill b)
     {
         if (!CanPerformAction(b) || attacking) yield break;
@@ -253,9 +302,31 @@ public class InGameActor : MonoBehaviour {
         tempattack = b;
         temptarget = a;
         actor.Move(a.TilePosition, true);
+       
+        foreach (var item in GameManager.PathUI)
+        {
+            if (GameManager.CurrentBattle.map.AtPos(item).Actor != null)
+            {
+                var f = GameManager.CurrentBattle.map.AtPos(item).Actor;
+                if (f == actor) continue;
+                if (f == a) continue;
+
+                if (f != actor || f != a)
+                {
+                    attacking = false;
+                    tempattack = null;
+                    temptarget = null;
+                    yield break;
+                }
+                
+
+            }
+      
+        }
         // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
         while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
         {
+            
             if (!MyTurn)
             {
                 attacking = false;
@@ -265,7 +336,9 @@ public class InGameActor : MonoBehaviour {
         }
         TurnSprite((temptarget.TilePosition - actor.TilePosition).x < 0);
         yield return new WaitForSeconds(.3f);
-        foreach (var item in anim) item.SetTrigger(b.Type.ToString());
+
+        if (Actor.CanUseSkill(Skill.Base, actor))       
+            foreach (var item in anim) item.SetTrigger(b.Type.ToString());
         attacking = false;
         yield break;
     }
@@ -274,6 +347,7 @@ public class InGameActor : MonoBehaviour {
     //Actor Related - Can Swap Actor on a whim
     public void InitializedActor(Actor a, RuntimeAnimatorController b =null )
     {
+        
         actor = a;
         a.OnTurn += OnTurn;
         a.OnExpGain += OnExpGain;
@@ -298,6 +372,36 @@ public class InGameActor : MonoBehaviour {
         actor.OnDamage -= OnDamage;
         actor.OnKillActor -= OnKillingSomone;
     }
+
+    IEnumerator ColorBlink(Color c, float x)
+    {
+        var e = new Color[sprity.Length];
+        
+        for (int i = 0; i < sprity.Length; i++)
+            e[i] = sprity[i].color;
+
+        foreach (var item in sprity)
+        {
+            item.color = c;
+        }
+        yield return new WaitForSeconds(x/2);
+        var v = 0f;
+        while (v < x/2)
+        {
+            for (int i = 0; i < sprity.Length; i++)
+                sprity[i].color = Color.Lerp(sprity[i].color, e[i], 5* Time.smoothDeltaTime);
+
+            v += Time.fixedDeltaTime;
+            yield return null;
+        }
+    
+      
+
+        for (int i = 0; i < sprity.Length; i++)
+            sprity[i].color = e[i];
+
+        yield break;
+    }
     private void OnKillingSomone(Actor a)
     {
         GameManager.CursorPos = a.TilePosition;
@@ -315,7 +419,7 @@ public class InGameActor : MonoBehaviour {
         if(!actor.IsDefeat)
         anim[0].SetTrigger("Attacked");          
         else anim[0].SetTrigger("IsDeath");
-
+        StartCoroutine(ColorBlink(Color.red,.1f));
         StartCoroutine(ShowDamage(z));
 
     }

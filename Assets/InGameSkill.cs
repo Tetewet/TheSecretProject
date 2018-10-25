@@ -6,13 +6,20 @@ using UnityEngine.UI;
 
 public class InGameSkill : MonoBehaviour {
 
-
+ 
     public Text Cost,Name;
 
     Skill s;
-    public Skill UseSKill
+    public Skill getSkill
     {
         get { return s; }
+    }
+    public void UseSkill(InGameActor Target, InGameActor Whom)
+    {
+
+    
+    
+
     }
 
     public void ShowSkill(Skill c)
