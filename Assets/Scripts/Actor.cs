@@ -76,11 +76,20 @@ public struct Vector
 
 public abstract class Actor : IComparable<Actor> {
 
-
-    public const float BASEEXP = 100;
-    public string Name;
+    public bool IsInPlayerTeam
+    {
+        get { return GameManager.CurrentBattle.Players.Contains(this); }
+    }
+    public const float BASEEXP = 10;
+    public string Name, AnimatorPath;
     public bool Controllable = true;
+
+
     //Level
+    public delegate void OnGainEXP(float x);
+    public event OnGainEXP OnExpGain;
+    public delegate void OnKillHandler(Actor a);
+    public event OnKillHandler OnKillActor;
     public int GetLevel
     {
         get { return Level; }
@@ -93,11 +102,14 @@ public abstract class Actor : IComparable<Actor> {
     }
     public virtual float RequiredEXP
     {
-        get { return BASEEXP * (2 * (float)Math.Exp(Level)); }
+        get { return BASEEXP * ((float)Math.Exp(Math.Abs(Level - 1))); }
     }
+
     public virtual void AddExp(float exp)
     {
         EXP += exp;
+        UnityEngine.Debug.Log(Name + " gained " + exp + " exp.");
+        if (OnExpGain != null) OnExpGain(exp);
         if (EXP >= RequiredEXP) LevelUP();
     }
     public virtual void LevelUP()
@@ -106,33 +118,61 @@ public abstract class Actor : IComparable<Actor> {
 
         Level++;
     }
-    public Actor(string Name, stat BaseStats, bool Controllable)
+
+    public Vector DefaultPos = new Vector(5, 2);
+    public Actor(string Name, stat BaseStats, bool Controllable, string AnimatorPath)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
         this.Controllable = Controllable;
-        
+        this.AnimatorPath = AnimatorPath;
+
     }
 
+    //Oy Vey Goyim
+    protected int Gold = 0;
+    public void AddGold(int g)
+    {
+        Gold += g;
+    }
+    public void RemoveGold(int g)
+    {
+        Gold -= g;
+    }
     //Status
     public float HP = 10;
-     public float MP = 10;
-    public int SP = 10;
+    public float MP = 10;
+    public int SP = 10; 
+    public bool Defending = false;
     public void Heal()
     {
         HP = GetStats.MaximumHP;
         MP = GetStats.MaximumMP;
-        
-        SP = 0;
+        Defending = false;
+        SP = 0;                     
     }
 
 
     //Stats
     protected stat baseStats = new stat();
-    public Profession Class = new Profession(new stat());
+    public Profession Class = new Profession(new stat()) { Skills = new Skill[3] {
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
+    }
+    };
     public stat GetStats
     {
-        get { return Class.GetBase + baseStats; }
+        get {
+            var t = Class.GetBase + baseStats;
+            if (inventory.Slot.Length > 0)        
+                foreach (var x in inventory.Slot)
+                {
+                    if (x.item != null)
+                        t += x.item.StatsBonus;
+                }
+ 
+            return t; }
     }
 
     public int RemainingPoint
@@ -147,17 +187,17 @@ public abstract class Actor : IComparable<Actor> {
             return (Level + 1) * 5 - (baseStats.STR + baseStats.AGI + baseStats.END + baseStats.WIS + baseStats.INT); }
     }
 
-    
+
     //Action
-    public delegate void DamageHandler(float z,Skill x );
+    public delegate void DamageHandler(float z, Skill x);
 
     public event DamageHandler OnAttack, OnDamage, OnBlocked;
-    
+
     public virtual void Use(Skill s, Actor[] Target)
     {
 
-        if (HP >= s.HpCost) { if (s.HpCost != 0) TakeDamage(s.HpCost); } 
-            else { UnityEngine.Debug.Log(Name + " not enough HP :" + HP +"/" + s.HpCost ); return; }
+        if (HP >= s.HpCost) { if (s.HpCost != 0) TakeDamage(s.HpCost); }
+        else { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return; }
 
         if (MP >= s.MpCost) { if (s.MpCost != 0) ConsumeMP(s.MpCost); }
         else { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return; }
@@ -166,7 +206,7 @@ public abstract class Actor : IComparable<Actor> {
         else { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return; }
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
-        foreach (var item in Target) s.Activate(item, GetStats);
+        foreach (var item in Target) s.Activate(item, GetStats, this);
 
     }
     public virtual void Use(Item i, Actor[] T)
@@ -174,16 +214,29 @@ public abstract class Actor : IComparable<Actor> {
         i.Uses--;
         foreach (var item in T)
         {
-          i.UseOn(item);
+            i.UseOn(item);
             if (i.Uses <= 0)
             {
                 for (int x = 0; x < inventory.items.Length; x++)
-                   if(inventory.items[x] == i) inventory.items[x] = null;
+                    if (inventory.items[x] == i) inventory.items[x] = null;
                 i.Dispose();
                 break;
             }
-        } 
-         
+        }
+
+    }
+
+    public virtual void Equip(Equipement q)
+    {
+        foreach (var g in inventory.Slot)
+            if(g.item == null && g.SlotType == q.slot)
+                g.Equip(q);
+
+    }
+    public void OnMurder(Actor a)
+    {
+        if (OnKillActor != null) OnKillActor(a);
+
     }
     public void Use(Item i, Actor T)
     {
@@ -199,6 +252,7 @@ public abstract class Actor : IComparable<Actor> {
         var i = x;
         if(f != null) 
         {
+            if (Defending) x *= .5f;
             if (f.Type == DamageType.Magical) x -= GetStats.MagDEF;
             else if (f.Type == DamageType.Physical) x -= GetStats.PhysDEF;
             if (x <= 0 && f.Type != DamageType.None)
@@ -218,7 +272,13 @@ public abstract class Actor : IComparable<Actor> {
     
     public virtual void Ondeath(float x, Skill f , Actor a = null)
     {
-   
+        if (GameManager.CurrentBattle.Foes.Contains(this))
+            GameManager.CurrentBattle.Foes.Remove(this);
+        if (GameManager.CurrentBattle.Players.Contains(this))
+            GameManager.CurrentBattle.Players.Remove(this);
+
+        CurrentTile.OnQuitting();
+        UnityEngine.Debug.Log(this.Name + " is death");
     }
     public void ConsumeMP(float x )
     {
@@ -235,12 +295,23 @@ public abstract class Actor : IComparable<Actor> {
     }
 
      public int tilewalked = 0;
+
     public int TileWalkedThisTurn = 0;
     public void Grab( Item a)
     {
 
+        if (IsDefeat) return;
+
+
         for (int i = 0; i < inventory.items.Length; i++)
         {
+
+            if(a is Gold)
+            {
+                a.OnGrab(this);
+                a.Dispose();
+            }
+            else 
             if (inventory.items[i] == null)
             {   
                 inventory.items[i] = a;
@@ -265,14 +336,23 @@ public abstract class Actor : IComparable<Actor> {
     public virtual void Turn(Battle battle)
     {
         if (IsDefeat) return;
+        if (SP < 0) SP = 0;
+        if (Defending)
+        {
+            Defending = false;
+            battle.EndTurn();
+            return;
+        }
+       
+    
         //This turn
-        SP +=  3;
+        SP = GetStats.MaximumSP;
         this.TileWalkedThisTurn = 0;
         
-        if (SP > 10) SP = 10;
-        Battle.Turn ThisTurn = battle.ThisTurn;
+        if (SP > GetStats.MaximumSP) SP = GetStats.MaximumSP;
+       
         SpAvaillableThisTurn = SP;
-       if(OnTurn!=null) OnTurn(ThisTurn);
+       if(OnTurn!=null) OnTurn(battle.ThisTurn);
         //Act Here - Add logic for monster here             
         
     }
@@ -291,6 +371,8 @@ public abstract class Actor : IComparable<Actor> {
         _transform.position += position;
         
     }
+
+     
 
     //Move with bound and collision in mind 
     public virtual void Move(Vector v,bool bypass = false)
@@ -353,7 +435,8 @@ public abstract class Actor : IComparable<Actor> {
                int x = (int)(where.x -TilePosition.x );
                int y = (int)(where.y - TilePosition.y );
         UnityEngine.Debug.Log(Name + ": Creating Path : from "+TilePosition.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y +"}" );
-               var a = 1;
+
+                var a = 1;
                var b = 1;
                if (x < 0) a = -1;
                if (y < 0) b = -1;
@@ -578,6 +661,8 @@ public abstract class Actor : IComparable<Actor> {
         if (t == x) (t + GetStats.LUC).CompareTo(x + other.GetStats.LUC);
         return t.CompareTo(x); 
     }
+ 
+ 
 }
 
 public class Skill
@@ -599,7 +684,7 @@ public class Skill
     public float Damage  = 1;
     protected float BaseCritChance = 5;
     public TargetType Targets;
-    
+    public bool Unlocked = false;
 
     //Requirement    
     public float MpCost =0, HpCost = 0;
@@ -618,18 +703,32 @@ public class Skill
             return e;
         }
     }
-    public virtual void Activate(Actor Target, stat Stats = new stat())
+    public static Skill Weapon(Weapon w)
+    {
+        
+            var e = new Skill();
+            e.Name = "Attack";
+            e.SpCost = 2;
+            e.Reach = 1;
+            e.Type = w.DamageType;
+            e.Damage = .5f;
+            e.Targets = TargetType.OneEnemy;
+            return e;
+        
+    }
+    public virtual void Activate(Actor Target, stat Stats = new stat(), Actor f = null)
     {
      
         var x = Damage;
         if (Type == DamageType.Magical) x *=  Stats.INT;
         else if (Type == DamageType.Physical) x *= Stats.STR;
-        
-        if ((Stats.LUC * 2 + BaseCritChance) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
 
-            Target.TakeDamage(x,this);
+     
+        if ((Stats.LUC * 2 + BaseCritChance + Stats.CriticalHitPercentage) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
+
+            Target.TakeDamage(x,this,f);
     }
-    public void Activate(Actor[] a)
+    public void Activate(Actor[] a, Actor f = null)
     {
         foreach (var item in a) { Activate(item);  } 
     }
@@ -665,10 +764,20 @@ public struct stat : IComparable<stat>
     public int Priority;
     //For fine tuning targeting
     public int Threat;
+    public int DamageBonus, DefenseBonus;
     public float PhysDEF { get { return ( STR / 2 + END + AGI / 4)/2; } }
     public float MagDEF { get { return (INT + WIS * 2)/2; } }
     public float MaximumHP { get { if (END == 0) return 1; return END * 2; } }
     public float MaximumMP { get { return WIS * 5; } }
+    public float CriticalHitPercentage { get { return CriticalHitFlat + LUC; } }
+    public float CriticalHitFlat;
+    public int MaximumSP { get {
+
+            int a = 2;
+            a += (int)((STR + AGI + END + WIS + INT + LUC) / 22.8571428571);
+            if (a > 7) a = 7;
+            return a;
+        } }
 
     public int Magnitude { get { return (STR + AGI + END + WIS + INT + LUC) / 6; } }
 
@@ -760,8 +869,19 @@ public class Profession
     protected stat BaseStats;
     protected float ClassEXP = 0;
 
-    public Skill[] SkillList;
     
+    public Skill[] UsableSkill
+    {
+        get
+        {
+            var a = new List<Skill>();
+            foreach (var item in Skills)
+                if (item.Unlocked) a.Add(item);
+
+            return a.ToArray();
+        }
+    }
+    public Skill[] Skills;
     public void AddExp(float exp)
     {
         ClassEXP += exp;

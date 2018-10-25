@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
 
 [System.Serializable]
 public class Battle{
@@ -8,10 +8,42 @@ public class Battle{
 
     public delegate void OnBattleEndHandler();
     public event OnBattleEndHandler BattlEnd, OnTurnEnd;
+    public float BattleTime = 0;
+    public int GoldEarnedThisBattle = 0;
+    public virtual string Grade
+    {
+        get
+        {
+            float pts = 0;
+           
+            //Logic for the grade of the battle where the damaged receive, damage dealt and time come in place
+
+            if (BattleTime <= 60) pts += 200;
+            if (BattleTime <= 30) pts += 200;
+            pts += GoldEarnedThisBattle * 1;
+            var tot = (History[0].ActorsThisTurn.Length - GameManager.Protags.Count);
+            pts += tot * 100;
+            if (History.Count <= tot + 1) pts += 500;
+
+
+            if (pts >= 1000) return "SSS";
+            if (pts >= 900) return "S";
+            if (pts >= 700) return "A";
+            if (pts >= 500) return "B";
+            if (pts >= 400) return "C";
+            if (pts >= 300) return "D";
+            if (pts >= 100) return "E";
+            UnityEngine.Debug.Log("BATTLE PTS: " + pts);
+            return "F";
+
+           
+        }
+    
+    }
     public Actor ActingThisTurn
     {
         get {
-            if (ThisTurn.Order.Count == 0) return null;
+            if (ThisTurn == null ) return null;
             return ThisTurn.Order[0]; }
     }
     public bool IsPlayerTurn
@@ -44,7 +76,7 @@ public class Battle{
         foreach (var item in Foe)
             Foes.Add(item);
     }
-    public float BattleTime = 0;
+ 
 
     public Battle(InGameActor[] Player, InGameActor[] Foe)
     {
@@ -56,14 +88,19 @@ public class Battle{
     }
 
 
-
+    public bool Paused = true;
+    public void Proceed()
+    {
+        ActingThisTurn.Turn(this);
+    }
     public void StartNewTurn()
     {
         var e = new Turn(Players, Foes);
         
         History.Add(e);
         var f = "";
-       
+
+      if(!Paused)
         e.Order[0].Turn(this);
         foreach (var item in e.Order )
         {
@@ -123,7 +160,9 @@ public class Battle{
     public Turn ThisTurn
     {
 
-        get { return History[History.Count - 1]; }
+        get {
+            if (History.Count == 0) return null;
+            return History[History.Count - 1]; }
     }
     public Turn LastTurn
     {
@@ -139,16 +178,18 @@ public class Battle{
     {
         //Which one is going to play next - for now, two list will do trick. Less bothersome than using an index
         public List<Actor> Order = new List<Actor>();
-        public Actor[] History;
+        public Actor[] ActorsThisTurn;
         public Turn(List<Actor>  TeamA, List<Actor> TeamB)
         {
             var e = new List<Actor>();
 
             foreach (var item in TeamA) e.Add(item);
             foreach (var item in TeamB) e.Add(item);
+ 
             e.Sort();
+
             Order = e;
-            History = Order.ToArray();
+            ActorsThisTurn = Order.ToArray();
 
         }
     }
@@ -202,6 +243,7 @@ public class Map
         public Actor Actor;
         public List<Item> Items = new List<Item>();
         public Vector Position;
+        public int Heigth = 0;
         public int x
         {
             get { return (int)Position.x; }
@@ -212,21 +254,29 @@ public class Map
         }
         public void Enter(Actor a )
         {
+            Actor = a;           
+            a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
-            if (Items.Count >= 0)
-            {
+
+         
+            if (Items.Count >= 0)           
                 for (int i = 0; i < Items.Count; i++)
                 {
-                    if (!a.inventory.IsFull) { UnityEngine.Debug.Log(a.ToString() + " takes  " + Items[i].ToString()); a.Grab(Items[i]);Items.Remove(Items[i]); }
-                }
-
-                   
-            }
-            Actor = a;
-
-           
-           a.TileWalkedThisTurn++;
-          
+                    if(Items[i] != null)
+                        if (Items[i] is Gold)
+                        {
+                    
+                            GameManager.CurrentBattle.GoldEarnedThisBattle += Items[i].GoldValue;
+                            a.Grab(Items[i]);
+                        }
+                         
+                        else  if (!a.inventory.IsFull)
+                        {
+                            a.Grab(Items[i]);
+                           
+                            Items.Remove(Items[i]);
+                        }
+                }   
         }
         public  void OnQuitting()
         {
@@ -254,6 +304,7 @@ public class Map
         public void AddItem(Item a)
         {
             Items.Add(a);
+            if(a!= null)
             a.CurrentTile = this;
         }
         public override string ToString()
