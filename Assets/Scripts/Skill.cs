@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-
+using UnityEngine;
 
 public class Skill
 {
@@ -16,12 +15,33 @@ public class Skill
         Anyone = 4
     }
 
-    static Random SkillRandom = new Random();
-    public string Name = "";
-    public DamageType Type;
+    
+    [SerializeField] private string name = "";
+    public string Name {
+        get {
+            return name;
+        }
+        set {
+            name = value;
+        }
+    }
+
+    [SerializeField] private DamageType type;
+
+    public DamageType Type {
+        get {
+            return type;
+        }
+        set
+        {
+            type = value;
+        }
+    }
+
     public int Reach = 1;
     //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
     public float Damage = 1;
+    //
     protected float BaseCritChance = 5;
     public TargetType Targets;
     public bool Unlocked = false;
@@ -51,7 +71,7 @@ public class Skill
         if (Type == DamageType.Magical) x *= Stats.INT;
         else if (Type == DamageType.Physical) x *= Stats.STR;
 
-        if ((Stats.LUC * 2 + BaseCritChance) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
+        if ((Stats.LUC * 2 + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
 
         Target.TakeDamage(x, this, f);
     }
