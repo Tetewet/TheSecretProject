@@ -7,7 +7,7 @@ namespace Assets.Scripts
 {
     class Kuku : MonsterControllerFactory
     {
-        public Kuku(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
+        public Kuku(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             base.Name = Name;
             base.baseStats = baseStats;

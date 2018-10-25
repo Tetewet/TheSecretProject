@@ -7,7 +7,7 @@ namespace Assets.Scripts
 {
     class Kodama : MonsterControllerFactory
     {
-        public Kodama(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
+        public Kodama(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             base.Name = Name;
             base.baseStats = baseStats;

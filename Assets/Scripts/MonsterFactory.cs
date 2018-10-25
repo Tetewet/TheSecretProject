@@ -17,11 +17,12 @@ namespace Assets.Scripts
         //    warrior, mage, rogue
         //}
 
-        public MonsterFactory(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
+        public MonsterFactory(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             this.Name = Name;
             this.baseStats = baseStats;
             this.Controllable = Controllable;
+            this.AnimatorPath = AnimatorP;
             //ScaleOnPlayerLevel();
         }
 
@@ -40,26 +41,27 @@ namespace Assets.Scripts
     {
         static Random random;
 
-        public MonsterControllerFactory(string Name, stat baseStats, bool Controllable) : base(Name, baseStats, Controllable)
+        public MonsterControllerFactory(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             base.Name = Name;
             base.baseStats = baseStats;
             base.Controllable = Controllable;
+            base.AnimatorPath = AnimatorP;
         }
 
         public override MonsterFactory CreateBandit()
         {
-            return new Bandit(Name, baseStats, Controllable);
+            return new Bandit(Name, baseStats, Controllable, AnimatorPath);
         }
 
         public override MonsterFactory CreateKodama()
         {
-            return new Kodama(Name, baseStats, Controllable);
+            return new Kodama(Name, baseStats, Controllable, AnimatorPath);
         }
 
         public override MonsterFactory CreateKuku()
         {
-            return new Kuku(Name, baseStats, Controllable);
+            return new Kuku(Name, baseStats, Controllable, AnimatorPath);
         }
 
         public static void SpawnMonsters()
@@ -72,21 +74,21 @@ namespace Assets.Scripts
             {
                 for (int i = 0; i < number; i++) 
                 {
-                    factories.Add(new Kuku("Kuku " + i.ToString(), new stat(), false));
+                    factories.Add(new Kuku("Kuku " + i.ToString(), new stat(), false, "AnimatorP"));
                 }
             }
             else if (chances < 33) 
             {
                 for (int i = 0; i < number; i++)
                 {
-                    factories.Add(new Kodama("Kodama " + i.ToString(), new stat(), false));
+                    factories.Add(new Kodama("Kodama " + i.ToString(), new stat(), false, "AnimatorP"));
                 }
             }
             else
             {
                 for (int i = 0; i < number; i++)
                 {
-                    factories.Add(new Bandit("Bandit " + i.ToString(), new stat(), false));
+                    factories.Add(new Bandit("Bandit " + i.ToString(), new stat(), false, "AnimatorP"));
                 }
             }
             //SpawnMonsters(random.range(0, Monsterlist.count);
