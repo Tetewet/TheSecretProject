@@ -313,6 +313,7 @@ public class InGameActor : MonoBehaviour {
 
                 if (f != actor || f != a)
                 {
+                    print(f.Name);
                     attacking = false;
                     tempattack = null;
                     temptarget = null;
