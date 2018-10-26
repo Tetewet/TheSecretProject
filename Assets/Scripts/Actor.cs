@@ -782,12 +782,32 @@ public struct Stat : IComparable<Stat>
         return e;
     }
 }
+
+public enum ProfessionType
+{
+    Adventurer = 0,
+    Clerc = 1,
+    Mercenary = 2,
+    Mage = 3,
+    Priest = 4,
+    Paladin = 5,
+    Rogue = 6,
+    Sorcerer = 7,
+    Barbarian = 8,
+    Alchemist = 9,
+    Archpriest = 10,
+    Templar = 11,
+    Berserker = 12,
+    Elementalist = 13,
+    Apostle = 14,
+    Dark_Knight = 15
+}
 public class Profession
 {
 
     public const float BASEPROFIENCYEXP= 10;
  
-    public string Name = "Adventurer";
+    public ProfessionType profession = ProfessionType.Adventurer;
 
     private int Profiency = 0;
     public int GetProfiency
@@ -829,10 +849,10 @@ public class Profession
         get { return BaseStats; }
     }
        
-    public Profession(Stat s, string Name = "Adventurer")
+    public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer)
     {
         this.BaseStats = s;
-        this.Name = Name;
+        this.profession = profession;
         
     }
 

@@ -4,17 +4,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-public class Skill
-{
-    public enum TargetType
-    {
-        Self = 0,
-        AnAlly = 1,
-        OneEnemy = 2,
-        Enemy = 3,
-        Anyone = 4
-    }
-
 public class Skill : MonoBehaviour
 {
     public enum TargetType
@@ -26,9 +15,11 @@ public class Skill : MonoBehaviour
         Anyone = 4
     }
 
-
+    
     [SerializeField] private new string name = "";
     public string Name { get { return name; } set { name = value; } }
+    [SerializeField] private ProfessionType profession;
+    public ProfessionType Profession { get { return profession; } set { profession = value; } }
     [SerializeField] private DamageType type;
     public DamageType Type { get { return type; } set { type = value; } }
     [SerializeField] private int reach = 1;
@@ -40,14 +31,15 @@ public class Skill : MonoBehaviour
     public float BaseCritChance{ get { return baseCritChance; } set { baseCritChance = value; } }
     [SerializeField] private TargetType targets;
     public TargetType Targets { get { return targets; } set { targets = value; } }
-
+    public bool Unlocked;
 
     //Requirement    
     [SerializeField] private float mpCost = 0, hpCost = 0;
     public float MpCost { get { return mpCost; } set { mpCost= value; } }
     public float HpCost { get { return hpCost; } set { hpCost = value; } }
-    [SerializeField] private int spCost = 0;
+    [SerializeField] private int spCost = 0, level = 0;
     public int SpCost { get { return spCost; } set { spCost = value; } }
+    public int Level { get { return level; } set { level = value; } }
     public static Skill Base
     {
 
@@ -86,4 +78,4 @@ public class Skill : MonoBehaviour
 }
 
 
-}
+
