@@ -1137,7 +1137,7 @@ public class GameManager : MonoBehaviour {
     
     public void ActionFreeze()
     {
-        StartCoroutine(_freezecam(1.2f));
+        StartCoroutine(_freezecam(1.5f));
     }
 
     /// <summary>

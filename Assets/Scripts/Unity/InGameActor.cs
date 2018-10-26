@@ -58,25 +58,7 @@ public class InGameActor : MonoBehaviour {
     private void Awake()
     {
         cv = GetComponentInChildren<Canvas>();
-        //Debug
-       /* if (OverrideStats)
-        {
-            if (!isAI)
-                InitializedActor(new Player(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS }, isAI), "");
-            else
-            {
-                var e = new Monster(Name, new stat { AGI = ActorStats.AGI, STR = ActorStats.STR, LUC = ActorStats.LUC, END = ActorStats.END, INT = ActorStats.INT, WIS = ActorStats.WIS }, isAI);
-                InitializedActor(e, "");
-                e.ExpGain = ActorStats.EXPGain;
-            }
-        }
-        else
-        {
-            if (!isAI)
-                InitializedActor(new Player(Name, new stat { AGI = 2, STR = 6, INT = 5, LUC = 5, WIS = 5, END = 1 }, isAI), "");
-            else
-                InitializedActor(new Monster(Name, new stat { AGI = 4, STR = 1, INT = 1, LUC = 1, WIS = 1, END = 1 }, isAI), "");
-        }*/
+ 
 
     }
 
@@ -305,22 +287,25 @@ public class InGameActor : MonoBehaviour {
         tempattack = b;
         temptarget = a;
         actor.Move(a.TilePosition, true);
-       
-        foreach (var item in GameManager.PathUI)
+ 
+        
+        foreach (var item in actor.Path)
         {
             if (GameManager.CurrentBattle.map.AtPos(item).Actor != null)
             {
                 var f = GameManager.CurrentBattle.map.AtPos(item).Actor;
                 if (f == actor) continue;
                 if (f == a) continue;
+                if (!f.IsTeamWith(actor)) continue;
 
-                if (f != actor || f != a)
+                if (f != actor && f != a)
                 {
-                    print(f.Name);
-                    attacking = false;
+           
+                    print(f.Name + " is block me!");
+                   /* attacking = false;
                     tempattack = null;
                     temptarget = null;
-                    yield break;
+                    yield break;*/
                 }
                 
 
@@ -334,6 +319,7 @@ public class InGameActor : MonoBehaviour {
             if (!MyTurn)
             {
                 attacking = false;
+                print("RAN OUT OF TIME!");
                 yield break;
             }
             yield return null;
@@ -409,6 +395,7 @@ public class InGameActor : MonoBehaviour {
     private void OnKillingSomone(Actor a)
     {
         GameManager.CursorPos = a.TilePosition;
+        GameManager.GM.ActionFreeze();
 
     }
 

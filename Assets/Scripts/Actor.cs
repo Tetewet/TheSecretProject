@@ -522,7 +522,10 @@ public abstract class Actor : IComparable<Actor> {
         return;
  
     }
-    
+    public bool IsTeamWith(Actor a)
+    {
+        return GameManager.CurrentBattle.IsTeamWith(this, a);
+    }
    public void CantMove(Vector v)
     {
         //DEBUG
