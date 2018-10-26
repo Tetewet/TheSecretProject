@@ -120,7 +120,7 @@ public abstract class Actor : IComparable<Actor> {
     }
 
     public Vector DefaultPos = new Vector(5, 2);
-    public Actor(string Name, stat BaseStats, bool Controllable, string AnimatorPath)
+    public Actor(string Name, Stat BaseStats, bool Controllable, string AnimatorPath)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
@@ -154,14 +154,14 @@ public abstract class Actor : IComparable<Actor> {
 
 
     //Stats
-    protected stat baseStats = new stat();
-    public Profession Class = new Profession(new stat()) { Skills = new Skill[3] {
+    protected Stat baseStats = new Stat();
+    public Profession Class = new Profession(new Stat()) { Skills = new Skill[3] {
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
     }
     };
-    public stat GetStats
+    public Stat GetStats
     {
         get {
             var t = Class.GetBase + baseStats;
@@ -666,7 +666,6 @@ public abstract class Actor : IComparable<Actor> {
 }
 
 
-
 [Flags]
 public enum _stats
 {
@@ -678,12 +677,13 @@ public enum DamageType
     Physical =1,
     Magical =2,
     Pierce = 3,
-    
+    Slashing = 4,
+    Blunt = 5
 }
 /// <summary>
 /// Stats of any living being.
 /// </summary>
-public struct stat : IComparable<stat>
+public struct Stat : IComparable<Stat>
 {
 
     public delegate void OnStatsGainHandler();
@@ -737,14 +737,14 @@ public struct stat : IComparable<stat>
         }
         OnGainStats();
     }
-    public void AddStats(stat a)
+    public void AddStats(Stat a)
     {
         this += a;
         if (OnGainStats != null) OnGainStats();
         else Console.WriteLine("No OnGainStats");
     }
 
-    public int CompareTo(stat other)
+    public int CompareTo(Stat other)
     {
         return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
     }
@@ -752,13 +752,13 @@ public struct stat : IComparable<stat>
     //Useful Functions
 
 
-    public static stat zero
+    public static Stat zero
     {
-        get { return new stat(); }
+        get { return new Stat(); }
     }
-    public static stat operator +(stat a, stat b)
+    public static Stat operator +(Stat a, Stat b)
     {
-        var e = new stat();
+        var e = new Stat();
         e.STR = a.STR + b.STR;
         e.INT = a.INT + b.INT;
         e.AGI = a.AGI + b.AGI;
@@ -769,9 +769,9 @@ public struct stat : IComparable<stat>
         
         return e;
     }
-    public static stat operator *(stat a, int b)
+    public static Stat operator *(Stat a, int b)
     {
-        var e = new stat();
+        var e = new Stat();
         e.STR = a.STR * b;
         e.INT = a.INT * b;
         e.AGI = a.AGI * b;
@@ -795,7 +795,7 @@ public class Profession
         get { return Profiency; }
     }
     
-    protected stat BaseStats;
+    protected Stat BaseStats;
     protected float ClassEXP = 0;
 
     
@@ -824,12 +824,12 @@ public class Profession
     {
         Profiency++;
     }
-    public virtual stat GetBase
+    public virtual Stat GetBase
     {
         get { return BaseStats; }
     }
        
-    public Profession(stat s, string Name = "Adventurer")
+    public Profession(Stat s, string Name = "Adventurer")
     {
         this.BaseStats = s;
         this.Name = Name;
