@@ -100,7 +100,7 @@ public class GameManager : MonoBehaviour {
     }
     public static void StartBattle(Actor[] F, Map m, int Map = 0)
     {
-
+        GM.Cam.enabled = true;
         GM.Cursor.gameObject.SetActive(true);
         Map = Mathf.Clamp(Map, 0, GM.Battlefields.Length - 1);
         for (int i = 0; i < GM.Battlefields.Length; i++)
@@ -355,6 +355,8 @@ public class GameManager : MonoBehaviour {
             item.Map.gameObject.SetActive(false);
 
         ClearActor();
+
+        GM.Cam.enabled = false;
         //------------------------------------------------------
 
         var nGroup = new List<Monster>();
