@@ -17,7 +17,11 @@ namespace Assets.Scripts
         //    warrior, mage, rogue
         //}
 
+<<<<<<< HEAD
         public MonsterFactory(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+=======
+        public MonsterFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+>>>>>>> CoreEngine
         {
             this.Name = Name;
             this.baseStats = baseStats;
@@ -41,7 +45,11 @@ namespace Assets.Scripts
     {
         static Random random;
 
+<<<<<<< HEAD
         public MonsterControllerFactory(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+=======
+        public MonsterControllerFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+>>>>>>> CoreEngine
         {
             base.Name = Name;
             base.baseStats = baseStats;
@@ -74,21 +82,33 @@ namespace Assets.Scripts
             {
                 for (int i = 0; i < number; i++) 
                 {
+<<<<<<< HEAD
                     factories.Add(new Kuku("Kuku " + i.ToString(), new stat(), false, "AnimatorP"));
+=======
+                    factories.Add(new Kuku("Kuku " + i.ToString(), new Stat(), false, "AnimatorP"));
+>>>>>>> CoreEngine
                 }
             }
             else if (chances < 33) 
             {
                 for (int i = 0; i < number; i++)
                 {
+<<<<<<< HEAD
                     factories.Add(new Kodama("Kodama " + i.ToString(), new stat(), false, "AnimatorP"));
+=======
+                    factories.Add(new Kodama("Kodama " + i.ToString(), new Stat(), false, "AnimatorP"));
+>>>>>>> CoreEngine
                 }
             }
             else
             {
                 for (int i = 0; i < number; i++)
                 {
+<<<<<<< HEAD
                     factories.Add(new Bandit("Bandit " + i.ToString(), new stat(), false, "AnimatorP"));
+=======
+                    factories.Add(new Bandit("Bandit " + i.ToString(), new Stat(), false, "AnimatorP"));
+>>>>>>> CoreEngine
                 }
             }
             //SpawnMonsters(random.range(0, Monsterlist.count);

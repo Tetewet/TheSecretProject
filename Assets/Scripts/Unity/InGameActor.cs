@@ -253,6 +253,31 @@ public class InGameActor : MonoBehaviour {
         tempattack = b;
         temptarget = a;
         actor.Move(a.TilePosition, true);
+<<<<<<< HEAD
+=======
+       
+        foreach (var item in GameManager.PathUI)
+        {
+            if (GameManager.CurrentBattle.map.AtPos(item).Actor != null)
+            {
+                var f = GameManager.CurrentBattle.map.AtPos(item).Actor;
+                if (f == actor) continue;
+                if (f == a) continue;
+
+                if (f != actor || f != a)
+                {
+                    print(f.Name);
+                    attacking = false;
+                    tempattack = null;
+                    temptarget = null;
+                    yield break;
+                }
+                
+
+            }
+      
+        }
+>>>>>>> CoreEngine
         // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
         while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
         {
