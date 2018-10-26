@@ -17,7 +17,7 @@ namespace Assets.Scripts
         //    warrior, mage, rogue
         //}
 
-        public MonsterFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+        public MonsterFactory(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             this.Name = Name;
             this.baseStats = baseStats;
@@ -41,7 +41,7 @@ namespace Assets.Scripts
     {
         static Random random;
 
-        public MonsterControllerFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+        public MonsterControllerFactory(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             base.Name = Name;
             base.baseStats = baseStats;
@@ -74,21 +74,21 @@ namespace Assets.Scripts
             {
                 for (int i = 0; i < number; i++) 
                 {
-                    factories.Add(new Kuku("Kuku " + i.ToString(), new Stat(), false, "AnimatorP"));
+                    factories.Add(new Kuku("Kuku " + i.ToString(), new stat(), false, "AnimatorP"));
                 }
             }
             else if (chances < 33) 
             {
                 for (int i = 0; i < number; i++)
                 {
-                    factories.Add(new Kodama("Kodama " + i.ToString(), new Stat(), false, "AnimatorP"));
+                    factories.Add(new Kodama("Kodama " + i.ToString(), new stat(), false, "AnimatorP"));
                 }
             }
             else
             {
                 for (int i = 0; i < number; i++)
                 {
-                    factories.Add(new Bandit("Bandit " + i.ToString(), new Stat(), false, "AnimatorP"));
+                    factories.Add(new Bandit("Bandit " + i.ToString(), new stat(), false, "AnimatorP"));
                 }
             }
             //SpawnMonsters(random.range(0, Monsterlist.count);

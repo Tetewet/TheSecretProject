@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Player : Actor
 {
-    public Player(string Name, Stat BaseStats, bool Controllable, string AnimatorP) : base(Name, BaseStats, Controllable, AnimatorP)
+    public Player(string Name, stat BaseStats, bool Controllable, string AnimatorP) : base(Name, BaseStats, Controllable, AnimatorP)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
@@ -18,7 +18,7 @@ public class Player : Actor
 public class Monster : Actor
 {
     public float ExpGain = 5;
-    public Monster(string Name, Stat BaseStats, bool Controllable,string AnimatorP) : base(Name, BaseStats, Controllable, AnimatorP)
+    public Monster(string Name, stat BaseStats, bool Controllable,string AnimatorP) : base(Name, BaseStats, Controllable, AnimatorP)
     {
         
     }

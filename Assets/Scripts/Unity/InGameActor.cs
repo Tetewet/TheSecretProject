@@ -34,7 +34,7 @@ public class InGameActor : MonoBehaviour {
     {
 
         public int AGI, STR, INT, LUC, WIS, END;
-        public InGameActorStats(Stat s)
+        public InGameActorStats(stat s)
         {
             AGI = s.AGI;
             STR = s.STR;

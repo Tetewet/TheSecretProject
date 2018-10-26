@@ -120,7 +120,7 @@ public abstract class Actor : IComparable<Actor> {
     }
 
     public Vector DefaultPos = new Vector(5, 2);
-    public Actor(string Name, Stat BaseStats, bool Controllable, string AnimatorPath)
+    public Actor(string Name, stat BaseStats, bool Controllable, string AnimatorPath)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
@@ -154,14 +154,14 @@ public abstract class Actor : IComparable<Actor> {
 
 
     //Stats
-    protected Stat baseStats = new Stat();
-    public Profession Class = new Profession(new Stat()) { Skills = new Skill[3] {
+    protected stat baseStats = new stat();
+    public Profession Class = new Profession(new stat()) { Skills = new Skill[3] {
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
     }
     };
-    public Stat GetStats
+    public stat GetStats
     {
         get {
             var t = Class.GetBase + baseStats;
@@ -665,7 +665,79 @@ public abstract class Actor : IComparable<Actor> {
  
 }
 
+public class Skill
+{
+    public enum TargetType
+    {
+        Self = 0,
+        AnAlly = 1,
+        OneEnemy = 2,
+        Enemy = 3,
+        Anyone = 4
+    }
 
+    static Random SkillRandom = new Random();
+    public string Name ="";
+    public DamageType Type;
+    public int Reach = 1;
+    //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
+    public float Damage  = 1;
+    protected float BaseCritChance = 5;
+    public TargetType Targets;
+    public bool Unlocked = false;
+
+    //Requirement    
+    public float MpCost =0, HpCost = 0;
+    public int SpCost = 0;
+    public static Skill Base {
+
+        get
+        {
+            var e = new Skill();
+            e.Name = "Attack";
+            e.SpCost = 2;
+            e.Reach = 1;
+            e.Type = DamageType.Physical;
+            e.Damage = .5f;
+            e.Targets = TargetType.OneEnemy;
+            return e;
+        }
+    }
+    public static Skill Weapon(Weapon w)
+    {
+        
+            var e = new Skill();
+            e.Name = "Attack";
+            e.SpCost = 2;
+            e.Reach = 1;
+            e.Type = w.DamageType;
+            e.Damage = .5f;
+            e.Targets = TargetType.OneEnemy;
+            return e;
+        
+    }
+    public virtual void Activate(Actor Target, stat Stats = new stat(), Actor f = null)
+    {
+     
+        var x = Damage;
+        if (Type == DamageType.Magical) x *=  Stats.INT;
+        else if (Type == DamageType.Physical) x *= Stats.STR;
+
+     
+        if ((Stats.LUC * 2 + BaseCritChance + Stats.CriticalHitPercentage) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
+
+            Target.TakeDamage(x,this,f);
+    }
+    public void Activate(Actor[] a, Actor f = null)
+    {
+        foreach (var item in a) { Activate(item);  } 
+    }
+
+
+
+    
+
+}
 [Flags]
 public enum _stats
 {
@@ -683,7 +755,7 @@ public enum DamageType
 /// <summary>
 /// Stats of any living being.
 /// </summary>
-public struct Stat : IComparable<Stat>
+public struct stat : IComparable<stat>
 {
 
     public delegate void OnStatsGainHandler();
@@ -737,14 +809,14 @@ public struct Stat : IComparable<Stat>
         }
         OnGainStats();
     }
-    public void AddStats(Stat a)
+    public void AddStats(stat a)
     {
         this += a;
         if (OnGainStats != null) OnGainStats();
         else Console.WriteLine("No OnGainStats");
     }
 
-    public int CompareTo(Stat other)
+    public int CompareTo(stat other)
     {
         return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
     }
@@ -752,13 +824,13 @@ public struct Stat : IComparable<Stat>
     //Useful Functions
 
 
-    public static Stat zero
+    public static stat zero
     {
-        get { return new Stat(); }
+        get { return new stat(); }
     }
-    public static Stat operator +(Stat a, Stat b)
+    public static stat operator +(stat a, stat b)
     {
-        var e = new Stat();
+        var e = new stat();
         e.STR = a.STR + b.STR;
         e.INT = a.INT + b.INT;
         e.AGI = a.AGI + b.AGI;
@@ -769,9 +841,9 @@ public struct Stat : IComparable<Stat>
         
         return e;
     }
-    public static Stat operator *(Stat a, int b)
+    public static stat operator *(stat a, int b)
     {
-        var e = new Stat();
+        var e = new stat();
         e.STR = a.STR * b;
         e.INT = a.INT * b;
         e.AGI = a.AGI * b;
@@ -782,32 +854,12 @@ public struct Stat : IComparable<Stat>
         return e;
     }
 }
-
-public enum ProfessionType
-{
-    Adventurer = 0,
-    Clerc = 1,
-    Mercenary = 2,
-    Mage = 3,
-    Priest = 4,
-    Paladin = 5,
-    Rogue = 6,
-    Sorcerer = 7,
-    Barbarian = 8,
-    Alchemist = 9,
-    Archpriest = 10,
-    Templar = 11,
-    Berserker = 12,
-    Elementalist = 13,
-    Apostle = 14,
-    Dark_Knight = 15
-}
 public class Profession
 {
 
     public const float BASEPROFIENCYEXP= 10;
  
-    public ProfessionType profession = ProfessionType.Adventurer;
+    public string Name = "Adventurer";
 
     private int Profiency = 0;
     public int GetProfiency
@@ -815,7 +867,7 @@ public class Profession
         get { return Profiency; }
     }
     
-    protected Stat BaseStats;
+    protected stat BaseStats;
     protected float ClassEXP = 0;
 
     
@@ -844,15 +896,15 @@ public class Profession
     {
         Profiency++;
     }
-    public virtual Stat GetBase
+    public virtual stat GetBase
     {
         get { return BaseStats; }
     }
        
-    public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer)
+    public Profession(stat s, string Name = "Adventurer")
     {
         this.BaseStats = s;
-        this.profession = profession;
+        this.Name = Name;
         
     }
 

@@ -7,7 +7,7 @@ namespace Assets.Scripts
 {
     class Bandit : MonsterControllerFactory
     {
-        public Bandit(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+        public Bandit(string Name, stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             base.Name = Name;
             base.baseStats = baseStats;

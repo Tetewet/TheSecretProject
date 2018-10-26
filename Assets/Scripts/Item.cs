@@ -88,7 +88,7 @@ public class Equipement : Item
     }
     public float Durability = 10;
     
-    public Stat StatsBonus;
+    public stat StatsBonus;
     public Slot slot;
     public float DEF = 0;
     public float MagDEF = 0;
@@ -126,7 +126,7 @@ public class Weapon : Equipement
 }
 public class Consumeable : Item
 {
-    public Stat StatsBonus;
+    public stat StatsBonus;
     public float HPregen, MPregen;
     public int SPregen;
 
