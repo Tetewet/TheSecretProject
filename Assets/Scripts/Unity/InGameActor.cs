@@ -34,7 +34,7 @@ public class InGameActor : MonoBehaviour {
     {
 
         public int AGI, STR, INT, LUC, WIS, END;
-        public InGameActorStats(stat s)
+        public InGameActorStats(Stat s)
         {
             AGI = s.AGI;
             STR = s.STR;
@@ -129,10 +129,13 @@ public class InGameActor : MonoBehaviour {
         cacheditem = t;
         if (OnActorItem != null) OnActorItem.sprite = GameManager.LoadSprite(t.ResourcePath);
     }
+
+
+
     public void UseSkill(Actor to, Skill s)
     {
         var r = s.Targets;
-        if (!Actor.CanUseSkill(s, actor)) { Error("Not enough ressource");return; }
+        if (!actor.CanUseSkill(s)) { Error("Not enough ressource");return; }
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
@@ -338,7 +341,7 @@ public class InGameActor : MonoBehaviour {
         TurnSprite((temptarget.TilePosition - actor.TilePosition).x < 0);
         yield return new WaitForSeconds(.3f);
 
-        if (Actor.CanUseSkill(Skill.Base, actor))       
+        if (actor.CanUseSkill(Skill.Base ))       
             foreach (var item in anim) item.SetTrigger(b.Type.ToString());
         attacking = false;
         yield break;

@@ -120,7 +120,7 @@ public abstract class Actor : IComparable<Actor> {
     }
 
     public Vector DefaultPos = new Vector(5, 2);
-    public Actor(string Name, stat BaseStats, bool Controllable, string AnimatorPath)
+    public Actor(string Name, Stat BaseStats, bool Controllable, string AnimatorPath)
     {
         this.Name = Name;
         this.baseStats = BaseStats;
@@ -154,14 +154,14 @@ public abstract class Actor : IComparable<Actor> {
 
 
     //Stats
-    protected stat baseStats = new stat();
-    public Profession Class = new Profession(new stat()) { Skills = new Skill[3] {
+    protected Stat baseStats = new Stat();
+    public Profession Class = new Profession(new Stat()) { Skills = new Skill[3] {
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
         new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
     }
     };
-    public stat GetStats
+    public Stat GetStats
     {
         get {
             var t = Class.GetBase + baseStats;
@@ -193,49 +193,47 @@ public abstract class Actor : IComparable<Actor> {
 
     public event DamageHandler OnAttack, OnDamage, OnBlocked;
 
-    public virtual void Use(Skill s, Actor[] Target)
+
+
+    public bool CanUseSkill(Skill s)
     {
 
-        if (HP >= s.HpCost) { if (s.HpCost != 0) TakeDamage(s.HpCost); }
-        else { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return; }
+        if (s.HpCost > HP) { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return false; }
+        if ( s.MpCost > MP ) { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return false; }
+        if(s.SpCost > SP) { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return false; }
 
-        if (MP >= s.MpCost) { if (s.MpCost != 0) ConsumeMP(s.MpCost); }
-        else { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return; }
-
-        if (SP >= s.SpCost) { if (s.SpCost != 0) ConsumeSP(s.SpCost); }
-        else { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return; }
-
-        UnityEngine.Debug.Log(Name + " uses " + s.Name);
-        foreach (var item in Target) s.Activate(item, GetStats, this);
-
-    }
-
-    public static bool CanUseSkill(Skill s,Actor t)
-    {
-        if (t.HP < s.HpCost)
-        { UnityEngine.Debug.Log(t.Name + " not enough HP :" + t.HP + "/" + s.HpCost); return false; }
-
-        if (t.MP < s.MpCost)  
-          { UnityEngine.Debug.Log(t.Name + " not enough MP: " + t.MP + "/" + s.MpCost); return false; }
-
-        if (t.SP < s.SpCost) 
-        { UnityEngine.Debug.Log(t.Name + " not enough SP: " + t.SP + "/" + s.SpCost); return false; }
-        return true;
-
+        return true; 
     }
     public virtual void Use(Skill s, Actor Target)
     {
 
-        if (!CanUseSkill(s,this)) return;
+        if (!CanUseSkill(s)) return;
+
+        if (s.HpCost > 0) TakeDamage(s.HpCost);
+        if (s.MpCost > 0) ConsumeMP(s.MpCost);
+        if (s.SpCost > 0) ConsumeSP(s.SpCost);
+
+        UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + Target.Name);
+        s.Activate(Target, GetStats, this);
+
+    }
+    public virtual void Use(Skill s, Actor[] Target)
+    {
+        if (!CanUseSkill(s)) return;
 
         if (s.HpCost > 0) TakeDamage(s.HpCost);
         if (s.MpCost > 0) ConsumeMP(s.MpCost);
         if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
-         s.Activate(Target, GetStats, this);
+        foreach (var item in Target)
+            s.Activate(item, GetStats, this);
+
 
     }
+
+
+
     public virtual void Use(Item i, Actor[] T)
     {
         i.Uses--;
@@ -472,7 +470,7 @@ public abstract class Actor : IComparable<Actor> {
         for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
         for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
         */
-        
+
 
         if (Math.Abs(x) > Math.Abs(y) || GameManager.CurrentBattle.map.AtPos(TilePosition + Vector.up * b).Actor != null)
         {
@@ -692,84 +690,7 @@ public abstract class Actor : IComparable<Actor> {
  
 }
 
-public class Skill
-{
-    public enum TargetType
-    {
-        Self = 0,
-        AnAlly = 1,
-        OneEnemy = 2,
-        Enemy = 3,
-        Anyone = 4
-    }
 
-    static Random SkillRandom = new Random();
-    public string EffectPath = "" ;
-    public string Name ="";
-    public DamageType Type;
-    public int Reach = 1;
-    //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
-    public float Damage  = 1;
-    protected float BaseCritChance = 5;
-    public TargetType Targets;
-    public bool Unlocked = false;
-
-    //Requirement    
-    public Skill(string path = "")
-    {
-        EffectPath = path;
-    }
-    public float MpCost =0, HpCost = 0;
-    public int SpCost = 0;
-    public static Skill Base {
-
-        get
-        {
-            var e = new Skill();
-            e.Name = "Attack";
-            e.SpCost = 2;
-            e.Reach = 1;
-            e.Type = DamageType.Physical;
-            e.Damage = .5f;
-            e.Targets = TargetType.OneEnemy;
-            return e;
-        }
-    }
-    public static Skill Weapon(Weapon w)
-    {
-        
-            var e = new Skill();
-            e.Name = "Attack";
-            e.SpCost = 2;
-            e.Reach = 1;
-            e.Type = w.DamageType;
-            e.Damage = .5f;
-            e.Targets = TargetType.OneEnemy;
-            return e;
-        
-    }
-    public virtual void Activate(Actor Target, stat Stats = new stat(), Actor f = null)
-    {
-     
-        var x = Damage;
-        if (Type == DamageType.Magical) x *=  Stats.INT;
-        else if (Type == DamageType.Physical) x *= Stats.STR;
-
-     
-        if ((Stats.LUC * 2 + BaseCritChance + Stats.CriticalHitPercentage) > SkillRandom.Next(0, 100)) Damage *= 1.50f;
-
-            Target.TakeDamage(x,this,f);
-    }
-    public void Activate(Actor[] a, Actor f = null)
-    {
-        foreach (var item in a) { Activate(item);  } 
-    }
-
-
-
-    
-
-}
 [Flags]
 public enum _stats
 {
@@ -781,12 +702,13 @@ public enum DamageType
     Physical =1,
     Magical =2,
     Pierce = 3,
-    
+    Slashing = 4,
+    Blunt = 5
 }
 /// <summary>
 /// Stats of any living being.
 /// </summary>
-public struct stat : IComparable<stat>
+public struct Stat : IComparable<Stat>
 {
 
     public delegate void OnStatsGainHandler();
@@ -840,14 +762,14 @@ public struct stat : IComparable<stat>
         }
         OnGainStats();
     }
-    public void AddStats(stat a)
+    public void AddStats(Stat a)
     {
         this += a;
         if (OnGainStats != null) OnGainStats();
         else Console.WriteLine("No OnGainStats");
     }
 
-    public int CompareTo(stat other)
+    public int CompareTo(Stat other)
     {
         return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
     }
@@ -855,13 +777,13 @@ public struct stat : IComparable<stat>
     //Useful Functions
 
 
-    public static stat zero
+    public static Stat zero
     {
-        get { return new stat(); }
+        get { return new Stat(); }
     }
-    public static stat operator +(stat a, stat b)
+    public static Stat operator +(Stat a, Stat b)
     {
-        var e = new stat();
+        var e = new Stat();
         e.STR = a.STR + b.STR;
         e.INT = a.INT + b.INT;
         e.AGI = a.AGI + b.AGI;
@@ -872,9 +794,9 @@ public struct stat : IComparable<stat>
         
         return e;
     }
-    public static stat operator *(stat a, int b)
+    public static Stat operator *(Stat a, int b)
     {
-        var e = new stat();
+        var e = new Stat();
         e.STR = a.STR * b;
         e.INT = a.INT * b;
         e.AGI = a.AGI * b;
@@ -885,12 +807,32 @@ public struct stat : IComparable<stat>
         return e;
     }
 }
+
+public enum ProfessionType
+{
+    Adventurer = 0,
+    Clerc = 1,
+    Mercenary = 2,
+    Mage = 3,
+    Priest = 4,
+    Paladin = 5,
+    Rogue = 6,
+    Sorcerer = 7,
+    Barbarian = 8,
+    Alchemist = 9,
+    Archpriest = 10,
+    Templar = 11,
+    Berserker = 12,
+    Elementalist = 13,
+    Apostle = 14,
+    Dark_Knight = 15
+}
 public class Profession
 {
 
     public const float BASEPROFIENCYEXP= 10;
  
-    public string Name = "Adventurer";
+    public ProfessionType profession = ProfessionType.Adventurer;
 
     private int Profiency = 0;
     public int GetProfiency
@@ -898,37 +840,37 @@ public class Profession
         get { return Profiency; }
     }
     
-    protected stat BaseStats;
+    protected Stat BaseStats;
     protected float ClassEXP = 0;
 
+    
     public static Profession Madoshi
     {
+
         get
         {
-            var p = new Profession(new stat { INT = 2, WIS = 1, Threat = 5, DefenseBonus = -1 }, "Madoshi");
-            p.Skills = 
-                new Skill[1] {
-                    new Skill
-                    { Name = "Fireball",
-                        Damage = .25f,
-                        Type = DamageType.Magical,
-                        SpCost = 2, Reach = 5,
-                        Unlocked = true, MpCost = 15,
-                        Targets = Skill.TargetType.OneEnemy }
-                };
-
-            return p;
-
+            return new Profession(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[1]
+            { new Skill { Name = "Firebolt",
+                Damage = .5f,
+               MpCost = 10,
+               BaseCritChance = 5f,
+               Reach = 5,
+               SpCost = 2,
+               Targets = Skill.TargetType.OneEnemy,
+               Type = DamageType.Magical,
+               Unlocked = true
+            } });
         }
-
-
     }
+
+
+
+    
     public Skill[] UsableSkill
     {
         get
         {
             var a = new List<Skill>();
-            
             foreach (var item in Skills)
                 if (item.Unlocked) a.Add(item);
 
@@ -949,16 +891,18 @@ public class Profession
     {
         Profiency++;
     }
-    public virtual stat GetBase
+    public virtual Stat GetBase
     {
         get { return BaseStats; }
     }
        
-    public Profession(stat s, string Name = "Adventurer")
+    public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
     {
         this.BaseStats = s;
-        this.Name = Name;
+        this.profession = profession;
+        Skills = sk;
         
     }
+    
 
 }

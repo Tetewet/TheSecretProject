@@ -63,8 +63,8 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     public static List<Actor> Protags = new List<Actor>
     {
-        new Player("Nana",new stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"),
-        new Player("Mathew", new stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
+        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"),
+        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
     };
     public List<InGameActor> InGameActors = new List<InGameActor>(), InGameFoes = new List<InGameActor>();
     public List<InGameItem> InGameItems = new List<InGameItem>();
@@ -226,7 +226,7 @@ public class GameManager : MonoBehaviour {
         //14 6
         var nGroup = new List<Monster>();
         for (int i = 0; i < Random.Range(1, 5); i++)
-            nGroup.Add(new Monster("Kuku " + i, new stat { AGI = 1 }, false, "Kuku~"));
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "Kuku~"));
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
 
 
@@ -360,7 +360,7 @@ public class GameManager : MonoBehaviour {
         var nGroup = new List<Monster>();
         for (int i = 0; i < Random.Range(2, 5); i++)
         {
-            nGroup.Add(new Monster("Kuku " + i, new stat { AGI = 1 }, false, "Kuku~"));
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "Kuku~"));
         }
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
         yield break;
@@ -896,13 +896,15 @@ public class GameManager : MonoBehaviour {
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
         if (SelectedActor != null)
+        {
             if (CurrentBattle.ThisTurn.Order.Count > 0)
-                if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable && Actor.CanUseSkill(Skill.Base,SelectedActor))
-                {
-                    var gig = GetInGameFromActor(SelectedActor);
+                if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
                     if (curtile.Actor == null) SelectedActor.Move(curtile);
-                    else { if (gig) gig.Attack(curtile.Actor, Skill.Base); }
-                }
+                    else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base)) { GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base); }
+
+        }
+
+
 
 
 
@@ -1175,9 +1177,9 @@ public class GameManager : MonoBehaviour {
             {
 
 
-                    if (SelectedSkill != null) { SkillList.SetActive(true); SelectedSkill = null; } 
-                else if (SkillsSelected) SkillsSelected = false;
-                else CloseInventory();
+                    if (SelectedSkill != null) { SkillList.SetActive(true); SelectedSkill = null; }
+                    else if (SkillsSelected) { SkillList.SetActive(false); SkillsSelected = false; }
+                    else CloseInventory();
 
             }
 
