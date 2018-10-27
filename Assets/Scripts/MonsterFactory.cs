@@ -39,8 +39,6 @@ namespace Assets.Scripts
 
     class MonsterControllerFactory : MonsterFactory
     {
-        static Random random;
-
         public MonsterControllerFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
         {
             base.Name = Name;
@@ -64,6 +62,7 @@ namespace Assets.Scripts
             return new Kuku(Name, baseStats, Controllable, AnimatorPath);
         }
 
+        static Random random;
         public static void SpawnMonsters()
         {
             // randomize here
