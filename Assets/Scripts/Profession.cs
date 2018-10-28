@@ -20,7 +20,7 @@ using System.Text;
         Berserker = 12,
         Elementalist = 13,
         Apostle = 14,
-        Dark_Knight = 15
+        Dragoon = 15
     }
     public class Profession
     {
