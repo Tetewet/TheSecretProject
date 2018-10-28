@@ -1,39 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 
-namespace Assets.Scripts
+static class SkillManager
 {
-    class SkillManager
+
+    static void Start()
     {
-        private List<Skill> skillsToOrganize = new List<Skill>();
-        private List<List<Skill>> skills = new List<List<Skill>>(16);
+       
+        string[] arr = XDocument.Load(@"skills.xml").Descendants("NodeName")
+                 .Select(element => element.Value).ToArray();
+        
+    }
 
-        void Start()
-        {
-            for (int i = 0; i < Enum.GetNames(typeof(ProfessionType)).Length; i++)
-            {
-                skills.Add(new List<Skill>(5));
+    public static Skill[] GetSkillsByProfession(Actor actor)
+    {
+        ProfessionType professionType = actor.profession.type;
+        XDocument xml = XDocument.Load(@"skills.xml");
+        XNamespace df = xml.Root.Name.Namespace;
+        var elements = from c in xml.Descendants(df + professionType.ToString())
+                       select c;
+        Skill[] skill = new Skill[5];
+        for (int i = 0; i < skill.Length; i++) {
+            skill[i] = new Skill() {
+                Name = elements.Select(e => e.Attribute("id")).First().Value,
+                ProfType = (ProfessionType)Enum.Parse(typeof(ProfessionType),(string)elements.Select(e => e.Attribute("profession")).First().Value),
+                DmgType = (DamageType)Enum.Parse(typeof(DamageType), (string)elements.Select(e => e.Attribute("type")).First().Value),
+                Reach = int.Parse(elements.Select(e => e.Attribute("reach")).First().Value),
+                Damage =  float.Parse(elements.Select(e => e.Attribute("damage")).First().Value),
+                BaseCritChance = float.Parse(elements.Select(e => e.Attribute("baseCritChance")).First().Value),
+                Targets = (TargetType)Enum.Parse(typeof(TargetType), (string)elements.Select(e => e.Attribute("targets")).First().Value),
+                MpCost = int.Parse(elements.Select(e => e.Attribute("mpcost")).First().Value),
+                HpCost = int.Parse(elements.Select(e => e.Attribute("hpcost")).First().Value),
+                SpCost = int.Parse(elements.Select(e => e.Attribute("spcost")).First().Value),
+                Level = int.Parse(elements.Select(e => e.Attribute("level")).First().Value)
 
-            }
-            foreach (Skill skill in skillsToOrganize)
-            {
-                // Debug.Log((int)skill.Profession);
 
-                skills[(int)skill.Profession].Add(skill);
-            }
-            foreach (List<Skill> skillList in skills)
-            {
-                skillList.Sort((x, y) => x.Level.CompareTo(y.Level));
-            }
-            skillsToOrganize = null;
-            // foreach (List<Skill> skillList in skills)
-            //{
-            //  foreach (Skill skill in skillList)
-            //{
-            //  print(skill.Name + " " + skill.Level );
-            //    }
+
+            };
         }
+        return skill;
     }
 }
+
