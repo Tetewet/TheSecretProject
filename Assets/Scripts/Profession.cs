@@ -27,7 +27,7 @@ using System.Text;
 
         public const float BASEPROFIENCYEXP = 10;
 
-        public ProfessionType profession = ProfessionType.Adventurer;
+        public ProfessionType type = ProfessionType.Adventurer;
 
         private int Profiency = 0;
         public int GetProfiency
@@ -52,7 +52,7 @@ using System.Text;
                Reach = 5,
                SpCost = 2,
                Targets = Skill.TargetType.OneEnemy,
-               Type = DamageType.Magical,
+               DmgType = DamageType.Magical,
                Unlocked = true
             } });
             }
@@ -94,7 +94,7 @@ using System.Text;
         public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
         {
             this.BaseStats = s;
-            this.profession = profession;
+            this.type = profession;
             Skills = sk;
 
         }

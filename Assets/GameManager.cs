@@ -212,7 +212,7 @@ public class GameManager : MonoBehaviour {
         audi = GetComponent<AudioSource>();
 
 
-        Protags[0].Class = Profession.Madoshi;
+        Protags[0].profession = Profession.Madoshi;
 
     }
     public void Start()
@@ -1155,12 +1155,12 @@ public class GameManager : MonoBehaviour {
 
         if (TabChoice > 3) TabChoice = 0;
         if (TabChoice < 0) TabChoice = 3;
-        if (skillUI < 0) skillUI = SelectedActor.Class.UsableSkill.Length - 1;
-        if (skillUI > SelectedActor.Class.UsableSkill.Length - 1) skillUI = 0;
+        if (skillUI < 0) skillUI = SelectedActor.profession.UsableSkill.Length - 1;
+        if (skillUI > SelectedActor.profession.UsableSkill.Length - 1) skillUI = 0;
 
 
         invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length);
+        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.profession.UsableSkill.Length);
 
 
 
@@ -1200,9 +1200,9 @@ public class GameManager : MonoBehaviour {
                 return;
             }
             else
-            if(SkillsSelected && SelectedActor.Class.UsableSkill[skillUI] != null && SelectedSkill == null )
+            if(SkillsSelected && SelectedActor.profession.UsableSkill[skillUI] != null && SelectedSkill == null )
             {
-                var e  = SelectedActor.Class.UsableSkill[skillUI];
+                var e  = SelectedActor.profession.UsableSkill[skillUI];
                 if (PathUI.Count > 0)
                     PathUI.Clear();
 
@@ -1217,9 +1217,9 @@ public class GameManager : MonoBehaviour {
                 SkillsSelected = true;
                 for (int i = 0; i < Skills.Length; i++)
                 {
-                    if (i < SelectedActor.Class.UsableSkill.Length)
+                    if (i < SelectedActor.profession.UsableSkill.Length)
                     {
-                        Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.Class.UsableSkill[i]);
+                        Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.profession.UsableSkill[i]);
                         Skills[i].gameObject.SetActive(true);
                     }
                     else Skills[i].gameObject.SetActive(false);
