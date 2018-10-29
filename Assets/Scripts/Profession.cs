@@ -3,27 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-public enum ProfessionType
-{
-    Adventurer = 0,
-    Clerc = 1,
-    Mercenary = 2,
-    Mage = 3,
-    Priest = 4,
-    Paladin = 5,
-    Rogue = 6,
-    Sorcerer = 7,
-    Barbarian = 8,
-    Alchemist = 9,
-    Archpriest = 10,
-    Templar = 11,
-    Berserker = 12,
-    Elementalist = 13,
-    Apostle = 14,
-    Dragoon = 15
-}
 public class Profession
 {
+    public enum ProfessionType
+    {
+        Adventurer = 0,
+        Clerc = 1,
+        Mercenary = 2,
+        Mage = 3,
+        Priest = 4,
+        Paladin = 5,
+        Rogue = 6,
+        Sorcerer = 7,
+        Barbarian = 8,
+        Alchemist = 9,
+        Archpriest = 10,
+        Templar = 11,
+        Berserker = 12,
+        Elementalist = 13,
+        Apostle = 14,
+        Dragoon = 15
+    }
 
     public const float BASEPROFIENCYEXP = 10;
 

@@ -5,23 +5,21 @@ using System.Text;
 using UnityEngine;
 
 
-public enum TargetType
-{
-    Self = 0,
-    AnAlly = 1,
-    OneEnemy = 2,
-    Enemy = 3,
-    Anyone = 4
-}
 public class Skill 
 {
-    
-
+    public enum TargetType
+    {
+        Self = 0,
+        AnAlly = 1,
+        OneEnemy = 2,
+        Enemy = 3,
+        Anyone = 4
+    }
     
     private new string name = "";
     public string Name { get { return name; } set { name = value; } }
-    private ProfessionType profType;
-    public ProfessionType ProfType { get { return profType; } set { profType = value; } }
+    private Profession.ProfessionType profType;
+    public Profession.ProfessionType ProfType { get { return profType; } set { profType = value; } }
     private DamageType dmgType;
     public DamageType DmgType { get { return dmgType; } set { dmgType = value; } }
     private int reach = 1;
