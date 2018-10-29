@@ -67,7 +67,7 @@
       <level></level>
     </skill>
   </Adventurer>
-  <Clerc>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -133,8 +133,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Clerc>
-  <Mercenary>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -200,8 +200,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Mercenary>
-  <Mage>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -267,8 +267,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Mage>
-  <Priest>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -334,8 +334,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Priest>
-  <Paladin>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -401,8 +401,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Paladin>
-  <Rogue>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -468,8 +468,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Rogue>
-  <Sorcerer>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -535,8 +535,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Sorcerer>
-  <Barbarian>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -602,8 +602,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Barbarian>
-  <Alchemist>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -669,8 +669,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Alchemist>
-  <Archpriest>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -736,8 +736,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Archpriest>
-  <Templar>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -803,8 +803,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Templar>
-  <Berserker>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -870,8 +870,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Berserker>
-  <Elementalist>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -937,8 +937,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Elementalist>
-  <Apostle>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -1004,8 +1004,8 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Apostle>
-  <Dragoon>
+  </Power>
+  <Power>
     <skill id="bleh">
       <profession></profession>
       <damage></damage>
@@ -1071,5 +1071,5 @@
       <spcost></spcost>
       <level></level>
     </skill>
-  </Dragoon>
+  </Power>
 </catalog>

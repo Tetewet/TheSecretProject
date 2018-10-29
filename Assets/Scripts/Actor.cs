@@ -158,19 +158,19 @@ public struct Vector
 
         //Stats
         protected Stat baseStats = new Stat();
-        public Profession profession = new Profession(new Stat())
+        public Profession Class = new Profession(new Stat())
         {
             Skills = new Skill[3] {
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, DmgType = DamageType.Physical, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, DmgType = DamageType.Physical, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, DmgType = DamageType.Physical, Unlocked = true }
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
     }
         };
         public Stat GetStats
         {
             get
             {
-                var t = profession.GetBase + baseStats;
+                var t = Class.GetBase + baseStats;
                 if (inventory.Slot.Length > 0)
                     foreach (var x in inventory.Slot)
                     {
@@ -287,15 +287,15 @@ public struct Vector
             if (f != null)
             {
                 if (Defending) x *= .5f;
-                if (f.DmgType == DamageType.Magical) x -= GetStats.MagDEF;
-                else if (f.DmgType == DamageType.Physical) x -= GetStats.PhysDEF;
-                if (x <= 0 && f.DmgType != DamageType.None)
+                if (f.Type == DamageType.Magical) x -= GetStats.MagDEF;
+                else if (f.Type == DamageType.Physical) x -= GetStats.PhysDEF;
+                if (x <= 0 && f.Type != DamageType.None)
                 {
                     if (OnBlocked != null) OnBlocked(x, f);
                     UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
                     return;
                 }
-                UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
+                UnityEngine.Debug.Log(Name + " took " + f.Type + " " + x);
             }
 
             HP -= x;

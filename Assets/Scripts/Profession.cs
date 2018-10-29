@@ -20,14 +20,14 @@ using System.Text;
         Berserker = 12,
         Elementalist = 13,
         Apostle = 14,
-        Dragoon = 15
+        Dark_Knight = 15
     }
     public class Profession
     {
 
         public const float BASEPROFIENCYEXP = 10;
 
-        public ProfessionType type = ProfessionType.Adventurer;
+        public ProfessionType profession = ProfessionType.Adventurer;
 
         private int Profiency = 0;
         public int GetProfiency
@@ -52,7 +52,7 @@ using System.Text;
                Reach = 5,
                SpCost = 2,
                Targets = Skill.TargetType.OneEnemy,
-               DmgType = DamageType.Magical,
+               Type = DamageType.Magical,
                Unlocked = true
             } });
             }
@@ -94,7 +94,7 @@ using System.Text;
         public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
         {
             this.BaseStats = s;
-            this.type = profession;
+            this.profession = profession;
             Skills = sk;
 
         }
