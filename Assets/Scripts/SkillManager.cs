@@ -45,5 +45,4 @@ static class SkillManager
         }
         return skill;
     }
-}
 
