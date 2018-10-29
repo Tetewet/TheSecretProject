@@ -15,38 +15,47 @@ public class Skill
         Anyone = 4
     }
 
-    
-    [SerializeField] private new string name = "";
+    public bool Unlocked = false;
+    public string AnimationPath = "";
+
+    private new string name = "";
     public string Name { get { return name; } set { name = value; } }
-    [SerializeField] private ProfessionType profession;
+    private ProfessionType profession;
     public ProfessionType Profession { get { return profession; } set { profession = value; } }
-    [SerializeField] private DamageType type;
-    public DamageType Type { get { return type; } set { type = value; } }
-    [SerializeField] private int reach = 1;
+    private DamageType type;
+    public DamageType  Type { get { return type; } set { type = value; } }
+    private int reach = 1;
     public int Reach { get { return reach; } set {reach  = value; } }
+   
     //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
-    [SerializeField] private float damage = 1;
+    private float damage = 1;
     public float Damage{ get { return damage; } set { damage = value; } }
-    [SerializeField] private float baseCritChance = 5;
+
+
+    private float baseCritChance = 5;
     public float BaseCritChance{ get { return baseCritChance; } set { baseCritChance = value; } }
-    [SerializeField] private TargetType targets;
+
+    private TargetType targets;
     public TargetType Targets { get { return targets; } set { targets = value; } }
-    public bool Unlocked;
+
 
     //Requirement    
-    [SerializeField] private float mpCost = 0, hpCost = 0;
+    private float mpCost = 0, hpCost = 0;
     public float MpCost { get { return mpCost; } set { mpCost= value; } }
     public float HpCost { get { return hpCost; } set { hpCost = value; } }
-    [SerializeField] private int spCost = 0, level = 0;
+    private int spCost = 0, level = 0;
     public int SpCost { get { return spCost; } set { spCost = value; } }
     public int Level { get { return level; } set { level = value; } }
+
+
+ 
     public static Skill Base
     {
 
         get
         {
             var e = new Skill();
-            e.Name = "Attack";
+            e.name = "Attack";
             e.SpCost = 2;
             e.Reach = 1;
             e.Type = DamageType.Physical;

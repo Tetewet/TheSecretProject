@@ -4,6 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
+    /// <summary>
+    /// Are we in battle mode?
+    /// </summary>
+    public static bool BattleMode 
+    {
+       get { return !(CurrentBattle == null || CurrentBattle.OnGoing); }
+    }
     public static GameManager GM;
     public static bool InBattleMode = true;
     public Camera Cam;
@@ -23,6 +30,7 @@ public class GameManager : MonoBehaviour {
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject SkillsPrefab;
+   
     public GameObject panel, InventoryCeil;
     public RectTransform GameEnd;
     public GameObject TabButtons, MiniMenu;
@@ -48,6 +56,13 @@ public class GameManager : MonoBehaviour {
 
     public static InGameItem CreateNewItemOnField(Item i, Vector Position)
     {
+
+
+        if(i is Weapon)
+        {
+            InGameWeapon.GenerateInGameWeapon(i as Weapon);
+            return null;
+        }
         var e = Instantiate(GM.ItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameItem>();
         GM.InGameItems.Add(e);
         e.item = i;
@@ -63,9 +78,10 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     public static List<Actor> Protags = new List<Actor>
     {
-        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"),
-        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
+        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"){ inventory = Actor.Inventory.Light},
+        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian"){ inventory = Actor.Inventory.Light}
     };
+
     public List<InGameActor> InGameActors = new List<InGameActor>(), InGameFoes = new List<InGameActor>();
     public List<InGameItem> InGameItems = new List<InGameItem>();
 
@@ -73,7 +89,9 @@ public class GameManager : MonoBehaviour {
     public static InGameActor GenerateInGameActor(Actor f)
     {
         var e = Instantiate(GM.ActorPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameActor>();
-        e.InitializedActor(f, LoadAnimatorController(f.AnimatorPath));
+        e.InitializedActor(f, f.AnimatorPath, LoadAnimatorController("Actor"));
+
+        
         return e;
     }
 
@@ -217,6 +235,8 @@ public class GameManager : MonoBehaviour {
     }
     public void Start()
     {
+
+     
         GM.InitializeUI();
 
         foreach (var item in Protags)
@@ -226,11 +246,22 @@ public class GameManager : MonoBehaviour {
         //14 6
         var nGroup = new List<Monster>();
         for (int i = 0; i < Random.Range(1, 5); i++)
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "Kuku~"));
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "~Kuku"));
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
 
 
-
+        Protags[1].Equip(
+       new Weapon("Iron Sword")
+       {
+           slot = Equipement.Slot.Weapon,
+           StatsBonus = new Stat { STR = 2 },
+           DamageType = DamageType.Slashing,
+           WeaponType = Weapon.type.Sword,
+           GoldValue = 100,
+           rarity = Item.Rarity.Common,
+           Durability = 100
+       })
+        ;
 
         //Debug
 
@@ -362,7 +393,7 @@ public class GameManager : MonoBehaviour {
         var nGroup = new List<Monster>();
         for (int i = 0; i < Random.Range(2, 5); i++)
         {
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "Kuku~"));
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "~Kuku"));
         }
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
         yield break;

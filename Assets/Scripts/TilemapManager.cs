@@ -5,18 +5,31 @@ using UnityEngine.Tilemaps;
 
 public class TilemapManager : MonoBehaviour {
 
-    public Tilemap ForeGround, BackGround, Paralax;
-    public TileBase tb;
- 
-    // Use this for initialization
-    void Start () {
+    public Tilemap Events ;
 
-        ForeGround.SetTile(Vector3Int.zero, tb);
-     
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    private void Start()
+    {
+        LoadMap();
+    }
+    public void LoadMap()
+    {
+
+        print("Loading the map....");
+        print("Map size: " + Events.size );
+
+       
+        
+        foreach (var item in Events.GetTilesBlock(new BoundsInt(Vector3Int.zero,Events.size)))
+        {
+
+            if(item!= null)
+            {
+                print(item.name + " -- " + item.ToString());
+ 
+            }
+    
+        }
+      
+    }
 }

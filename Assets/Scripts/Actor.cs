@@ -253,9 +253,13 @@ public abstract class Actor : IComparable<Actor> {
 
     public virtual void Equip(Equipement q)
     {
+        var f = false;
         foreach (var g in inventory.Slot)
-            if(g.item == null && g.SlotType == q.slot)
-                g.Equip(q);
+            if(g.item == null && g.SlotType == q.slot) { f = true; g.Equip(q); }
+
+        if (!f) return;
+        if (OnEquip!= null) OnEquip(q);
+        UnityEngine.Debug.Log(Name + " equips " + q.Name);
 
     }
     public void OnMurder(Actor a)
@@ -386,7 +390,8 @@ public abstract class Actor : IComparable<Actor> {
         
       
     }
-
+    public delegate void OnEquipHandler(Equipement e);
+    public event OnEquipHandler OnEquip;
     public delegate void OnTurnHandler(Battle.Turn e);
     public event OnTurnHandler OnTurn;
     //Position In world;
@@ -590,6 +595,31 @@ public abstract class Actor : IComparable<Actor> {
     
         public EquipementSlot[] Slot;
 
+        public List<Weapon> GetWeapons
+        {
+            get
+            {
+                if (Slot.Length == 0) return null;
+                if (!HasWeapon) return null;
+
+                List < Weapon > w = new List<Weapon>();
+                foreach (var item in Slot)              
+                    if (item.item is Weapon)
+                        w.Add(item.item as Weapon);
+                return w; 
+
+            }
+        }
+        public bool HasWeapon
+        {
+            get
+            {
+                for (int i = 0; i < Slot.Length; i++)             
+                    if (Slot[i].item is Weapon) return true;               
+                return false;
+            }
+        }
+
         /// <summary>
         /// Light Equipement Build
         /// </summary>
@@ -601,11 +631,11 @@ public abstract class Actor : IComparable<Actor> {
 
                 e.items = new Item[3];
                 e.Slot = new EquipementSlot[4];
-                e.Slot[0].SlotType = global::Equipement.Slot.Armor;
-                e.Slot[1].SlotType = global::Equipement.Slot.Head;
-                e.Slot[2].SlotType = global::Equipement.Slot.Accessory;
-                e.Slot[3].SlotType = global::Equipement.Slot.Weapon;
-               // foreach (var ITEM in e.Slot) ITEM.item.OnItemBreak += e.OnItemBreak;
+                e.Slot[0] = new EquipementSlot(Equipement.Slot.Armor);
+                e.Slot[1] = new EquipementSlot(Equipement.Slot.Head);
+                e.Slot[2] = new EquipementSlot(Equipement.Slot.Weapon);
+                e.Slot[3] = new EquipementSlot(Equipement.Slot.Accessory);
+                // foreach (var ITEM in e.Slot) ITEM.item.OnItemBreak += e.OnItemBreak;
 
                 return e;
             }
@@ -643,8 +673,14 @@ public abstract class Actor : IComparable<Actor> {
                 return t;
             }
         }
-        public struct EquipementSlot
+        public class EquipementSlot
         {
+
+            public EquipementSlot(  Equipement.Slot type)
+            {
+                this.SlotName = type.ToString();
+                this.SlotType = type;
+            }
             public string SlotName;
             public Equipement item;
             public Equipement.Slot SlotType;
@@ -652,7 +688,7 @@ public abstract class Actor : IComparable<Actor> {
             {
                 if (q.slot != SlotType) return;
                 item = q;
-
+                 
 
             }
         }

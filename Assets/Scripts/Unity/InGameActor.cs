@@ -3,6 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public class AnimationClipOverrides : List<KeyValuePair<AnimationClip, AnimationClip>>
+{
+    public AnimationClipOverrides(int capacity) : base(capacity) { }
+
+    public AnimationClip this[string name]
+    {
+        get { return this.Find(x => x.Key.name.Equals(name)).Value; }
+        set
+        {
+            int index = this.FindIndex(x => x.Key.name.Equals(name));
+            if (index != -1)
+                this[index] = new KeyValuePair<AnimationClip, AnimationClip>(this[index].Key, value);
+        }
+    }
+}
+
+
 public class InGameActor : MonoBehaviour {
 
     public string Name;
@@ -21,6 +38,10 @@ public class InGameActor : MonoBehaviour {
     public float DistanceToPos;
     public bool isAI = false;
     private Canvas cv;
+
+    [Header("Equipements")]
+    public Transform[] Wep;
+
 
     public bool MyTurn = false;
     // private Skill SkillToUse = null;
@@ -113,7 +134,7 @@ public class InGameActor : MonoBehaviour {
     }
 
 
-
+  
     public void UseSkill(Actor to, Skill s)
     {
         var r = s.Targets;
@@ -121,13 +142,15 @@ public class InGameActor : MonoBehaviour {
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
-        if (r == Skill.TargetType.Self && to != null) { Error("Can only target yourself"); return; }
+        if (r == Skill.TargetType.Self && to != actor) { Error("Can only target yourself"); return; }
 
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
-        actor.Use(s, to);
+         actor.Use(s, to);
+
         GameManager.GM.ShowTabMenu(false);
+
     }
     void Error(string s)
     {
@@ -196,7 +219,7 @@ public class InGameActor : MonoBehaviour {
         AITImer = 0;
         Actor[] e = new Actor[1];
         e[0] = temptarget;
-
+        GameManager.GM.ActionFreeze();
         actor.Use(tempattack, e);
         TimeSincedAttack = 0;
         if (actor.SP <= 0) EndTurn();
@@ -334,25 +357,75 @@ public class InGameActor : MonoBehaviour {
     }
 
 
+    public List<InGameWeapon> IGW= new List<InGameWeapon>();
     //Actor Related - Can Swap Actor on a whim
-    public void InitializedActor(Actor a, RuntimeAnimatorController b =null )
+
+    AnimatorOverrideController animcont;
+    AnimationClipOverrides clipov;
+    public void InitializedActor(Actor a, string ActorName, RuntimeAnimatorController b =null  )
     {
         
         actor = a;
         a.OnTurn += OnTurn;
         a.OnExpGain += OnExpGain;
         a.OnDamage += OnDamage;
-        a.OnKillActor += OnKillingSomone;
+        a.OnKillActor += OnKillingSomeone;
+        a.OnEquip += OnEquip;
         Indicator.color = ActorColor;
+
+
+       
 
         isAI = !actor.Controllable;
         if (a.AnimatorPath.Contains("~")) InverseSprite = true;
         this.name = actor.Name;
         Name = actor.Name;
         if (b) foreach (var item in anim) item.runtimeAnimatorController = b;
-        
+        string[] amn = new string[b.animationClips.Length];
+   
+
+        animcont = new AnimatorOverrideController(anim[0].runtimeAnimatorController);
+        anim[0].runtimeAnimatorController = animcont;
+        clipov = new AnimationClipOverrides(animcont.overridesCount);
+        animcont.GetOverrides(clipov);
+        for (int i = 0; i < animcont.runtimeAnimatorController.animationClips.Length; i++)
+        {
+            amn[i] = animcont.runtimeAnimatorController.animationClips[i].name;
+            clipov[amn[i]] = Resources.Load<AnimationClip>("Sprites/Animation/Actors/" + ActorName + "/" + amn[i]);
+
+        }
+
+
+
+        animcont.ApplyOverrides(clipov);
+
+        if (a.inventory.HasWeapon)
+        {
+            for (int i = 0; i < a.inventory.GetWeapons.Count; i++)
+                if (i < Wep.Length) OnEquip(a.inventory.GetWeapons[i]);
+                    
+
+        }
+
+    }
+
+    private void OnEquip(Equipement e)
+    {
+        if(e is Weapon)
+        {
  
-     
+            for (int i = 0; i < Wep.Length; i++)
+            {
+ 
+                if (Wep[i].childCount == 0)
+                {
+                  IGW.Add(Instantiate(InGameWeapon.GenerateInGameWeapon(e as Weapon), Wep[i]).GetComponent<InGameWeapon>());
+                    break;
+                }
+          
+            }
+           
+        }
     }
 
     private void OnDestroy()
@@ -360,7 +433,8 @@ public class InGameActor : MonoBehaviour {
         actor.OnTurn -= OnTurn;
         actor.OnExpGain -= OnExpGain;
         actor.OnDamage -= OnDamage;
-        actor.OnKillActor -= OnKillingSomone;
+        actor.OnKillActor -= OnKillingSomeone;
+        actor.OnEquip -= OnEquip;
     }
 
     IEnumerator ColorBlink(Color c, float x)
@@ -392,7 +466,7 @@ public class InGameActor : MonoBehaviour {
 
         yield break;
     }
-    private void OnKillingSomone(Actor a)
+    private void OnKillingSomeone(Actor a)
     {
         GameManager.CursorPos = a.TilePosition;
         GameManager.GM.ActionFreeze();
@@ -450,7 +524,7 @@ public class InGameActor : MonoBehaviour {
     public void InitializedActor(Actor a, string path = "")
     {
      
-        InitializedActor(a, (RuntimeAnimatorController)Resources.Load<RuntimeAnimatorController>(path) );
+        InitializedActor(a, actor.AnimatorPath,(RuntimeAnimatorController)Resources.Load<RuntimeAnimatorController>(path) );
   
     }
 
@@ -477,7 +551,7 @@ public class InGameActor : MonoBehaviour {
         transform.position = (Vector2)GameManager.Battlefied[(int)actor.TilePosition.x, (int)actor.TilePosition.y].transform.position + offset;
 
     
-
+        //Check for next tile
         while (actor.Path.Count > 0)
         {
 
@@ -487,14 +561,24 @@ public class InGameActor : MonoBehaviour {
 
 
 
-            if (target.Actor != null && target.Actor != actor )
+            if (target.Actor != null && target.Actor != actor  )
             {
              
                 actor.CantMove(actor.Path.Peek());
 
 
                 //Since PathFinding Is dumb, AI skip turn on stuck
-                if (isAI && MyTurn) EndTurn();
+                if (isAI && MyTurn)
+                {
+                    if (temptarget != null && tempattack != null && target.Actor == temptarget)
+                    {
+                        if (actor.CanUseSkill(tempattack))
+                            foreach (var item in anim) item.SetTrigger(tempattack.Type.ToString());
+                        else EndTurn();
+                        attacking = false;
+                    }
+                    else EndTurn();
+                } 
                     timer = 0;
                 return;
             }
