@@ -933,7 +933,13 @@ public class GameManager : MonoBehaviour {
             if (CurrentBattle.ThisTurn.Order.Count > 0)
                 if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
                     if (curtile.Actor == null) SelectedActor.Move(curtile);
-                    else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base)) { GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base); }
+                    else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base)) {
+
+                      if(SelectedActor.inventory.HasWeapon)
+                            foreach (var item in SelectedActor.inventory.GetWeapons)
+                                GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
+
+                    }
 
         }
 

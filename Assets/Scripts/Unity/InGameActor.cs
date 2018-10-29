@@ -350,7 +350,7 @@ public class InGameActor : MonoBehaviour {
         TurnSprite((temptarget.TilePosition - actor.TilePosition).x < 0);
         yield return new WaitForSeconds(.3f);
 
-        if (actor.CanUseSkill(Skill.Base ))       
+        if (actor.CanUseSkill(b))       
             foreach (var item in anim) item.SetTrigger(b.Type.ToString());
         attacking = false;
         yield break;

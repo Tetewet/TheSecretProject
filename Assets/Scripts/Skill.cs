@@ -14,7 +14,7 @@ public class Skill
         Enemy = 3,
         Anyone = 4
     }
-
+    protected Weapon wep;
     public bool Unlocked = false;
     public string AnimationPath = "";
 
@@ -48,7 +48,24 @@ public class Skill
     public int Level { get { return level; } set { level = value; } }
 
 
- 
+    public static Skill Weapon(Weapon w)
+    {
+        if (w == null) return Skill.Base;
+        else
+        {
+
+            var e = new Skill();
+            e.wep = w; 
+            e.name = "Attack";
+            e.SpCost = 2;
+            e.Reach = 1;
+            e.Type = w.DamageType;
+            e.baseCritChance = w.StatsBonus.CriticalHitFlat;
+            e.Damage = .5f;
+            e.Targets = TargetType.OneEnemy;
+            return e;
+        }
+    }
     public static Skill Base
     {
 
@@ -58,7 +75,7 @@ public class Skill
             e.name = "Attack";
             e.SpCost = 2;
             e.Reach = 1;
-            e.Type = DamageType.Physical;
+            e.Type = DamageType.Melee;
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             return e;
@@ -68,9 +85,10 @@ public class Skill
     {
 
         var x = Damage;
+       
         if (Type == DamageType.Magical) x *= stats.INT;
-        else if (Type == DamageType.Physical) x *= stats.STR;
-
+        else if (Type == DamageType.Melee) x *= stats.STR;
+        if (wep != null) x += wep.ATK;
         if ((stats.LUC * 2 + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
 
         target.TakeDamage(x, this, f);

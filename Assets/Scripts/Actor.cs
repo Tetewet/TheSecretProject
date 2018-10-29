@@ -156,9 +156,9 @@ public abstract class Actor : IComparable<Actor> {
     //Stats
     protected Stat baseStats = new Stat();
     public Profession Class = new Profession(new Stat()) { Skills = new Skill[3] {
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Physical, Unlocked = true }
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Melee, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Melee, Unlocked = true },
+        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Melee, Unlocked = true }
     }
     };
     public Stat GetStats
@@ -283,7 +283,7 @@ public abstract class Actor : IComparable<Actor> {
         {
             if (Defending) x *= .5f;
             if (f.Type == DamageType.Magical) x -= GetStats.MagDEF;
-            else if (f.Type == DamageType.Physical) x -= GetStats.PhysDEF;
+            else if (f.Type == DamageType.Melee) x -= GetStats.PhysDEF;
             if (x <= 0 && f.Type != DamageType.None)
             {
                 if(OnBlocked!= null)OnBlocked(x, f);
@@ -738,7 +738,7 @@ public enum _stats
 public enum DamageType
 {
     None = 0,
-    Physical =1,
+    Melee =1,
     Magical =2,
     Pierce = 3,
     Slashing = 4,

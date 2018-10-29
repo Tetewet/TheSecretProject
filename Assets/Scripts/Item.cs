@@ -181,8 +181,8 @@ public class Weapon : Equipement
         //Axe, WarAxe
         Axe = 7, 
     }
- 
-    
+    //Bonus Attacks - Raw Addtional Damage, this should be keep low 
+    public int ATK = 0;
     public class EquipmentSpriteData
     {
         public Component Blade, Hilt, Enchant;
