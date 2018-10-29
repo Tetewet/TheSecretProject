@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
+
 public class Skill 
 {
     public enum TargetType
@@ -14,30 +15,28 @@ public class Skill
         Enemy = 3,
         Anyone = 4
     }
-
     
-    [SerializeField] private new string name = "";
+    private new string name = "";
     public string Name { get { return name; } set { name = value; } }
-    [SerializeField] private ProfessionType profession;
-    public ProfessionType Profession { get { return profession; } set { profession = value; } }
-    [SerializeField] private DamageType type;
-    public DamageType Type { get { return type; } set { type = value; } }
-    [SerializeField] private int reach = 1;
+    private Profession.ProfessionType profType;
+    public Profession.ProfessionType ProfType { get { return profType; } set { profType = value; } }
+    private DamageType dmgType;
+    public DamageType DmgType { get { return dmgType; } set { dmgType = value; } }
+    private int reach = 1;
     public int Reach { get { return reach; } set {reach  = value; } }
     //What percentage of the stats it uses; 1 = 100%, .2 = 20% of STR or INT - A la pokemon
-    [SerializeField] private float damage = 1;
+    private float damage = 1;
     public float Damage{ get { return damage; } set { damage = value; } }
-    [SerializeField] private float baseCritChance = 5;
+    private float baseCritChance = 5;
     public float BaseCritChance{ get { return baseCritChance; } set { baseCritChance = value; } }
-    [SerializeField] private TargetType targets;
+    private TargetType targets;
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
 
     //Requirement    
-    [SerializeField] private float mpCost = 0, hpCost = 0;
-    public float MpCost { get { return mpCost; } set { mpCost= value; } }
-    public float HpCost { get { return hpCost; } set { hpCost = value; } }
-    [SerializeField] private int spCost = 0, level = 0;
+    private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
+    public int MpCost { get { return mpCost; } set { mpCost= value; } }
+    public int HpCost { get { return hpCost; } set { hpCost = value; } }
     public int SpCost { get { return spCost; } set { spCost = value; } }
     public int Level { get { return level; } set { level = value; } }
     public static Skill Base
@@ -49,7 +48,7 @@ public class Skill
             e.Name = "Attack";
             e.SpCost = 2;
             e.Reach = 1;
-            e.Type = DamageType.Physical;
+            e.DmgType = DamageType.Physical;
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             return e;
@@ -59,8 +58,8 @@ public class Skill
     {
 
         var x = Damage;
-        if (Type == DamageType.Magical) x *= stats.INT;
-        else if (Type == DamageType.Physical) x *= stats.STR;
+        if (DmgType == DamageType.Magical) x *= stats.INT;
+        else if (DmgType == DamageType.Physical) x *= stats.STR;
 
         if ((stats.LUC * 2 + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
 

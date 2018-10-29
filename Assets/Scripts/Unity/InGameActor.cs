@@ -342,7 +342,7 @@ public class InGameActor : MonoBehaviour {
         yield return new WaitForSeconds(.3f);
 
         if (actor.CanUseSkill(Skill.Base ))       
-            foreach (var item in anim) item.SetTrigger(b.Type.ToString());
+            foreach (var item in anim) item.SetTrigger(b.DmgType.ToString());
         attacking = false;
         yield break;
     }
