@@ -152,8 +152,9 @@ public class GameManager : MonoBehaviour {
         {
             GM.InGameActors.Add(GenerateInGameActor(h));
             h.SP = 0;
+            if (h.HP < 0) h.HP = 1;
         }
-           
+          
         foreach (var q in F)
         {
             GM.InGameFoes.Add(GenerateInGameActor(q));

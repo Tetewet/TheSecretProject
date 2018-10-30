@@ -434,7 +434,14 @@ public class InGameActor : MonoBehaviour {
  
                 if (Wep[i].childCount == 0)
                 {
-                  IGW.Add(Instantiate(InGameWeapon.GenerateInGameWeapon(e as Weapon), Wep[i]).GetComponent<InGameWeapon>());
+                    var g = InGameWeapon.GenerateInGameWeapon(e as Weapon).GetComponent<InGameWeapon>();
+
+
+                  IGW.Add(  g);
+                    g.transform.parent = Wep[i].transform;
+                    g.transform.localPosition = Vector3.zero;
+                    g.transform.localRotation = Quaternion.Euler(Vector3.zero);
+                    g.transform.localScale = Vector3.one;
                     break;
                 }
           
