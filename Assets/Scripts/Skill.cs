@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
-
+ 
 public class Skill 
 {
     public enum TargetType
@@ -85,9 +84,11 @@ public class Skill
     {
 
         var x = Damage;
+
        
-        if (Type == DamageType.Magical) x *= stats.INT;
-        else if (Type == DamageType.Melee) x *= stats.STR;
+        if ( type == DamageType.Magic) x *= stats.INT;
+        if (type == DamageType.Physical || type == DamageType.Slashing || type == DamageType.Blunt) x *= stats.STR;
+ 
         if (wep != null) x += wep.ATK;
         if ((stats.LUC * 2 + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
 

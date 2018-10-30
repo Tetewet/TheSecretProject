@@ -53,7 +53,7 @@ public class InGameWeapon : MonoBehaviour {
             s.Blade.sprite = B[w.GetSpriteData.Blade.SpriteIndex];
             s.Blade.enabled = true;
             s.Blade.color = IGMtoColor(w.GetSpriteData.Blade.Color);
-            print("oh no");
+            
         }
         if (H.Length > 0)
         {

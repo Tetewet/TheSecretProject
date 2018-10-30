@@ -197,7 +197,8 @@ public abstract class Actor : IComparable<Actor> {
 
     public bool CanUseSkill(Skill s)
     {
-
+        if (s == null)
+            s = Skill.Base;
         if (s.HpCost > HP) { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return false; }
         if ( s.MpCost > MP ) { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return false; }
         if(s.SpCost > SP) { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return false; }
@@ -535,6 +536,7 @@ public abstract class Actor : IComparable<Actor> {
     {
         //DEBUG
         UnityEngine.Debug.Log("Couldn't move to " + v);
+   
         Path.Clear();
     }
     protected Transform _transform;
@@ -735,14 +737,17 @@ public enum _stats
 {
     STR = 1, AGI = 2, END =4, WIS = 8, INT = 16, LUC = 32 
 }
+[Flags]
 public enum DamageType
 {
     None = 0,
     Melee =1,
     Magical =2,
-    Pierce = 3,
-    Slashing = 4,
-    Blunt = 5
+    Pierce = 4,
+    Slashing = 8,
+    Blunt = 16,
+    Physical = Melee | Pierce | Slashing | Blunt,
+    Magic = Magical
 }
 /// <summary>
 /// Stats of any living being.
@@ -844,6 +849,11 @@ public struct Stat : IComparable<Stat>
         e.LUC = a.LUC * b;
         e.OnGainStats += a.OnGainStats;
         return e;
+    }
+
+    public override string ToString()
+    {
+        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC;
     }
 }
 

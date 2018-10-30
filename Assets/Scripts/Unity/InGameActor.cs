@@ -71,15 +71,15 @@ public class InGameActor : MonoBehaviour {
     public static Actor[] ToActors(InGameActor[] s)
     {
         var e = new Actor[s.Length];
-        for (int i = 0; i < e.Length; i++)       
+        for (int i = 0; i < e.Length; i++)
             e[i] = s[i].actor;
         return e;
-        
+
     }
     private void Awake()
     {
         cv = GetComponentInChildren<Canvas>();
- 
+
 
     }
 
@@ -102,16 +102,16 @@ public class InGameActor : MonoBehaviour {
     public void AI(Battle.Turn Turn = null)
     {
 
-        
+
         if (!MyTurn) return;
 
         AITImer = 0;
-        Attack(GameManager.GM.InGameActors[Random.Range(0,GameManager.Protags.Count)].actor, Skill.Base);
+        Attack(GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor, Skill.Base);
 
     }
 
 
-    Actor cachedactor;Item cacheditem; public SpriteRenderer OnActorItem;
+    Actor cachedactor; Item cacheditem; public SpriteRenderer OnActorItem;
 
     public void UseItem(Actor to, Item t)
     {
@@ -134,11 +134,11 @@ public class InGameActor : MonoBehaviour {
     }
 
 
-  
+
     public void UseSkill(Actor to, Skill s)
     {
         var r = s.Targets;
-        if (!actor.CanUseSkill(s)) { Error("Not enough ressource");return; }
+        if (!actor.CanUseSkill(s)) { Error("Not enough ressource"); return; }
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
@@ -147,7 +147,7 @@ public class InGameActor : MonoBehaviour {
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
-         actor.Use(s, to);
+        actor.Use(s, to);
 
         GameManager.GM.ShowTabMenu(false);
 
@@ -163,9 +163,9 @@ public class InGameActor : MonoBehaviour {
         actor.Use(cacheditem, cachedactor);
         actor.ConsumeSP(1);
         GameManager.SetActor(actor);
-        
+
     }
-    
+
     /// <summary>
     /// Is called once at the start of the turn
     /// </summary>
@@ -175,8 +175,8 @@ public class InGameActor : MonoBehaviour {
 
         actor.TileWalkedThisTurn = 0;
 
-       if(sprity[0]!= null)
-        sprity[0].color = Color.white;
+        if (sprity[0] != null)
+            sprity[0].color = Color.white;
         MyTurn = true;
 
         if (!isAI)
@@ -187,11 +187,11 @@ public class InGameActor : MonoBehaviour {
 
         }
         else AI(Turn);
-        
+
 
     }
 
-    
+
     public bool CanPerformAction(Skill s)
     {
         if (actor.HP < s.HpCost) { print("Not enough HP: " + actor.HP + "/" + s.HpCost); return false; }
@@ -208,7 +208,7 @@ public class InGameActor : MonoBehaviour {
             StartCoroutine(normattack);
         }
 
-          
+
     }
     /// <summary>
     /// Used by the Animation. Will Ends the Turn
@@ -219,12 +219,19 @@ public class InGameActor : MonoBehaviour {
         AITImer = 0;
         Actor[] e = new Actor[1];
         e[0] = temptarget;
-        GameManager.GM.ActionFreeze();
         actor.Use(tempattack, e);
         TimeSincedAttack = 0;
+        AITImer = 0;
+
+    }
+    public void StopAnimatedAttack()
+    {
+         
+        if (!MyTurn) return;
+        AITImer = 0;
+        GameManager.GM.ActionFreeze();
         if (actor.SP <= 0) EndTurn();
-
-
+        StopCoroutine(normattack);
     }
 
     void StopAttacking()
@@ -311,34 +318,42 @@ public class InGameActor : MonoBehaviour {
         temptarget = a;
         actor.Move(a.TilePosition, true);
  
-        
+
         foreach (var item in actor.Path)
         {
+            
             if (GameManager.CurrentBattle.map.AtPos(item).Actor != null)
             {
+              
                 var f = GameManager.CurrentBattle.map.AtPos(item).Actor;
+                
                 if (f == actor) continue;
                 if (f == a) continue;
-                if (!f.IsTeamWith(actor)) continue;
-
-                if (f != actor && f != a)
+                
+               
+                if ((f != actor && f != a) || f.IsTeamWith(actor))
                 {
            
-                    print(f.Name + " is block me!");
-                   /* attacking = false;
+                    Error(f.Name + " is blocking " + name);
+                    attacking = false;
                     tempattack = null;
                     temptarget = null;
-                    yield break;*/
+                    StopAttacking();
+                    
+                    yield break;
                 }
                 
 
             }
       
         }
+        TurnSprite((temptarget.TilePosition - actor.TilePosition).x < 0);
+
         // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
-        while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
+        //while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
+        while (actor.Path.Count > b.Reach)
         {
-            
+
             if (!MyTurn)
             {
                 attacking = false;
@@ -608,25 +623,37 @@ public class InGameActor : MonoBehaviour {
             item.SetBool("Walking", walking);
         anim[0].SetBool("Defend",actor.Defending);
         var g = transform.position.x - e.transform.position.x;
+        if (!InverseSprite)
+        {
+            if (g > 0) transform.rotation = Quaternion.Euler(new Vector3(0,180,0));
+            else if (g < 0)transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+        }
+        else
+        {
 
+            if (g > 0) transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+            else if (g < 0) transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+        }
         for (int i = 0; i < sprity.Length; i++)
         {
             var item = sprity[i];
-            if (InverseSprite)
+          /*  if (InverseSprite)
             {
-                if (g > 0) item.flipX = !true;
-                if (g < 0) item.flipX = !false;
+                
+               if (g > 0) item.flipX = !true;
+                if (g < 0) item.flipX = !false; 
             }
             else
             {
-                if (g > 0) item.flipX = true;
-                if (g < 0) item.flipX = false;
+               if (g > 0) item.flipX = true;
+                if (g < 0) item.flipX = false; 
             }
 
-
+            */
             if (i > 0)
             {
                 item.sprite = sprity[0].sprite;
+                item.flipX= sprity[0].flipX;
             }
         }
         Position = new Vector2(actor.TilePosition.x, actor.TilePosition.y);
@@ -640,18 +667,31 @@ public class InGameActor : MonoBehaviour {
         sprity[0].sortingOrder = 2 + (int)actor.TilePosition.y;
 
         Indicator.gameObject.SetActive(GameManager.SelectedActor == actor);
+        Indicator.transform.rotation = Quaternion.Euler(Vector3.zero);
         Indicator.transform.position = e.transform.position;
 
     }
     public void TurnSprite(bool x)
     {
-        for (int i = 0; i < sprity.Length; i++)
+
+        if (!InverseSprite)
         {
-            var item = sprity[i];
-            if (InverseSprite)
-                x = !x;
-           item.flipX = x;     
+            if (x) transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+            else   transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
         }
+        else
+        {
+
+            if (x) transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+            else  transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+        }
+        /* for (int i = 0; i < sprity.Length; i++)
+         {
+             var item = sprity[i];
+             if (InverseSprite)
+                 x = !x;
+            item.flipX = x;     
+         }*/
     }
         private void Update()
     {

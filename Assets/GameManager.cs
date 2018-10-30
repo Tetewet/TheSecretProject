@@ -246,7 +246,7 @@ public class GameManager : MonoBehaviour {
         //14 6
         var nGroup = new List<Monster>();
         for (int i = 0; i < Random.Range(1, 5); i++)
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "~Kuku"));
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1,STR = 3 }, false, "~Kuku"));
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
 
 
@@ -935,9 +935,20 @@ public class GameManager : MonoBehaviour {
                     if (curtile.Actor == null) SelectedActor.Move(curtile);
                     else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base)) {
 
-                      if(SelectedActor.inventory.HasWeapon)
+                        if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
-                                GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
+                            {
+                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
+                            }
+                        else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
+
+
+
+
+
+
+
+
 
                     }
 
@@ -1091,7 +1102,10 @@ public class GameManager : MonoBehaviour {
     public void ShowTabMenu(bool a)
     {
         Tabmenu = a;
-        if (!HasSelectedActor || (HasSelectedActor && SelectedActor != CurrentBattle.ActingThisTurn) ) Tabmenu = false;
+
+        
+        if (!BattleMode && !HasSelectedActor || (HasSelectedActor && SelectedActor != CurrentBattle.ActingThisTurn) ) Tabmenu = false;
+
         TabButtons.SetActive(!Tabmenu && SelectedActor != null);
         MiniMenu.gameObject.SetActive(Tabmenu);
         inventorySelected = false;
