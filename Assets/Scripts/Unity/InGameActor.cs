@@ -216,6 +216,7 @@ public class InGameActor : MonoBehaviour {
     public void AnimatedAttack()
     {
         if (!MyTurn) return;
+        GameManager.GM.Cam.orthographicSize = 5.2f;
         AITImer = 0;
         Actor[] e = new Actor[1];
         e[0] = temptarget;
@@ -386,6 +387,7 @@ public class InGameActor : MonoBehaviour {
         a.OnDamage += OnDamage;
         a.OnKillActor += OnKillingSomeone;
         a.OnEquip += OnEquip;
+        a.OnBlocked += OnBlocked;
         Indicator.color = ActorColor;
 
 
@@ -424,6 +426,12 @@ public class InGameActor : MonoBehaviour {
 
     }
 
+    private void OnBlocked(float z, Skill x)
+    {
+        StartCoroutine(ColorBlink(Color.cyan, .1f));
+        StartCoroutine(ShowDamage(0));
+    }
+
     private void OnEquip(Equipement e)
     {
         if(e is Weapon)
@@ -457,6 +465,7 @@ public class InGameActor : MonoBehaviour {
         actor.OnDamage -= OnDamage;
         actor.OnKillActor -= OnKillingSomeone;
         actor.OnEquip -= OnEquip;
+        actor.OnBlocked -= OnBlocked;
     }
 
     IEnumerator ColorBlink(Color c, float x)
@@ -514,12 +523,13 @@ public class InGameActor : MonoBehaviour {
     {
         float x = 0;
         var b = Instantiate(UIPrefab, cv.transform ).GetComponent<Text>();
-
+        b.gameObject.transform.rotation = Quaternion.Euler(Vector3.zero);
         b.transform.position += Vector3.down;
-        
-        if (z > 0) b.color = Color.red;
+
+        if (z == 0) b.color = Color.cyan;
+        else if (z > 0) b.color = Color.white;
         else if (z < 0) b.color = Color.green;
-        else b.color = Color.white;
+        
         b.text = z.ToString("0");
         while (x < 1f)
         {

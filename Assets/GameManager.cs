@@ -168,6 +168,12 @@ public class GameManager : MonoBehaviour {
         {
             GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3 + Random.Range(-2, 2)));
             GM.InGameFoes[i].actor.Heal();
+            if (GM.InGameFoes[i].actor is Monster)
+            {
+                var ggd = GM.InGameFoes[i].actor as Monster;
+                CurrentBattle.BattleExp += ggd.ExpGain;
+            }
+           
         }
            
 
@@ -231,7 +237,7 @@ public class GameManager : MonoBehaviour {
         audi = GetComponent<AudioSource>();
 
 
-        Protags[0].Class = Profession.Madoshi;
+        Protags[0].SetProfession( Profession.Madoshi);
 
     }
     public void Start()
@@ -246,8 +252,9 @@ public class GameManager : MonoBehaviour {
         }
         //14 6
         var nGroup = new List<Monster>();
-        for (int i = 0; i < Random.Range(1, 5); i++)
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1,STR = 3 }, false, "~Kuku"));
+      
+        for (int i = 0; i < Random.Range(1, 5 ); i++)
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
 
 
@@ -291,6 +298,13 @@ public class GameManager : MonoBehaviour {
     private void OnBattleEnd()
     {
         GM.Cursor.gameObject.SetActive(false);
+        ShowTabMenu(false);
+        SelectedActor = null;
+        PathUI.Clear();
+        foreach (var item in Protags)
+        {
+            item.AddExp(CurrentBattle.BattleExp / Protags.Count);
+        }
         StartCoroutine(BattleEndTransition());
 
     }
@@ -302,6 +316,7 @@ public class GameManager : MonoBehaviour {
     //THE END
     IEnumerator BattleEndTransition()
     {
+        yield return new WaitForSeconds(1.5f);
         GameEnd.anchorMax = new Vector2(0.5f,1);
         GameEnd.anchorMin = new Vector2(0.5f,1);
         GameEnd.anchoredPosition = Vector2.zero + Vector2.up * 25;
@@ -392,9 +407,14 @@ public class GameManager : MonoBehaviour {
         //------------------------------------------------------
 
         var nGroup = new List<Monster>();
-        for (int i = 0; i < Random.Range(2, 5); i++)
+        var gd = 0;
+        foreach (var item in Protags)
         {
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 1 }, false, "~Kuku"));
+            gd += item.GetLevel;
+        }
+        for (int i = 0; i < Random.Range(2, 5 + gd); i++)
+        {
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END =3, LUC = 20,STR =2 }, false, "~Kuku"));
         }
         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
         yield break;
@@ -973,7 +993,7 @@ public class GameManager : MonoBehaviour {
         if (SelectedItem != null || SelectedSkill != null)
             campos = Cursor.transform.position;
         campos.z = Cam.transform.position.z;
-
+        Cam.orthographicSize = Mathf.Lerp(Cam.orthographicSize, 5,12 * Time.smoothDeltaTime);
         if (freezeCam) campos = Cam.transform.position;
         Cam.transform.position = Vector3.Lerp(Cam.transform.position, campos, 10 * Time.smoothDeltaTime);
     }

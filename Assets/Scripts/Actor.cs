@@ -115,7 +115,9 @@ public abstract class Actor : IComparable<Actor> {
     public virtual void LevelUP()
     {
         //Even when there is a level up
-
+        UnityEngine.Debug.Log(Name + "is now level" + GetLevel);
+        var e = new Random();
+        baseStats += new Stat() { END = e.Next(0,5), STR = e.Next(0, 5), INT = e.Next(0, 5), LUC = e.Next(0, 5), AGI = e.Next(0, 5), WIS = e.Next(0, 5) };
         Level++;
     }
 
@@ -155,10 +157,9 @@ public abstract class Actor : IComparable<Actor> {
 
     //Stats
     protected Stat baseStats = new Stat();
-    public Profession Class = new Profession(new Stat()) { Skills = new Skill[3] {
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Melee, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Melee, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, Type = DamageType.Melee, Unlocked = true }
+    public Profession Class = new Profession(new Stat()) { Skills = new Skill[1] {
+        new Skill{Name = "Quick Jab", Damage = .25f, SpCost = 1, MpCost = 0, Reach = 1, Type = DamageType.Melee, Unlocked = true,Targets = Skill.TargetType.OneEnemy },
+ 
     }
     };
     public Stat GetStats
@@ -220,6 +221,7 @@ public abstract class Actor : IComparable<Actor> {
     }
     public virtual void Use(Skill s, Actor[] Target)
     {
+        if (s == null) return;
         if (!CanUseSkill(s)) return;
 
         if (s.HpCost > 0) TakeDamage(s.HpCost);
@@ -251,7 +253,11 @@ public abstract class Actor : IComparable<Actor> {
         }
 
     }
-
+    public void SetProfession(Profession p)
+    {
+        this.Class = p;
+        OnTurn += Class.ClassLogic;
+    }
     public virtual void Equip(Equipement q)
     {
         var f = false;
@@ -892,13 +898,16 @@ public class Profession
     protected Stat BaseStats;
     protected float ClassEXP = 0;
 
-    
-    public static Profession Madoshi
+    public virtual void ClassLogic(Battle.Turn t)
+    {
+
+    }
+    public static Mage Madoshi
     {
 
         get
         {
-            return new Profession(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[1]
+            return new Mage(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[1]
             { new Skill { Name = "Firebolt",
                 Damage = .5f,
                MpCost = 10,
@@ -954,4 +963,16 @@ public class Profession
     }
     
 
+}
+public class Mage : Profession
+{
+    public override void ClassLogic(Battle.Turn t)
+    {
+
+        t.Order[0].ConsumeMP(-1); 
+        base.ClassLogic(t);
+    }
+    public Mage(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null) : base(s, profession, sk)
+    {
+    }
 }

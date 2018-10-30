@@ -10,6 +10,7 @@ public class Battle{
     public event OnBattleEndHandler BattlEnd, OnTurnEnd;
     public float BattleTime = 0;
     public int GoldEarnedThisBattle = 0;
+    public float BattleExp = 0;
     bool Ended = false;
     public virtual string Grade
     {
