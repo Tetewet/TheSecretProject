@@ -959,7 +959,7 @@ public class GameManager : MonoBehaviour {
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
-                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, SelectedSkill);
+                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
                             }
                         else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
                     }
