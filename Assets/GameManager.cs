@@ -959,27 +959,14 @@ public class GameManager : MonoBehaviour {
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
-                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
+                                // TODO
+                                //if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, );
                             }
                         else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
-
-
-
-
-
-
-
-
-
                     }
-
         }
-
-
-
-
-
     }
+
     /// <summary>
     /// Camera Update
     /// </summary>

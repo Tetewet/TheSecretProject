@@ -158,7 +158,7 @@ public abstract class Actor : IComparable<Actor> {
     //Stats
     protected Stat baseStats = new Stat();
     public Profession Class = new Profession(new Stat()) { Skills = new Skill[1] {
-        new Skill{Name = "Quick Jab", Damage = .25f, SpCost = 1, MpCost = 0, Reach = 1, Type = DamageType.Melee, Unlocked = true,Targets = Skill.TargetType.OneEnemy },
+        new Skill{Name = "Quick Jab", Damage = .25f, SpCost = 1, MpCost = 0, Reach = 1, DmgType = DamageType.Melee, Unlocked = true,Targets = Skill.TargetType.OneEnemy },
  
     }
     };
@@ -256,7 +256,8 @@ public abstract class Actor : IComparable<Actor> {
     public void SetProfession(Profession p)
     {
         this.Class = p;
-        OnTurn += Class.ClassLogic;
+        // TODO
+        //OnTurn += Class.ClassLogic;
     }
     public virtual void Equip(Equipement q)
     {
@@ -289,15 +290,15 @@ public abstract class Actor : IComparable<Actor> {
         if(f != null) 
         {
             if (Defending) x *= .5f;
-            if (f.Type == DamageType.Magical) x -= GetStats.MagDEF;
-            else if (f.Type == DamageType.Melee) x -= GetStats.PhysDEF;
-            if (x <= 0 && f.Type != DamageType.None)
+            if (f.DmgType == DamageType.Magical) x -= GetStats.MagDEF;
+            else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
+            if (x <= 0 && f.DmgType != DamageType.None)
             {
                 if(OnBlocked!= null)OnBlocked(x, f);
                 UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
                 return;
             }
-            UnityEngine.Debug.Log(Name + " took " + f.Type + " " + x);
+            UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
         }
        
         HP -= x;
@@ -863,116 +864,5 @@ public struct Stat : IComparable<Stat>
     }
 }
 
-public enum ProfessionType
-{
-    Adventurer = 0,
-    Clerc = 1,
-    Mercenary = 2,
-    Mage = 3,
-    Priest = 4,
-    Paladin = 5,
-    Rogue = 6,
-    Sorcerer = 7,
-    Barbarian = 8,
-    Alchemist = 9,
-    Archpriest = 10,
-    Templar = 11,
-    Berserker = 12,
-    Elementalist = 13,
-    Apostle = 14,
-    Dark_Knight = 15
-}
-public class Profession
-{
-
-    public const float BASEPROFIENCYEXP= 10;
- 
-    public ProfessionType profession = ProfessionType.Adventurer;
-
-    private int Profiency = 0;
-    public int GetProfiency
-    {
-        get { return Profiency; }
-    }
-    
-    protected Stat BaseStats;
-    protected float ClassEXP = 0;
-
-    public virtual void ClassLogic(Battle.Turn t)
-    {
-
-    }
-    public static Mage Madoshi
-    {
-
-        get
-        {
-            return new Mage(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[1]
-            { new Skill { Name = "Firebolt",
-                Damage = .5f,
-               MpCost = 10,
-               BaseCritChance = 5f,
-               Reach = 5,
-               SpCost = 2,
-               Targets = Skill.TargetType.OneEnemy,
-               Type = DamageType.Magical,
-               Unlocked = true
-            } });
-        }
-    }
 
 
-
-    
-    public Skill[] UsableSkill
-    {
-        get
-        {
-            var a = new List<Skill>();
-            foreach (var item in Skills)
-                if (item.Unlocked) a.Add(item);
-
-            return a.ToArray();
-        }
-    }
-    public Skill[] Skills;
-    public void AddExp(float exp)
-    {
-        ClassEXP += exp;
-        if (ClassEXP >= RequiredEXP) ProfiencyUP();
-    }
-    public virtual float RequiredEXP
-    {
-        get { return BASEPROFIENCYEXP * (2 * (float)Math.Exp(Profiency)); }
-    }
-    public virtual void ProfiencyUP()
-    {
-        Profiency++;
-    }
-    public virtual Stat GetBase
-    {
-        get { return BaseStats; }
-    }
-       
-    public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
-    {
-        this.BaseStats = s;
-        this.profession = profession;
-        Skills = sk;
-        
-    }
-    
-
-}
-public class Mage : Profession
-{
-    public override void ClassLogic(Battle.Turn t)
-    {
-
-        t.Order[0].ConsumeMP(-1); 
-        base.ClassLogic(t);
-    }
-    public Mage(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null) : base(s, profession, sk)
-    {
-    }
-}
