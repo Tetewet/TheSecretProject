@@ -90,6 +90,10 @@ public class Profession
     {
         get { return BaseStats; }
     }
+    public virtual void ClassLogic(Battle.Turn turn)
+    {
+        
+    }
 
     public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
     {

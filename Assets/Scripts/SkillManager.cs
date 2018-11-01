@@ -19,7 +19,7 @@ static class SkillManager
 
     public static Skill[] GetSkillsByProfession(Actor actor)
     {
-        Profession.ProfessionType professionType = actor.profession.type;
+        Profession.ProfessionType professionType = actor.Class.type;
         XDocument xml = XDocument.Load(@"skills.xml");
         XNamespace df = xml.Root.Name.Namespace;
         var elements = from c in xml.Descendants(df + professionType.ToString())

@@ -256,8 +256,7 @@ public abstract class Actor : IComparable<Actor> {
     public void SetProfession(Profession p)
     {
         this.Class = p;
-        // TODO
-        //OnTurn += Class.ClassLogic;
+        OnTurn += Class.ClassLogic;
     }
     public virtual void Equip(Equipement q)
     {
