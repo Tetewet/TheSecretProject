@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-/*
+
 public class Profession
 {
     public enum ProfessionType
@@ -90,6 +90,10 @@ public class Profession
     {
         get { return BaseStats; }
     }
+    public virtual void ClassLogic(Battle.Turn turn)
+    {
+        
+    }
 
     public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
     {
@@ -102,4 +106,3 @@ public class Profession
 
 }
 
-    */
