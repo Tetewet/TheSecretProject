@@ -247,7 +247,14 @@ public class Map
     }
     public class  Tile
     {
+        public enum ColliderType
+        {
+            None = 0, Up = 1, Down = 2, Right = 3, Left = 4, All = 5
+        }
 
+        public ColliderType collider;
+        public delegate void EventsHandler(Tile t);
+        public EventsHandler onEnter, onPressed, onExits;
         //There can be at any given time one actor or a list of item
         public Actor Actor;
         public List<Item> Items = new List<Item>();
@@ -261,7 +268,7 @@ public class Map
         {
             get { return (int)Position.y; }
         }
-        public void Enter(Actor a )
+        public virtual void Enter(Actor a )
         {
             Actor = a;           
             a.TileWalkedThisTurn++;
@@ -285,9 +292,16 @@ public class Map
                            
                             Items.Remove(Items[i]);
                         }
-                }   
+                }
+
+
+            if (onEnter != null) onEnter(this);
         }
-        public  void OnQuitting()
+        public void OnPressed(Actor a)
+        {
+            if (onPressed != null) onPressed(this);
+        }
+        public  virtual void OnQuitting()
         {
             if(Actor != null)
             {
@@ -301,9 +315,8 @@ public class Map
                 }
 
             }
-           
-            
-           // UnityEngine.Debug.Log(Actor.ToString() + " exits " + Position.ToString());
+
+            if (onExits != null) onExits(this);
             Actor = null;
         }
         public Tile()
@@ -323,6 +336,8 @@ public class Map
             foreach (var x in Items)
             { e += " " + x.ToString() + "\n"; }
             e += " Actor: " + Actor;
+            if (collider != ColliderType.None)
+                e += " Collider: " + collider;
             return e;
         }
     }

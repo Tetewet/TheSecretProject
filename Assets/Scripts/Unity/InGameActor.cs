@@ -79,6 +79,7 @@ public class InGameActor : MonoBehaviour {
     private void Awake()
     {
         cv = GetComponentInChildren<Canvas>();
+  
 
 
     }
@@ -87,6 +88,7 @@ public class InGameActor : MonoBehaviour {
     {
         ExpBar.transform.parent.gameObject.SetActive(false);
         ExpBar.fillAmount = 0;
+ 
         //StartCoroutine(UpDateEXP());
     }
     bool attacking = false;
@@ -306,6 +308,8 @@ public class InGameActor : MonoBehaviour {
     IEnumerator normattack;
     public IEnumerator InitiateAttack(Actor a, Skill b)
     {
+
+        if (!GameManager.BattleMode) yield break;
         if (!CanPerformAction(b) || attacking) yield break;
        
         if (!MyTurn ||  actor.IsDefeat) {
@@ -544,10 +548,12 @@ public class InGameActor : MonoBehaviour {
 
     public void SetDeath()
     {
+         
         foreach (var item in sprity)
             item.enabled = false;
 
         this.gameObject.SetActive(false);
+   
         if (GameManager.CurrentBattle.Foes.Count == 0) GameManager.CurrentBattle.EndTurn();
 
 
@@ -564,6 +570,7 @@ public class InGameActor : MonoBehaviour {
     float timer = 0;float timeSinceTurn = 2;float TimeSincedAttack = 0;
     private void FixedUpdate()
     {
+        inputtimer += Time.fixedDeltaTime;
         timer += Time.fixedDeltaTime;
         if (MyTurn)
         {
@@ -578,8 +585,9 @@ public class InGameActor : MonoBehaviour {
         ActorStats = new InGameActorStats(actor.GetStats);
     }
 
-    public void OnEnterTile()
+    public void BattleOnEnterTile()
     {
+        
         transform.position = (Vector2)GameManager.Battlefied[(int)actor.TilePosition.x, (int)actor.TilePosition.y].transform.position + offset;
 
     
@@ -629,16 +637,49 @@ public class InGameActor : MonoBehaviour {
         }
 
     }
-    public void Sprite()
+    public void OverWorldOnEnterTile()
     {
-        var e = GameManager.Battlefied[(int)actor.TilePosition.x, (int)actor.TilePosition.y];
+       
+        transform.position = (Vector2)GameManager.GM.Main.GetCellCenterWorld(new Vector3Int((int)actor.TilePosition.x, (int)actor.TilePosition.y, 0)) + offset;
+        while (actor.Path.Count > 0)
+        {
 
+      //      if (timer < .01f) return;
+            AITImer = 0;
+            var target = GameManager.Map.AtPos(actor.Path.Peek());
+            if (target.Actor != null && target.Actor != actor)
+            {
+
+                actor.CantMove(actor.Path.Peek());
+                timer = 0;
+                return;
+            }
+ 
+            if (GameManager.Map.AtPos(actor.Path.Peek()).Actor == null)
+            {
+
+                actor.CurrentTile.OnQuitting();
+                actor.CurrentTile = GameManager.Map.AtPos(actor.Path.Dequeue());
+                actor.CurrentTile.Enter(actor);
+            }
+   
+
+            timer = 0;
+        }
+
+    }
+    public void BattleModeSprite()
+    {
+     
+
+            BattleTile e = GameManager.Battlefied[(int)actor.TilePosition.x, (int)actor.TilePosition.y];
         var walking = DistanceToPos > 0f;
-
-    
         foreach (var item in anim)
             item.SetBool("Walking", walking);
-        anim[0].SetBool("Defend",actor.Defending);
+        anim[0].SetBool("Defend", actor.Defending);
+
+
+
         var g = transform.position.x - e.transform.position.x;
         if (!InverseSprite)
         {
@@ -654,19 +695,7 @@ public class InGameActor : MonoBehaviour {
         for (int i = 0; i < sprity.Length; i++)
         {
             var item = sprity[i];
-          /*  if (InverseSprite)
-            {
-                
-               if (g > 0) item.flipX = !true;
-                if (g < 0) item.flipX = !false; 
-            }
-            else
-            {
-               if (g > 0) item.flipX = true;
-                if (g < 0) item.flipX = false; 
-            }
-
-            */
+ 
             if (i > 0)
             {
                 item.sprite = sprity[0].sprite;
@@ -676,9 +705,9 @@ public class InGameActor : MonoBehaviour {
         Position = new Vector2(actor.TilePosition.x, actor.TilePosition.y);
         DistanceToPos = (Vector3.Distance(transform.position, e.transform.position + new Vector3(offset.x, offset.y)) - 90.9f) * 100;
         var x = 1;
-        if (GameManager.InBattleMode && GameManager.CurrentBattle.BattleTime < 2) x = 5;
+         
         this.transform.position = Vector3.Lerp(transform.position, (Vector2)e.transform.position + offset, Speed * x* Time.smoothDeltaTime / (DistanceToPos + .1f));
-        if (DistanceToPos <= 0.0025f) OnEnterTile();
+         if (DistanceToPos <= 0.0025f) BattleOnEnterTile();
 
 
         sprity[0].sortingOrder = 2 + (int)actor.TilePosition.y;
@@ -686,6 +715,75 @@ public class InGameActor : MonoBehaviour {
         Indicator.gameObject.SetActive(GameManager.SelectedActor == actor);
         Indicator.transform.rotation = Quaternion.Euler(Vector3.zero);
         Indicator.transform.position = e.transform.position;
+    }
+
+
+
+    float inputtimer;
+   
+    public void OverWorldSprite()
+    {
+
+        var map = GameManager.Map;
+        var h = Input.GetAxisRaw("Horizontal");
+        var v = Input.GetAxisRaw("Vertical");
+        var inputs = (Mathf.Abs(h) > 0.2f || Mathf.Abs(v) > 0.2f);
+        if (inputs && inputtimer > .1f)
+        {
+            
+            var u = new Vector(h, v);
+ 
+           var i = GameManager.Protags[0].TilePosition + u;
+            var q = new Vector(Mathf.Clamp(i.x, 0, map.Width - 1), Mathf.Clamp(i.y, 0, map.Length - 1));
+            GameManager.Protags[0].Move(map.AtPos(q));
+            inputtimer = 0;
+        }
+    
+        var e =  new Vector3Int((int)actor.TilePosition.x, (int)actor.TilePosition.y,0);
+        var cp = GameManager.GM.Main.GetCellCenterWorld(e);
+        DistanceToPos = Vector3.Distance(transform.position, (Vector2)cp + offset);
+
+        var t = transform.position.x - ((Vector2)cp + offset).x;
+        if (!InverseSprite)
+        {
+            if (t > 0) transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+            else if (t < 0) transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+        }
+        else
+        {
+
+            if (t > 0) transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+            else if (t < 0) transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+        }
+
+        sprity[0].sortingOrder = 2 + (int)actor.TilePosition.y;
+        Position = new Vector2(actor.TilePosition.x, actor.TilePosition.y);
+ 
+        var g = transform.position.x - e.x;
+
+        var walking = DistanceToPos > 0f;
+
+        foreach (var item in anim)
+            item.SetBool("Walking", walking);
+
+        anim[0].SetBool("Defend", actor.Defending);
+
+        for (int i = 0; i < sprity.Length; i++)
+        {
+            var item = sprity[i];
+
+            if (i > 0)
+            {
+                item.sprite = sprity[0].sprite;
+                item.flipX = sprity[0].flipX;
+            }
+        }
+         this.transform.position = Vector3.Lerp(transform.position, (Vector2)cp + offset, Speed* Time.smoothDeltaTime / (DistanceToPos + .1f));
+        if (DistanceToPos <= .06f) OverWorldOnEnterTile();
+
+        //  this.transform.position = Vector3.Lerp(transform.position, (Vector2)tilepos + offset, Speed * Time.fixedDeltaTime);
+
+
 
     }
     public void TurnSprite(bool x)
@@ -714,7 +812,11 @@ public class InGameActor : MonoBehaviour {
     {
 
         if (actor == null) return;
-        Sprite();
+
+        if (GameManager.BattleMode)
+            BattleModeSprite();
+        else
+            OverWorldSprite();
         bar.text = actor.Name;
 
 

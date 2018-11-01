@@ -1,15 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
     /// <summary>
     /// Are we in battle mode?
     /// </summary>
-    public static bool BattleMode 
+    public static bool BattleMode
     {
-       get { return !(CurrentBattle == null || CurrentBattle.OnGoing); }
+        get { return (CurrentBattle != null && CurrentBattle.OnGoing); }
     }
     public static GameManager GM;
     public static bool InBattleMode = true;
@@ -20,7 +21,7 @@ public class GameManager : MonoBehaviour {
     }
     public static BattleTile[,] Battlefied;
 
-    Image[] Inventory;GameObject[] Skills;
+    Image[] Inventory; GameObject[] Skills;
     public GridLayoutGroup grid, CharacterInventory;
     public Color GridColor;
     [Header("Templates")]
@@ -30,7 +31,8 @@ public class GameManager : MonoBehaviour {
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject SkillsPrefab;
-   
+
+    [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
     public RectTransform GameEnd;
     public GameObject TabButtons, MiniMenu;
@@ -40,6 +42,13 @@ public class GameManager : MonoBehaviour {
     public Vector3 CursorOffset;
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
+    [Header("Overworld")]
+    public Tilemap Main;
+    public Tilemap[] Events;
+    /// <summary>
+    /// The overworld
+    /// </summary>
+    public static Overworld Map;
 
 
     AudioSource audi;
@@ -58,7 +67,7 @@ public class GameManager : MonoBehaviour {
     {
 
 
-        if(i is Weapon)
+        if (i is Weapon)
         {
             InGameWeapon.GenerateInGameWeapon(i as Weapon);
             return null;
@@ -91,10 +100,9 @@ public class GameManager : MonoBehaviour {
         var e = Instantiate(GM.ActorPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameActor>();
         e.InitializedActor(f, f.AnimatorPath, LoadAnimatorController("Actor"));
 
-        
+
         return e;
     }
-
     public static void ClearBattle(Battle b)
     {
 
@@ -105,7 +113,6 @@ public class GameManager : MonoBehaviour {
 
 
     }
-
     void ClearActor()
     {
         foreach (var h in GM.InGameActors)
@@ -116,16 +123,18 @@ public class GameManager : MonoBehaviour {
         GM.InGameActors.Clear();
         GM.InGameFoes.Clear();
     }
-    public static void StartBattle(Actor[] F, Map m, int Map = 0)
+    public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
         GM.Cam.enabled = true;
+        GM.Cam.gameObject.SetActive(true);
         GM.Cursor.gameObject.SetActive(true);
-        Map = Mathf.Clamp(Map, 0, GM.Battlefields.Length - 1);
+
+        map = Mathf.Clamp(map, 0, GM.Battlefields.Length - 1);
         for (int i = 0; i < GM.Battlefields.Length; i++)
             GM.Battlefields[i].Map.SetActive(false);
-        GM.Battlefields[Map].Map.SetActive(true);
+        GM.Battlefields[map].Map.SetActive(true);
 
-        GM.audi.clip = GM.Battlefields[Map].Sounds[0];
+        GM.audi.clip = GM.Battlefields[map].Sounds[0];
         GM.audi.Play();
 
 
@@ -146,7 +155,7 @@ public class GameManager : MonoBehaviour {
         GM.OnHover.enabled = true;
 
         GM.ClearActor();
- 
+
 
         foreach (var h in Protags)
         {
@@ -154,7 +163,7 @@ public class GameManager : MonoBehaviour {
             h.SP = 0;
             if (h.HP < 0) h.HP = 1;
         }
-          
+
         foreach (var q in F)
         {
             GM.InGameFoes.Add(GenerateInGameActor(q));
@@ -173,9 +182,9 @@ public class GameManager : MonoBehaviour {
                 var ggd = GM.InGameFoes[i].actor as Monster;
                 CurrentBattle.BattleExp += ggd.ExpGain;
             }
-           
+
         }
-           
+
 
 
 
@@ -226,36 +235,37 @@ public class GameManager : MonoBehaviour {
 
         Skills = new GameObject[100];
         for (int i = 0; i < Skills.Length; i++)
-            Skills[i] = Instantiate(SkillsPrefab,SkillList.transform);
+            Skills[i] = Instantiate(SkillsPrefab, SkillList.transform);
 
     }
     private void Awake()
     {
         if (!GM) GM = this;
         else Destroy(this.gameObject);
-       DontDestroyOnLoad(this.gameObject);
+        DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
 
-        Protags[0].SetProfession( Profession.Madoshi);
+        Protags[0].SetProfession(Profession.Madoshi);
 
     }
+
     public void Start()
     {
 
-     
-        GM.InitializeUI();
 
+        GM.InitializeUI();
+        Cam.gameObject.SetActive(false);
         foreach (var item in Protags)
         {
             item.Heal();
         }
         //14 6
-        var nGroup = new List<Monster>();
-      
-        for (int i = 0; i < Random.Range(1, 5 ); i++)
+      /* var nGroup = new List<Monster>();
+
+        for (int i = 0; i < Random.Range(1, 5); i++)
             nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-        StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
+         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0); 
 
 
         Protags[1].Equip(
@@ -269,17 +279,47 @@ public class GameManager : MonoBehaviour {
            rarity = Item.Rarity.Common,
            Durability = 100
        })
-        ;
+        ;*/
 
         //Debug
 
+/*
+         CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
+          { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
+          CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+        */
 
-        CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
-        CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+       GenerateOverworld(Main);
+    }
 
 
 
+    void GenerateOverworld(Tilemap r)
+    {
+
+        var e = new Vector(r.cellBounds.size.x, r.cellBounds.size.y);
+        Map = new Overworld(e);
+        foreach (var item in Events)
+        {
+            if (item.size.magnitude > Main.size.magnitude)
+            {
+                print(item.name + " invalid size, Resizing");
+                Main.size = item.size;
+                Main.ResizeBounds();
+            }
+            TilemapManager.LoadEvents(item);
+
+        }
+        if (Overworld.SpawnPoints.Count > 0)
+        {
+            var z = GenerateInGameActor(Protags[0]);
+            z.actor.DefaultPos = Overworld.SpawnPoints[0];
+            z.actor.Teleport(Map.AtPos(z.actor.DefaultPos));
+            z.transform.localScale = Vector3.one * .6f;
+            z.offset = new Vector2(-29f, -30.7f);
+            z.Indicator.enabled = false;
+      
+        }
     }
 
     /// <summary>
@@ -1003,6 +1043,48 @@ public class GameManager : MonoBehaviour {
     private void Update()
     {
 
+
+        //If there is no battle the scripts is hibernating, having no impact whatsoever on the performances  
+        if (BattleMode) BattleModeLogic();
+        else OverWordLogic();
+
+    }
+
+    void BattleModeLogic()
+    {
+
+        Cursorlogic();
+
+        if (SelectedSkill != null)
+            EstimathPath(SelectedActor, CursorPos, 99);
+        else
+            EstimathPath(CursorPos);
+
+        var curtile = CurrentBattle.map.AtPos(CursorPos);
+        BattlePlayerInput(curtile);
+        OnCursorUpdate(curtile);
+
+        MiniMenuLogic();
+        CameraUpdate();
+    }
+    void OverWordLogic()
+    {
+        //For Smoother Effect, this is going to be in InGameActor
+        /*
+        var h = Input.GetAxisRaw("Horizontal");
+        var v = Input.GetAxisRaw("Vertical");
+        var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
+        if (timer >= .11f && inputs)
+        {
+            var u = new Vector(h, v);
+            var i = Protags[0].TilePosition + u;
+            var e = new Vector(Mathf.Clamp(i.x, 0, Map.Width - 1), Mathf.Clamp(i.y, 0, Map.Length - 1));
+            Protags[0].Move(Map.AtPos(e));
+            timer = 0;
+        }*/
+    }
+    void Cursorlogic()
+    {
         CursorPos = new Vector(Mathf.Clamp((int)CursorPos.x, 0, CurrentBattle.map.Width - 1), Mathf.Clamp((int)CursorPos.y, 0, CurrentBattle.map.Length - 1));
         var Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
 
@@ -1014,7 +1096,7 @@ public class GameManager : MonoBehaviour {
                 Position = Inventory[invUIItem].transform.position;
             if (SkillsSelected)
                 Position = Skills[skillUI].transform.position;
-                
+
             if (SelectedItem != null || SelectedSkill != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
         }
         else CursorPos = CurrentBattle.ActingThisTurn.TilePosition;
@@ -1022,13 +1104,13 @@ public class GameManager : MonoBehaviour {
 
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position + CursorOffset, 9 * Time.smoothDeltaTime);
 
+    }
+    public void BattlePlayerInput(Map.Tile curtile)
+    {
+
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
-
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
-
-
-
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
 
@@ -1039,13 +1121,6 @@ public class GameManager : MonoBehaviour {
                 timer = 0;
                 OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
             }
-
-        if(SelectedSkill != null)
-            EstimathPath(SelectedActor,CursorPos, 99);
-        else 
-            EstimathPath(CursorPos);
-
-        var curtile = CurrentBattle.map.AtPos(CursorPos);
         if (CurrentBattle.IsPlayerTurn)
         {
 
@@ -1064,12 +1139,7 @@ public class GameManager : MonoBehaviour {
                 ToggleTabMenu();
             }
         }
-        OnCursorUpdate(curtile);
-
-        MiniMenuLogic();
-        CameraUpdate();
     }
-
     /// <summary>
     /// Reset the Grid
     /// </summary>
