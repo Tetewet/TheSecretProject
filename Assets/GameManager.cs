@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour {
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
         GM.Cam.enabled = true;
-        GM.Cam.gameObject.SetActive(true);
+        
         GM.Cursor.gameObject.SetActive(true);
 
         map = Mathf.Clamp(map, 0, GM.Battlefields.Length - 1);
@@ -255,7 +255,7 @@ public class GameManager : MonoBehaviour {
 
 
         GM.InitializeUI();
-        Cam.gameObject.SetActive(false);
+        GM.Cam.enabled = false;
         foreach (var item in Protags)
         {
             item.Heal();
@@ -292,13 +292,14 @@ public class GameManager : MonoBehaviour {
        GenerateOverworld(Main);
     }
 
-
+    public static Events[,] EventList = new global::Events[1000,1000];
 
     void GenerateOverworld(Tilemap r)
     {
 
         var e = new Vector(r.cellBounds.size.x, r.cellBounds.size.y);
         Map = new Overworld(e);
+   
         foreach (var item in Events)
         {
             if (item.size.magnitude > Main.size.magnitude)
@@ -318,10 +319,40 @@ public class GameManager : MonoBehaviour {
             z.transform.localScale = Vector3.one * .6f;
             z.offset = new Vector2(-29f, -30.7f);
             z.Indicator.enabled = false;
-      
+        
+        }
+
+        var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    
+        AddEvent(ev1);
+        UpdateEvents();
+    
+    }
+    public static void UpdateEvents()
+    {
+        for (int x = 0; x < Map.Width; x++)
+        {
+            for (int y = 0; y < Map.Length; y++)
+            {
+
+                Map.AtPos(x, y).Event = EventList[x, y];
+            }
         }
     }
+    public static void AddEvent(Events e)
+    {
+        EventList[(int)e.ID.x, (int)e.ID.y] = e;
+        print("New event:"  + "["+ e.Name + "] "+ e.ID);
 
+ 
+        for (int x = 0; x < Map.Width; x++)
+        {
+            for (int y = 0; y < Map.Length; y++)
+            {
+
+                if(x == e.ID.x && y == e.ID.y) Map.AtPos(x, y).Event = EventList[x, y];
+            }
+        }
+    }
     /// <summary>
     /// Is called at the end of the turn
     /// </summary>
@@ -489,6 +520,59 @@ public class GameManager : MonoBehaviour {
         yield break;
     }
 
+    public Text Textbox;
+ 
+    public static void ShowText(string t)
+    {
+        
+    
+        if (GM._lasttext != null)
+            GM.StopCoroutine(GM._lasttext);
+        GM._lasttext = GM._ShowText(t);
+        GM.StartCoroutine(GM._lasttext);
+    }
+    IEnumerator _lasttext;
+    IEnumerator _ShowText(string t)
+    {
+       
+        Textbox.gameObject.transform.parent.gameObject.SetActive(true);
+        Textbox.text = "";
+        for (int i = 0; i < t.Length ; i++)
+        {
+
+            if(t[i] == '\\')
+            {
+                if(i+1 < t.Length)
+                {
+                    if(t[i+1] == 'n')
+                    {
+                        Textbox.text += "\n";
+                        continue;
+                    }
+                }
+            }
+            else if(t[i] == 'n')
+            {
+                if (i - 1 > 0)
+                    if (t[i - 1] == '\\') continue;
+            }
+            
+            Textbox.text += t[i];
+            yield return new WaitForSeconds(.05f);
+            if(t[i] == '.' || t[i] == '!' || t[i] == ',') yield return new WaitForSeconds(.1f);
+        }
+        Textbox.text = t;
+        yield return new WaitForSeconds(1);
+        while (!Input.GetKey(KeyCode.Space))
+        {
+            yield return null;
+        }
+        Textbox.gameObject.transform.parent.gameObject.SetActive(false);
+        yield break;
+
+
+
+    }
     public static List<Vector> PathUI = new List<Vector>();
 
     /// <summary>

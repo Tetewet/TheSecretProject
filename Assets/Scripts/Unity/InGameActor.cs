@@ -658,9 +658,14 @@ public class InGameActor : MonoBehaviour {
             if (GameManager.Map.AtPos(actor.Path.Peek()).Actor == null)
             {
 
+                var b = actor.CurrentTile.Position;
                 actor.CurrentTile.OnQuitting();
                 actor.CurrentTile = GameManager.Map.AtPos(actor.Path.Dequeue());
                 actor.CurrentTile.Enter(actor);
+                b -= actor.CurrentTile.Position;
+                b = new Vector(-b.x,-b.y);
+                b += actor.CurrentTile.Position;
+                tileInFront = GameManager.Map.AtPos(new Vector(Mathf.Clamp(b.x, 0, GameManager.Map.Width - 1), Mathf.Clamp(b.y, 0, GameManager.Map.Length - 1)));
             }
    
 
@@ -720,7 +725,8 @@ public class InGameActor : MonoBehaviour {
 
 
     float inputtimer;
-   
+    Map.Tile tileInFront;
+ 
     public void OverWorldSprite()
     {
 
@@ -735,10 +741,28 @@ public class InGameActor : MonoBehaviour {
  
            var i = GameManager.Protags[0].TilePosition + u;
             var q = new Vector(Mathf.Clamp(i.x, 0, map.Width - 1), Mathf.Clamp(i.y, 0, map.Length - 1));
+        
             GameManager.Protags[0].Move(map.AtPos(q));
+     
+
+            tileInFront = map.AtPos(new Vector(Mathf.Clamp(i.x, 0, map.Width - 1), Mathf.Clamp(i.y, 0, map.Length - 1)));
+
+
+
+
             inputtimer = 0;
         }
-    
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (tileInFront != null)
+            {
+                print(tileInFront);
+                tileInFront.OnPressed(actor);
+            } 
+            map.AtPos(actor.TilePosition).OnPressed(actor);
+
+        }
         var e =  new Vector3Int((int)actor.TilePosition.x, (int)actor.TilePosition.y,0);
         var cp = GameManager.GM.Main.GetCellCenterWorld(e);
         DistanceToPos = Vector3.Distance(transform.position, (Vector2)cp + offset);

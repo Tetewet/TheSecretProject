@@ -255,6 +255,7 @@ public class Map
         public ColliderType collider;
         public delegate void EventsHandler(Tile t);
         public EventsHandler onEnter, onPressed, onExits;
+        public Events Event;
         //There can be at any given time one actor or a list of item
         public Actor Actor;
         public List<Item> Items = new List<Item>();
@@ -299,6 +300,7 @@ public class Map
         }
         public void OnPressed(Actor a)
         {
+            if (Event != null) Event.Run();
             if (onPressed != null) onPressed(this);
         }
         public  virtual void OnQuitting()
