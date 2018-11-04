@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour {
     }
     public static GameManager GM;
     public static bool InBattleMode = true;
-    public Camera Cam;
+    public Camera Cam, OverworldCam;
     public static Vector3 VecTo3(Vector v)
     {
         return new Vector3(v.x, v.y, 0);
@@ -293,7 +293,8 @@ public class GameManager : MonoBehaviour {
     }
 
     public static Events[,] EventList = new global::Events[1000,1000];
-
+    public static InGameActor IGA;
+    public bool CanInteract = true;
     void GenerateOverworld(Tilemap r)
     {
 
@@ -316,10 +317,10 @@ public class GameManager : MonoBehaviour {
             var z = GenerateInGameActor(Protags[0]);
             z.actor.DefaultPos = Overworld.SpawnPoints[0];
             z.actor.Teleport(Map.AtPos(z.actor.DefaultPos));
-            z.transform.localScale = Vector3.one * .6f;
+            z.transform.localScale = Vector3.one * .75f;
             z.offset = new Vector2(-29f, -30.7f);
             z.Indicator.enabled = false;
-        
+            IGA = z;
         }
 
         var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    
@@ -521,6 +522,7 @@ public class GameManager : MonoBehaviour {
     }
 
     public Text Textbox;
+    
  
     public static void ShowText(string t)
     {
@@ -534,7 +536,8 @@ public class GameManager : MonoBehaviour {
     IEnumerator _lasttext;
     IEnumerator _ShowText(string t)
     {
-       
+        CanInteract = false;
+        Textbox.gameObject.GetComponentInChildren<Image>().enabled = false;
         Textbox.gameObject.transform.parent.gameObject.SetActive(true);
         Textbox.text = "";
         for (int i = 0; i < t.Length ; i++)
@@ -562,12 +565,15 @@ public class GameManager : MonoBehaviour {
             if(t[i] == '.' || t[i] == '!' || t[i] == ',') yield return new WaitForSeconds(.1f);
         }
         Textbox.text = t;
-        yield return new WaitForSeconds(1);
-        while (!Input.GetKey(KeyCode.Space))
+        yield return new WaitForSeconds(.25f);
+        Textbox.gameObject.GetComponentInChildren<Image>().enabled = true;
+        while (!Input.anyKey)
         {
             yield return null;
         }
         Textbox.gameObject.transform.parent.gameObject.SetActive(false);
+        Textbox.gameObject.GetComponentInChildren<Image>().enabled = false;
+        CanInteract = true;
         yield break;
 
 
@@ -1139,6 +1145,11 @@ public class GameManager : MonoBehaviour {
     }
     void OverWordLogic()
     {
+        var campos = IGA.transform.position;
+         campos.z = Cam.transform.position.z;
+
+        OverworldCam.transform.position = Vector3.Lerp(OverworldCam.transform.position, campos, 10 * Time.smoothDeltaTime);
+
         //For Smoother Effect, this is going to be in InGameActor
         /*
         var h = Input.GetAxisRaw("Horizontal");

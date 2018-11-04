@@ -734,7 +734,7 @@ public class InGameActor : MonoBehaviour {
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
         var inputs = (Mathf.Abs(h) > 0.2f || Mathf.Abs(v) > 0.2f);
-        if (inputs && inputtimer > .1f)
+        if (inputs && inputtimer > .1f && GameManager.GM.CanInteract)
         {
             
             var u = new Vector(h, v);
