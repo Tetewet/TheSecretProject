@@ -402,7 +402,7 @@ public abstract class Actor : IComparable<Actor> {
     public delegate void OnTurnHandler(Battle.Turn e);
     public event OnTurnHandler OnTurn;
     //Position In world;
-    public void Move(Vector position, int map = 0 )
+    public void Move(Vector position )
     {
        
         _transform.position += position;
@@ -460,7 +460,7 @@ public abstract class Actor : IComparable<Actor> {
     public Queue<Vector> Path = new Queue<Vector>();
     public void Teleport(Map.Tile where)
     {
-        CurrentTile.OnQuitting();
+        if(CurrentTile != null) CurrentTile.OnQuitting();
         CurrentTile = where;      
         CurrentTile.Enter(this);
 
@@ -482,9 +482,11 @@ public abstract class Actor : IComparable<Actor> {
         for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
         for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
         */
+        Map e;
+        if (GameManager.BattleMode) e = GameManager.CurrentBattle.map;
+        else e = GameManager.Map;
 
-
-        if (Math.Abs(x) > Math.Abs(y) || GameManager.CurrentBattle.map.AtPos(TilePosition + Vector.up * b).Actor != null)
+        if (Math.Abs(x) > Math.Abs(y) || e.AtPos(TilePosition + Vector.up * b).Actor != null)
         {
             for (int i = 1; i <= Math.Abs(x); i++)
             { if (TilePosition + Vector.up * i * b == TilePosition) continue; Path.Enqueue(TilePosition + Vector.right * i * a); }
@@ -518,12 +520,30 @@ public abstract class Actor : IComparable<Actor> {
 
     }
 
+    bool CanMoveThere(Map.Tile Where)
+    {
+        var e = true;
+        var s = Where.collider;
+        if (Where == CurrentTile) e = false;
+        if (Where.x > TilePosition.x && (s == Map.Tile.ColliderType.Left || CurrentTile.collider == Map.Tile.ColliderType.Right) ) e = false;
+        if (Where.x < TilePosition.x && ( s == Map.Tile.ColliderType.Right || CurrentTile.collider == Map.Tile.ColliderType.Left) ) e = false;
+        if (Where.y > TilePosition.y && (s == Map.Tile.ColliderType.Down || CurrentTile.collider == Map.Tile.ColliderType.Up)) e = false;
+        if (Where.y < TilePosition.y && (s == Map.Tile.ColliderType.Up || CurrentTile.collider == Map.Tile.ColliderType.Down)) e = false;
+        if(s == Map.Tile.ColliderType.All) e = false;
+     
+
+        return e;
+
+
+    }
+
+
     public virtual void Move(Map.Tile where)
     {
        var v = Vector.Distance(where.Position,CurrentTile.Position);
 
      
-        if (where.Actor != null)
+        if (where.Actor != null || !CanMoveThere(where))
         {
             CantMove(where.Position);
             return;
