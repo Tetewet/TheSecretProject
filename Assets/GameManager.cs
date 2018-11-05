@@ -167,7 +167,6 @@ public class GameManager : MonoBehaviour {
         foreach (var q in F)
         {
             GM.InGameFoes.Add(GenerateInGameActor(q));
-            q.AddGold(Random.Range(0, 5));
         }
 
 
@@ -261,11 +260,11 @@ public class GameManager : MonoBehaviour {
             item.Heal();
         }
         //14 6
-      /* var nGroup = new List<Monster>();
+       //var nGroup = new List<Monster>();
 
-        for (int i = 0; i < Random.Range(1, 5); i++)
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0); 
+       // for (int i = 0; i < Random.Range(1, 5); i++)
+       //     nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+         StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)),0); 
 
 
         Protags[1].Equip(
@@ -279,7 +278,7 @@ public class GameManager : MonoBehaviour {
            rarity = Item.Rarity.Common,
            Durability = 100
        })
-        ;*/
+        ;
 
         //Debug
 
@@ -289,7 +288,7 @@ public class GameManager : MonoBehaviour {
           CreateNewItemOnField(Item.Gold, new Vector(2, 5));
         */
 
-       GenerateOverworld(Main);
+       //GenerateOverworld(Main);
     }
 
     public static Events[,] EventList = new global::Events[1000,1000];

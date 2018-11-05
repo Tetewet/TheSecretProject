@@ -8715,6 +8715,10 @@ Prefab:
       propertyPath: OverworldCam
       value: 
       objectReference: {fileID: 382173798}
+    - target: {fileID: 1664726662811054, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
   m_IsPrefabAsset: 0

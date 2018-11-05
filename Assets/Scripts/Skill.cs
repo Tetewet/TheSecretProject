@@ -48,7 +48,7 @@ public class Skill
             e.Name = "Attack";
             e.SpCost = 2;
             e.Reach = 1;
-            e.DmgType = DamageType.Physical;
+            e.DmgType = DamageType.Melee;
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             return e;
@@ -59,7 +59,7 @@ public class Skill
 
         var x = Damage;
         if (DmgType == DamageType.Magical) x *= stats.INT;
-        else if (DmgType == DamageType.Physical) x *= stats.STR;
+        else if (DmgType == DamageType.Melee) x *= stats.STR;
 
         if ((stats.LUC * 2 + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
 
