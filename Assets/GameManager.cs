@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour {
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
     [Header("Overworld")]
+    public GameObject OverWorldGO;
     public Tilemap Main;
     public Tilemap[] Events;
     /// <summary>
@@ -125,6 +126,13 @@ public class GameManager : MonoBehaviour {
     }
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
+        GM.OverWorldGO.SetActive(false);
+
+        if (IGA)
+        {
+            Overworld.PlayerPos = IGA.actor.TilePosition;
+            IGA.gameObject.SetActive(false);
+        } 
         GM.Cam.enabled = true;
         
         GM.Cursor.gameObject.SetActive(true);
@@ -259,6 +267,8 @@ public class GameManager : MonoBehaviour {
         {
             item.Heal();
         }
+        GenerateOverworld(Main);
+
         //14 6
        //var nGroup = new List<Monster>();
 
@@ -282,13 +292,12 @@ public class GameManager : MonoBehaviour {
 
         //Debug
 
-/*
-         CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-          { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
-          CreateNewItemOnField(Item.Gold, new Vector(2, 5));
-        */
+        /*
+                 CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
+                  { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
+                  CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+                */
 
-       //GenerateOverworld(Main);
     }
 
     public static Events[,] EventList = new global::Events[1000,1000];
@@ -319,13 +328,14 @@ public class GameManager : MonoBehaviour {
             z.transform.localScale = Vector3.one * .75f;
             z.offset = new Vector2(-29f, -30.7f);
             z.Indicator.enabled = false;
+            z.BattleSprite = false;
             IGA = z;
         }
 
         var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    
         AddEvent(ev1);
         UpdateEvents();
-    
+        OverWorldGO.SetActive(true);
     }
     public static void UpdateEvents()
     {
@@ -376,6 +386,7 @@ public class GameManager : MonoBehaviour {
         {
             item.AddExp(CurrentBattle.BattleExp / Protags.Count);
         }
+       
         StartCoroutine(BattleEndTransition());
 
     }
@@ -477,17 +488,18 @@ public class GameManager : MonoBehaviour {
         GM.Cam.enabled = false;
         //------------------------------------------------------
 
-        var nGroup = new List<Monster>();
-        var gd = 0;
-        foreach (var item in Protags)
+            OverWorldGO.SetActive(true);
+
+        if (IGA)
         {
-            gd += item.GetLevel;
+            IGA.actor.Teleport(Map.AtPos( Overworld.PlayerPos));
+            IGA.gameObject.SetActive(true);
+          
+            IGA.actor.Defending = false;
+            if (IGA.actor.HP <= 0) IGA.actor.HP = 1;
         }
-        for (int i = 0; i < Random.Range(2, 5 + gd); i++)
-        {
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END =3, LUC = 20,STR =2 }, false, "~Kuku"));
-        }
-        StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
+
+ 
         yield break;
     }
     float timer = 0;
@@ -512,11 +524,12 @@ public class GameManager : MonoBehaviour {
     }
     IEnumerator _ShowInfo()
     {
+        CanInteract = false;
         InfoBar.transform.parent.gameObject.SetActive(true);
         StartCoroutine(_freezecam(.5f));
         yield return new WaitForSeconds(1f);
         InfoBar.transform.parent.gameObject.SetActive(false);
-
+        CanInteract = true;
         yield break;
     }
 
@@ -1060,8 +1073,12 @@ public class GameManager : MonoBehaviour {
                 return;}
             else
             {
+                Tabmenu = false;
                 GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
+              
                 CloseInventory();
+
+                return;
             }
             
 
@@ -1088,7 +1105,7 @@ public class GameManager : MonoBehaviour {
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
-                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
+                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
                             }
                         else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
                     }
@@ -1188,8 +1205,11 @@ public class GameManager : MonoBehaviour {
     public void BattlePlayerInput(Map.Tile curtile)
     {
 
+        if (!CanInteract) return;
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
+
+        
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
@@ -1412,7 +1432,7 @@ public class GameManager : MonoBehaviour {
 
 
         if(SelectedSkill == null && SelectedItem == null)
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && Tabmenu)
         {
             if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null &&  SelectedItem == null)
             {
@@ -1449,7 +1469,7 @@ public class GameManager : MonoBehaviour {
                 SkillList.SetActive(true);
             }
             else if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
-            else if (TabChoice == 2 && SelectedActor.SP > 0) {
+            else if (TabChoice == 2 && SelectedActor.SP > 0 ) {
               
                 GetInGameFromActor(SelectedActor).EnterDefenseMode();
                 ShowTabMenu(false);

@@ -48,7 +48,7 @@ public class InGameActor : MonoBehaviour {
 
     float AITImer = 0;
 
-    public bool OverrideStats = false;
+   
     public InGameActorStats ActorStats;
     [System.Serializable]
     public struct InGameActorStats
@@ -67,6 +67,7 @@ public class InGameActor : MonoBehaviour {
         }
         public float EXPGain;
     }
+    public bool BattleSprite = true;
 
     public static Actor[] ToActors(InGameActor[] s)
     {
@@ -97,7 +98,7 @@ public class InGameActor : MonoBehaviour {
     {
         if (!isAI || !MyTurn) return;
         AITImer += Time.fixedDeltaTime;
-        if (AITImer > .4f) EndTurn();
+        if (AITImer > .5f) EndTurn();
 
     }
     //Action and Attack
@@ -107,8 +108,14 @@ public class InGameActor : MonoBehaviour {
 
         if (!MyTurn) return;
 
-        AITImer = 0;
-        Attack(GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor, Skill.Base);
+        
+        if(AITImer > .3f && actor.Path.Count <= 1)
+        {
+            var e = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
+        
+                  Attack(e, Skill.Base);
+        }
+      
 
     }
 
@@ -174,6 +181,7 @@ public class InGameActor : MonoBehaviour {
     /// <param name="Turn"></param>
     public void OnTurn(Battle.Turn Turn)
     {
+        if (!gameObject.activeSelf) return;
 
         actor.TileWalkedThisTurn = 0;
 
@@ -196,12 +204,14 @@ public class InGameActor : MonoBehaviour {
 
     public bool CanPerformAction(Skill s)
     {
+        
         if (actor.HP < s.HpCost) { print("Not enough HP: " + actor.HP + "/" + s.HpCost); return false; }
         if (actor.MP < s.MpCost) { print("Not enough MP: " + actor.MP + "/" + s.MpCost); return false; }
         if (actor.SP < s.SpCost) { print("Not enough SP: " + actor.SP + "/" + s.SpCost); return false; }
-
+        
         return true;
     }
+
     public void Attack(Actor a, Skill b)
     {
         if (MyTurn)
@@ -209,7 +219,7 @@ public class InGameActor : MonoBehaviour {
             normattack = InitiateAttack(a, b);
             StartCoroutine(normattack);
         }
-
+        AITImer = 0;
 
     }
     /// <summary>
@@ -310,9 +320,15 @@ public class InGameActor : MonoBehaviour {
     {
 
         if (!GameManager.BattleMode) yield break;
-        if (!CanPerformAction(b) || attacking) yield break;
-       
-        if (!MyTurn ||  actor.IsDefeat) {
+        if (attacking) yield break;
+        if (!CanPerformAction(b))
+        {
+            EndTurn();
+            yield break;
+        }
+
+
+            if (!MyTurn ||  actor.IsDefeat) {
             attacking = false;
             yield break;
         }
@@ -356,6 +372,7 @@ public class InGameActor : MonoBehaviour {
 
         // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
         //while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
+        print(actor.Path.Count - b.Reach);
         while (actor.Path.Count > b.Reach)
         {
 
@@ -432,13 +449,17 @@ public class InGameActor : MonoBehaviour {
 
     private void OnBlocked(float z, Skill x)
     {
+        if (!gameObject.activeSelf) return;
+
         StartCoroutine(ColorBlink(Color.cyan, .1f));
         StartCoroutine(ShowDamage(0));
     }
 
     private void OnEquip(Equipement e)
     {
-        if(e is Weapon)
+        if (!gameObject.activeSelf) return;
+
+        if (e is Weapon)
         {
  
             for (int i = 0; i < Wep.Length; i++)
@@ -503,6 +524,8 @@ public class InGameActor : MonoBehaviour {
     }
     private void OnKillingSomeone(Actor a)
     {
+        if (!gameObject.activeSelf) return;
+
         GameManager.CursorPos = a.TilePosition;
         GameManager.GM.ActionFreeze();
 
@@ -510,13 +533,16 @@ public class InGameActor : MonoBehaviour {
 
     private void OnExpGain(float x)
     {
+        if (!gameObject.activeSelf) return;
         StartCoroutine(UpDateEXP());
     }
 
     public GameObject UIPrefab;
     private void OnDamage(float z, Skill x)
     {
-        if(!actor.IsDefeat)
+        if (!gameObject.activeSelf) return;
+
+        if (!actor.IsDefeat)
         anim[0].SetTrigger("Attacked");          
         else anim[0].SetTrigger("IsDeath");
         StartCoroutine(ColorBlink(Color.red,.1f));
@@ -839,7 +865,7 @@ public class InGameActor : MonoBehaviour {
 
         if (GameManager.BattleMode)
             BattleModeSprite();
-        else
+        else if(!BattleSprite)
             OverWorldSprite();
         bar.text = actor.Name;
 
