@@ -328,6 +328,7 @@ public class GameManager : MonoBehaviour {
             z.transform.localScale = Vector3.one * .75f;
             z.offset = new Vector2(-29f, -30.7f);
             z.Indicator.enabled = false;
+            z.BattleSprite = false;
             IGA = z;
         }
 
@@ -385,14 +386,7 @@ public class GameManager : MonoBehaviour {
         {
             item.AddExp(CurrentBattle.BattleExp / Protags.Count);
         }
-        foreach (var item in InGameActors)
-        {
-            item.enabled = false;
-        }
-        foreach (var item in InGameFoes)
-        {
-            item.enabled = false;
-        }
+       
         StartCoroutine(BattleEndTransition());
 
     }
@@ -527,11 +521,12 @@ public class GameManager : MonoBehaviour {
     }
     IEnumerator _ShowInfo()
     {
+        CanInteract = false;
         InfoBar.transform.parent.gameObject.SetActive(true);
         StartCoroutine(_freezecam(.5f));
         yield return new WaitForSeconds(1f);
         InfoBar.transform.parent.gameObject.SetActive(false);
-
+        CanInteract = true;
         yield break;
     }
 
@@ -1075,8 +1070,12 @@ public class GameManager : MonoBehaviour {
                 return;}
             else
             {
+                Tabmenu = false;
                 GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
+              
                 CloseInventory();
+
+                return;
             }
             
 
@@ -1203,8 +1202,11 @@ public class GameManager : MonoBehaviour {
     public void BattlePlayerInput(Map.Tile curtile)
     {
 
+        if (!CanInteract) return;
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
+
+        
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
@@ -1427,7 +1429,7 @@ public class GameManager : MonoBehaviour {
 
 
         if(SelectedSkill == null && SelectedItem == null)
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && Tabmenu)
         {
             if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null &&  SelectedItem == null)
             {
@@ -1464,7 +1466,7 @@ public class GameManager : MonoBehaviour {
                 SkillList.SetActive(true);
             }
             else if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
-            else if (TabChoice == 2 && SelectedActor.SP > 0) {
+            else if (TabChoice == 2 && SelectedActor.SP > 0 ) {
               
                 GetInGameFromActor(SelectedActor).EnterDefenseMode();
                 ShowTabMenu(false);

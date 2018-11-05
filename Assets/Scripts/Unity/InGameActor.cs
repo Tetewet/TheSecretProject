@@ -48,7 +48,7 @@ public class InGameActor : MonoBehaviour {
 
     float AITImer = 0;
 
-    public bool OverrideStats = false;
+   
     public InGameActorStats ActorStats;
     [System.Serializable]
     public struct InGameActorStats
@@ -67,6 +67,7 @@ public class InGameActor : MonoBehaviour {
         }
         public float EXPGain;
     }
+    public bool BattleSprite = true;
 
     public static Actor[] ToActors(InGameActor[] s)
     {
@@ -850,7 +851,7 @@ public class InGameActor : MonoBehaviour {
 
         if (GameManager.BattleMode)
             BattleModeSprite();
-        else
+        else if(!BattleSprite)
             OverWorldSprite();
         bar.text = actor.Name;
 
