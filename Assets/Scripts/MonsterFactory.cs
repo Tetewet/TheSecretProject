@@ -72,7 +72,7 @@ class MonsterControllerFactory : MonsterFactory
         {
             for (int i = 0; i < number; i++)
             {
-                monsters.Add(new Kuku("Kuku " + i.ToString(), new Stat(), false, "~Kuku"));
+                monsters.Add(new Kuku("Kuku " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
             }
             
             return monsters.ToArray();
@@ -81,7 +81,7 @@ class MonsterControllerFactory : MonsterFactory
         {
             for (int i = 0; i < number; i++)
             {
-                monsters.Add(new Kodama("Kodama " + i.ToString(), new Stat(), false, "~Kuku"));
+                monsters.Add(new Kodama("Kodama " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
             }
             return monsters.ToArray();
         }
@@ -89,7 +89,7 @@ class MonsterControllerFactory : MonsterFactory
         {
             for (int i = 0; i < number; i++)
             {
-                monsters.Add(new Bandit("Bandit " + i.ToString(), new Stat(), false, "~Kuku"));
+                monsters.Add(new Bandit("Bandit " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
             }
             return monsters.ToArray();
         }
