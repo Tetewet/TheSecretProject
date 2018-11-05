@@ -98,7 +98,7 @@ public class InGameActor : MonoBehaviour {
     {
         if (!isAI || !MyTurn) return;
         AITImer += Time.fixedDeltaTime;
-        if (AITImer > .4f) EndTurn();
+        if (AITImer > .5f) EndTurn();
 
     }
     //Action and Attack
@@ -108,8 +108,14 @@ public class InGameActor : MonoBehaviour {
 
         if (!MyTurn) return;
 
-        AITImer = 0;
-        Attack(GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor, Skill.Base);
+        
+        if(AITImer > .3f && actor.Path.Count <= 1)
+        {
+            var e = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
+        
+                  Attack(e, Skill.Base);
+        }
+      
 
     }
 
@@ -202,9 +208,10 @@ public class InGameActor : MonoBehaviour {
         if (actor.HP < s.HpCost) { print("Not enough HP: " + actor.HP + "/" + s.HpCost); return false; }
         if (actor.MP < s.MpCost) { print("Not enough MP: " + actor.MP + "/" + s.MpCost); return false; }
         if (actor.SP < s.SpCost) { print("Not enough SP: " + actor.SP + "/" + s.SpCost); return false; }
-
+        
         return true;
     }
+
     public void Attack(Actor a, Skill b)
     {
         if (MyTurn)
@@ -212,7 +219,7 @@ public class InGameActor : MonoBehaviour {
             normattack = InitiateAttack(a, b);
             StartCoroutine(normattack);
         }
-
+        AITImer = 0;
 
     }
     /// <summary>
@@ -313,9 +320,15 @@ public class InGameActor : MonoBehaviour {
     {
 
         if (!GameManager.BattleMode) yield break;
-        if (!CanPerformAction(b) || attacking) yield break;
-       
-        if (!MyTurn ||  actor.IsDefeat) {
+        if (attacking) yield break;
+        if (!CanPerformAction(b))
+        {
+            EndTurn();
+            yield break;
+        }
+
+
+            if (!MyTurn ||  actor.IsDefeat) {
             attacking = false;
             yield break;
         }
@@ -359,6 +372,7 @@ public class InGameActor : MonoBehaviour {
 
         // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
         //while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
+        print(actor.Path.Count - b.Reach);
         while (actor.Path.Count > b.Reach)
         {
 

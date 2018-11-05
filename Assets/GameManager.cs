@@ -494,6 +494,9 @@ public class GameManager : MonoBehaviour {
         {
             IGA.actor.Teleport(Map.AtPos( Overworld.PlayerPos));
             IGA.gameObject.SetActive(true);
+          
+            IGA.actor.Defending = false;
+            if (IGA.actor.HP <= 0) IGA.actor.HP = 1;
         }
 
  
