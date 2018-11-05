@@ -174,6 +174,7 @@ public class InGameActor : MonoBehaviour {
     /// <param name="Turn"></param>
     public void OnTurn(Battle.Turn Turn)
     {
+        if (!gameObject.activeSelf) return;
 
         actor.TileWalkedThisTurn = 0;
 
@@ -196,6 +197,7 @@ public class InGameActor : MonoBehaviour {
 
     public bool CanPerformAction(Skill s)
     {
+        
         if (actor.HP < s.HpCost) { print("Not enough HP: " + actor.HP + "/" + s.HpCost); return false; }
         if (actor.MP < s.MpCost) { print("Not enough MP: " + actor.MP + "/" + s.MpCost); return false; }
         if (actor.SP < s.SpCost) { print("Not enough SP: " + actor.SP + "/" + s.SpCost); return false; }
@@ -432,13 +434,17 @@ public class InGameActor : MonoBehaviour {
 
     private void OnBlocked(float z, Skill x)
     {
+        if (!gameObject.activeSelf) return;
+
         StartCoroutine(ColorBlink(Color.cyan, .1f));
         StartCoroutine(ShowDamage(0));
     }
 
     private void OnEquip(Equipement e)
     {
-        if(e is Weapon)
+        if (!gameObject.activeSelf) return;
+
+        if (e is Weapon)
         {
  
             for (int i = 0; i < Wep.Length; i++)
@@ -503,6 +509,8 @@ public class InGameActor : MonoBehaviour {
     }
     private void OnKillingSomeone(Actor a)
     {
+        if (!gameObject.activeSelf) return;
+
         GameManager.CursorPos = a.TilePosition;
         GameManager.GM.ActionFreeze();
 
@@ -510,13 +518,16 @@ public class InGameActor : MonoBehaviour {
 
     private void OnExpGain(float x)
     {
+        if (!gameObject.activeSelf) return;
         StartCoroutine(UpDateEXP());
     }
 
     public GameObject UIPrefab;
     private void OnDamage(float z, Skill x)
     {
-        if(!actor.IsDefeat)
+        if (!gameObject.activeSelf) return;
+
+        if (!actor.IsDefeat)
         anim[0].SetTrigger("Attacked");          
         else anim[0].SetTrigger("IsDeath");
         StartCoroutine(ColorBlink(Color.red,.1f));

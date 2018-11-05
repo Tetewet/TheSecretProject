@@ -289,7 +289,7 @@ public abstract class Actor : IComparable<Actor> {
         if(f != null) 
         {
             if (Defending) x *= .5f;
-            if (f.DmgType == DamageType.Magical) x -= GetStats.MagDEF;
+            if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
             else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
             if (x <= 0 && f.DmgType != DamageType.None)
             {
@@ -768,12 +768,12 @@ public enum DamageType
 {
     None = 0,
     Melee =1,
-    Magical =2,
+    Magic =2,
     Pierce = 4,
     Slashing = 8,
     Blunt = 16,
     Physical = Melee | Pierce | Slashing | Blunt,
-    Magic = Magical
+    Magical = Magic
 }
 /// <summary>
 /// Stats of any living being.

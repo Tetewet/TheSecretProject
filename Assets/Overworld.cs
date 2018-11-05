@@ -6,7 +6,7 @@ public class Overworld : Map
 {
 
 
-
+    public static Vector PlayerPos;
     public static List<Vector> SpawnPoints = new List<Vector>();
     public Overworld(Vector size) : base(size)
     {

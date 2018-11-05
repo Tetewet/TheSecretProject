@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour {
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
     [Header("Overworld")]
+    public GameObject OverWorldGO;
     public Tilemap Main;
     public Tilemap[] Events;
     /// <summary>
@@ -125,6 +126,13 @@ public class GameManager : MonoBehaviour {
     }
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
+        GM.OverWorldGO.SetActive(false);
+
+        if (IGA)
+        {
+            Overworld.PlayerPos = IGA.actor.TilePosition;
+            IGA.gameObject.SetActive(false);
+        } 
         GM.Cam.enabled = true;
         
         GM.Cursor.gameObject.SetActive(true);
@@ -260,36 +268,37 @@ public class GameManager : MonoBehaviour {
         {
             item.Heal();
         }
+        GenerateOverworld(Main);
+
         //14 6
-      /* var nGroup = new List<Monster>();
+        var nGroup = new List<Monster>();
 
-        for (int i = 0; i < Random.Range(1, 5); i++)
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-         StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0); 
+          for (int i = 0; i < Random.Range(1, 5); i++)
+              nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+           StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0); 
 
 
-        Protags[1].Equip(
-       new Weapon("Iron Sword")
-       {
-           slot = Equipement.Slot.Weapon,
-           StatsBonus = new Stat { STR = 2 },
-           DamageType = DamageType.Slashing,
-           WeaponType = Weapon.type.Sword,
-           GoldValue = 100,
-           rarity = Item.Rarity.Common,
-           Durability = 100
-       })
-        ;*/
+          Protags[1].Equip(
+         new Weapon("Iron Sword")
+         {
+             slot = Equipement.Slot.Weapon,
+             StatsBonus = new Stat { STR = 2 },
+             DamageType = DamageType.Slashing,
+             WeaponType = Weapon.type.Sword,
+             GoldValue = 100,
+             rarity = Item.Rarity.Common,
+             Durability = 100
+         })
+          ;
 
         //Debug
 
-/*
-         CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-          { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
-          CreateNewItemOnField(Item.Gold, new Vector(2, 5));
-        */
+        /*
+                 CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
+                  { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
+                  CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+                */
 
-       GenerateOverworld(Main);
     }
 
     public static Events[,] EventList = new global::Events[1000,1000];
@@ -326,7 +335,7 @@ public class GameManager : MonoBehaviour {
         var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    
         AddEvent(ev1);
         UpdateEvents();
-    
+        OverWorldGO.SetActive(true);
     }
     public static void UpdateEvents()
     {
@@ -376,6 +385,14 @@ public class GameManager : MonoBehaviour {
         foreach (var item in Protags)
         {
             item.AddExp(CurrentBattle.BattleExp / Protags.Count);
+        }
+        foreach (var item in InGameActors)
+        {
+            item.enabled = false;
+        }
+        foreach (var item in InGameFoes)
+        {
+            item.enabled = false;
         }
         StartCoroutine(BattleEndTransition());
 
@@ -478,17 +495,15 @@ public class GameManager : MonoBehaviour {
         GM.Cam.enabled = false;
         //------------------------------------------------------
 
-        var nGroup = new List<Monster>();
-        var gd = 0;
-        foreach (var item in Protags)
+            OverWorldGO.SetActive(true);
+
+        if (IGA)
         {
-            gd += item.GetLevel;
+            IGA.actor.Teleport(Map.AtPos( Overworld.PlayerPos));
+            IGA.gameObject.SetActive(true);
         }
-        for (int i = 0; i < Random.Range(2, 5 + gd); i++)
-        {
-            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END =3, LUC = 20,STR =2 }, false, "~Kuku"));
-        }
-        StartBattle(nGroup.ToArray(), new Map(new Vector(38, 9)),0);
+
+ 
         yield break;
     }
     float timer = 0;
@@ -1089,7 +1104,7 @@ public class GameManager : MonoBehaviour {
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
-                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, SelectedSkill);
+                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
                             }
                         else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
                     }

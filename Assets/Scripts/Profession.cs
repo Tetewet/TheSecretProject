@@ -52,7 +52,7 @@ public class Profession
                Reach = 5,
                SpCost = 2,
                Targets = Skill.TargetType.OneEnemy,
-               DmgType = DamageType.Magical,
+               DmgType = DamageType.Magic,
                Unlocked = true
             } });
         }
