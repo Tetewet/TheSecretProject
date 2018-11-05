@@ -33,6 +33,7 @@ public class Skill
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
 
+    Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
     public int MpCost { get { return mpCost; } set { mpCost= value; } }
@@ -53,15 +54,40 @@ public class Skill
             e.Targets = TargetType.OneEnemy;
             return e;
         }
+
+
+    }
+
+    public static Skill Weapon(Weapon w)
+    {
+        if (w == null) return Skill.Base;
+        else
+        {
+
+            var e = new Skill();
+            e.Name = "Attack";
+            e.SpCost = 2;
+            e.Reach = 1;
+            e.DmgType = w.DamageType;
+            e.Damage = .5f;
+            e.Targets = w.targetType;
+            e.wep = w;
+            return e;
+
+        }
     }
     public virtual void Activate(Actor target, Stat stats = new Stat(), Actor f = null)
     {
 
         var x = Damage;
-        if (DmgType == DamageType.Magical) x *= stats.INT;
-        else if (DmgType == DamageType.Melee) x *= stats.STR;
+     
+        if ((DamageType.Magical& dmgType) != 0) x *= stats.INT;
+        else if ( (DamageType.Physical & dmgType) != 0) x *= stats.STR;
 
-        if ((stats.LUC * 2 + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
+        if (wep != null) x += wep.ATK;
+
+        if ((stats.CriticalHitPercentage + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
+       
 
         target.TakeDamage(x, this, f);
     }
