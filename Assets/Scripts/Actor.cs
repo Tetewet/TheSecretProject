@@ -158,7 +158,13 @@ public abstract class Actor : IComparable<Actor> {
     //Stats
     protected Stat baseStats = new Stat();
     public Profession Class = new Profession(new Stat()) { Skills = new Skill[1] {
-        new Skill{Name = "Quick Jab", Damage = .25f, SpCost = 1, MpCost = 0, Reach = 1, DmgType = DamageType.Melee, Unlocked = true,Targets = Skill.TargetType.OneEnemy },
+        new Skill{Name = "Quick Jab",
+            Damage = .25f, SpCost = 1,
+            MpCost = 0, Reach = 1,
+            DmgType = DamageType.Melee,
+            Unlocked = true,
+            Targets = Skill.TargetType.OneEnemy
+            ,Description = "A jab. The quick type. Get Close and Personal."},
  
     }
     };
@@ -409,9 +415,13 @@ public abstract class Actor : IComparable<Actor> {
         
     }
 
-     
 
-    //Move with bound and collision in mind 
+
+    /// <summary>
+    /// Move with bound and collision in mind 
+    /// </summary>
+    /// <param name="v"></param>
+    /// <param name="bypass"></param>
     public virtual void Move(Vector v,bool bypass = false)
     {
         if (v == Vector.zero) return;
@@ -465,6 +475,10 @@ public abstract class Actor : IComparable<Actor> {
         CurrentTile.Enter(this);
 
     }
+    /// <summary>
+    /// Create a path toward X
+    /// </summary>
+    /// <param name="where"></param>
     public void CreatePath(Map.Tile where)
     {
 

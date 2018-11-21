@@ -14,19 +14,18 @@ public class InGameSkill : MonoBehaviour {
     {
         get { return s; }
     }
-    public void UseSkill(InGameActor Target, InGameActor Whom)
-    {
+ 
 
-    
-    
-
-    }
-
-    public void ShowSkill(Skill c)
+    public void ShowSkill(Skill c, Actor a)
     {
         s = c;
         Name.text = c.Name;
-        Cost.text = "sp:" + c.SpCost.ToString("00") + "mp:" + c.MpCost.ToString(); 
+        Cost.text = "";
+        if (s.SpCost > 0)
+            Cost.text += "SP:" + c.SpCost.ToString("00") + "/" + a.SP ;
+        if (s.MpCost > 0)
+            Cost.text += " MP:" + c.MpCost.ToString() + "/" + a.MP; ;
+
     }
 
 
