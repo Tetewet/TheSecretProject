@@ -32,7 +32,7 @@ public class Skill
     private TargetType targets;
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
-    public string Description;
+
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
@@ -52,7 +52,6 @@ public class Skill
             e.DmgType = DamageType.Melee;
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
-            e.Description = "Nonchalantly attack the target.";
             return e;
         }
 

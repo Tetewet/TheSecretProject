@@ -44,9 +44,8 @@ public class Profession
 
         get
         {
-            return new Profession(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[5]
-            {
-                new Skill { Name = "Firebolt",
+            return new Profession(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[1]
+            { new Skill { Name = "Firebolt",
                 Damage = .5f,
                MpCost = 10,
                BaseCritChance = 5f,
@@ -55,55 +54,7 @@ public class Profession
                Targets = Skill.TargetType.OneEnemy,
                DmgType = DamageType.Magic,
                Unlocked = true
-                ,Description = "Sparks aims at one target. Don't play with it , might start a fire."
-            },
-                   new Skill { Name = "Icebolt",
-                Damage = .3f,
-               MpCost = 6,
-               BaseCritChance = 0f,
-               Reach = 9,
-               SpCost = 1,
-               Targets = Skill.TargetType.OneEnemy,
-               DmgType = DamageType.Magic,
-               Unlocked = true
-                ,Description = "Icicle aims at one target. Stings a bit."
-            },
-                      new Skill { Name = "Lightingbolt",
-                Damage = .2f,
-               MpCost = 8,
-               BaseCritChance = 30f,
-               Reach = 15,
-               SpCost = 2,
-               Targets = Skill.TargetType.OneEnemy,
-               DmgType = DamageType.Magic,
-               Unlocked = true
-                ,Description = "Electrical arc launch at one target. Kinda hurt, but have 30% crit chance."
-            },
-                         new Skill { Name = "Mana Shock",
-                Damage = 1f,
-               MpCost = 30,
-               BaseCritChance = 5f,
-               Reach = 1,
-               SpCost = 2,
-               Targets = Skill.TargetType.OneEnemy,
-               DmgType = DamageType.Magic,
-               Unlocked = true,
-               Description = "Magical Impulsion toward one target. Useful for cooking."
-            },
-                            new Skill { Name = "Brainstorm",
-                Damage = 0f,
-               MpCost = -10,
-               BaseCritChance = 15f,
-               Reach = 1,
-               SpCost = 3,
-               Targets = Skill.TargetType.Self,
-               DmgType = DamageType.None,
-               Unlocked = true
-               ,Description = "Ponder on the situation. Give 10 MP to self."
-            }
-
-
-            });
+            } });
         }
     }
 
