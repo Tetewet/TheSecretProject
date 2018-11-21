@@ -95,7 +95,7 @@ public class BlackSmith : MonoBehaviour {
             GameObject temp = Instantiate(i); // pour instantier les items de la liste temporaire
             loadItemInventory.Add(temp);
 
-            slot[s].GetComponent<InventorySlot>().objectSlot = i;
+            //slot[s].GetComponent<InventorySlot>().objectSlot = i;
             slot[s].interactable = true;       
 
             // il faut créer le script des images des items dans la classe inventory, pour charger les images dans l'inventory du blackSmith
