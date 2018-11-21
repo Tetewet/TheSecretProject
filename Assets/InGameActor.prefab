@@ -28,6 +28,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1151582768239120
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4613236465270536}
+  m_Layer: 0
+  m_Name: Wep 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1272569243358224
 GameObject:
   m_ObjectHideFlags: 0
@@ -126,6 +141,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+--- !u!1 &1845206478781448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4555022134371854}
+  m_Layer: 0
+  m_Name: Wep 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1891695873294512
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,7 +202,7 @@ Transform:
   m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_Children: []
   m_Father: {fileID: 4476466357627902}
-  m_RootOrder: 3
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4476466357627902
 Transform:
@@ -181,9 +211,11 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1891695873294512}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.962532, y: -6.3, z: 0}
+  m_LocalPosition: {x: -19.196384, y: -16.30692, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 4555022134371854}
+  - {fileID: 4613236465270536}
   - {fileID: 4678993137952010}
   - {fileID: 4849352792169008}
   - {fileID: 4645553352191078}
@@ -191,6 +223,32 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4555022134371854
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1845206478781448}
+  m_LocalRotation: {x: -0, y: -0, z: 0.9238795, w: 0.38268355}
+  m_LocalPosition: {x: 0.3299999, y: 0.52, z: 0}
+  m_LocalScale: {x: 0.5600006, y: 0.5600006, z: 0.56}
+  m_Children: []
+  m_Father: {fileID: 4476466357627902}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 135}
+--- !u!4 &4613236465270536
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1151582768239120}
+  m_LocalRotation: {x: -0, y: -0, z: 0.9238798, w: -0.38268283}
+  m_LocalPosition: {x: -0.57, y: 0.57, z: 0}
+  m_LocalScale: {x: 0.5599998, y: 0.5599998, z: 0.56}
+  m_Children: []
+  m_Father: {fileID: 4476466357627902}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 225}
 --- !u!4 &4645553352191078
 Transform:
   m_ObjectHideFlags: 1
@@ -202,7 +260,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4476466357627902}
-  m_RootOrder: 2
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 52.38, y: 24.23, z: 0}
 --- !u!4 &4678993137952010
 Transform:
@@ -216,7 +274,7 @@ Transform:
   m_Children:
   - {fileID: 224397411504413924}
   m_Father: {fileID: 4476466357627902}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4849352792169008
 Transform:
@@ -229,7 +287,7 @@ Transform:
   m_LocalScale: {x: 0.75, y: 0.75, z: 1}
   m_Children: []
   m_Father: {fileID: 4476466357627902}
-  m_RootOrder: 1
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &95914254102835392
 Animator:
@@ -240,7 +298,7 @@ Animator:
   m_GameObject: {fileID: 1891695873294512}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 14925bc284a692a489a7a02ecebdcfc1, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9874c2278b6012242926356503ff8a9b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -293,13 +351,15 @@ MonoBehaviour:
   - {fileID: 212490046157143646}
   ExpBar: {fileID: 114332419729820768}
   StepDuration: 0.35
-  Speed: 3
+  Speed: 4
   offset: {x: 0, y: 0.91}
   InverseSprite: 0
   DistanceToPos: 0
   isAI: 0
+  Wep:
+  - {fileID: 4555022134371854}
+  - {fileID: 4613236465270536}
   MyTurn: 0
-  OverrideStats: 1
   ActorStats:
     AGI: 2
     STR: 1
@@ -308,7 +368,9 @@ MonoBehaviour:
     WIS: 5
     END: 1
     EXPGain: 0
+  BattleSprite: 1
   OnActorItem: {fileID: 212504019604083746}
+  IGW: []
   UIPrefab: {fileID: 1121437313290120, guid: e5aee91ed702015478fe9f6471be9791, type: 2}
 --- !u!114 &114332419729820768
 MonoBehaviour:

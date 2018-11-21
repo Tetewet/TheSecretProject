@@ -88,36 +88,21 @@ public struct Vector
         public bool Controllable = true;
 
 
-        //Level
-        public delegate void OnGainEXP(float x);
-        public event OnGainEXP OnExpGain;
-        public delegate void OnKillHandler(Actor a);
-        public event OnKillHandler OnKillActor;
-        public int GetLevel
-        {
-            get { return Level; }
-        }
-        private int Level = 1;
-        protected float EXP = 0;
-        public float GetEXP
-        {
-            get { return EXP; }
-        }
-        public virtual float RequiredEXP
-        {
-            get { return BASEEXP * ((float)Math.Exp(Math.Abs(Level - 1))); }
-        }
-
-        public virtual void AddExp(float exp)
-        {
-            EXP += exp;
-            UnityEngine.Debug.Log(Name + " gained " + exp + " exp.");
-            if (OnExpGain != null) OnExpGain(exp);
-            if (EXP >= RequiredEXP) LevelUP();
-        }
-        public virtual void LevelUP()
-        {
-            //Even when there is a level up
+    public virtual void AddExp(float exp)
+    {
+        EXP += exp;
+        UnityEngine.Debug.Log(Name + " gained " + exp + " exp.");
+        if (OnExpGain != null) OnExpGain(exp);
+        if (EXP >= RequiredEXP) LevelUP();
+    }
+    public virtual void LevelUP()
+    {
+        //Even when there is a level up
+        UnityEngine.Debug.Log(Name + "is now level" + GetLevel);
+        var e = new Random();
+        baseStats += new Stat() { END = e.Next(0,5), STR = e.Next(0, 5), INT = e.Next(0, 5), LUC = e.Next(0, 5), AGI = e.Next(0, 5), WIS = e.Next(0, 5) };
+        Level++;
+    }
 
             Level++;
         }
@@ -155,15 +140,17 @@ public struct Vector
             SP = 0;
         }
 
-
-        //Stats
-        protected Stat baseStats = new Stat();
-        public Profession profession = new Profession(new Stat())
-        {
-            Skills = new Skill[3] {
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, DmgType = DamageType.Physical, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, DmgType = DamageType.Physical, Unlocked = true },
-        new Skill{Name = "Strong Attack", Damage = .5f, SpCost = 2, MpCost = 5, Reach = 1, DmgType = DamageType.Physical, Unlocked = true }
+    //Stats
+    protected Stat baseStats = new Stat();
+    public Profession Class = new Profession(new Stat()) { Skills = new Skill[1] {
+        new Skill{Name = "Quick Jab",
+            Damage = .25f, SpCost = 1,
+            MpCost = 0, Reach = 1,
+            DmgType = DamageType.Melee,
+            Unlocked = true,
+            Targets = Skill.TargetType.OneEnemy
+            ,Description = "A jab. The quick type. Get Close and Personal."},
+ 
     }
         };
         public Stat GetStats
@@ -203,9 +190,13 @@ public struct Vector
         public event DamageHandler OnAttack, OnDamage, OnBlocked;
 
 
-
-        public bool CanUseSkill(Skill s)
-        {
+    public bool CanUseSkill(Skill s)
+    {
+        if (s == null)
+            s = Skill.Base;
+        if (s.HpCost > HP) { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return false; }
+        if ( s.MpCost > MP ) { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return false; }
+        if(s.SpCost > SP) { UnityEngine.Debug.Log(Name + " not enough SP: " + SP + "/" + s.SpCost); return false; }
 
             if (s.HpCost > HP) { UnityEngine.Debug.Log(Name + " not enough HP :" + HP + "/" + s.HpCost); return false; }
             if (s.MpCost > MP) { UnityEngine.Debug.Log(Name + " not enough MP: " + MP + "/" + s.MpCost); return false; }
@@ -222,8 +213,11 @@ public struct Vector
             if (s.MpCost > 0) ConsumeMP(s.MpCost);
             if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
-            UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + Target.Name);
-            s.Activate(Target, GetStats, this);
+    }
+    public virtual void Use(Skill s, Actor[] Target)
+    {
+        if (s == null) return;
+        if (!CanUseSkill(s)) return;
 
         }
         public virtual void Use(Skill s, Actor[] Target)
@@ -260,21 +254,52 @@ public struct Vector
 
         }
 
-        public virtual void Equip(Equipement q)
-        {
-            foreach (var g in inventory.Slot)
-                if (g.item == null && g.SlotType == q.slot)
-                    g.Equip(q);
+    }
+    public void SetProfession(Profession p)
+    {
+        this.Class = p;
+        OnTurn += Class.ClassLogic;
+    }
+    public virtual void Equip(Equipement q)
+    {
+        var f = false;
+        foreach (var g in inventory.Slot)
+            if(g.item == null && g.SlotType == q.slot) { f = true; g.Equip(q); }
 
-        }
-        public void OnMurder(Actor a)
-        {
-            if (OnKillActor != null) OnKillActor(a);
+        if (!f) return;
+        if (OnEquip!= null) OnEquip(q);
+        UnityEngine.Debug.Log(Name + " equips " + q.Name);
 
-        }
-        public void Use(Item i, Actor T)
+    }
+    public void OnMurder(Actor a)
+    {
+        if (OnKillActor != null) OnKillActor(a);
+
+    }
+    public void Use(Item i, Actor T)
+    {
+        Use(i, new Actor[1] { T });
+    }
+    public void TakeDamage(float x)
+    {
+        TakeDamage(x, null );
+    }
+    public virtual void TakeDamage(float x, Skill f , Actor a = null)
+    {
+
+        var i = x;
+        if(f != null) 
         {
-            Use(i, new Actor[1] { T });
+            if (Defending) x *= .5f;
+            if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
+            else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
+            if (x <= 0 && f.DmgType != DamageType.None)
+            {
+                if(OnBlocked!= null)OnBlocked(x, f);
+                UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
+                return;
+            }
+            UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
         }
         public void TakeDamage(float x)
         {
@@ -333,11 +358,60 @@ public struct Vector
         public int TileWalkedThisTurn = 0;
         public void Grab(Item a)
         {
+            Defending = false;
+            battle.EndTurn();
+            return;
+        }
+       
+    
+        //This turn
+        SP = GetStats.MaximumSP;
+        this.TileWalkedThisTurn = 0;
+        
+        if (SP > GetStats.MaximumSP) SP = GetStats.MaximumSP;
+       
+        SpAvaillableThisTurn = SP;
+       if(OnTurn!=null) OnTurn(battle.ThisTurn);
+        //Act Here - Add logic for monster here             
+        
+    }
+    public virtual void OnTurnEnded()
+    {
+        
+      
+    }
+    public delegate void OnEquipHandler(Equipement e);
+    public event OnEquipHandler OnEquip;
+    public delegate void OnTurnHandler(Battle.Turn e);
+    public event OnTurnHandler OnTurn;
+    //Position In world;
+    public void Move(Vector position )
+    {
+       
+        _transform.position += position;
+        
+    }
 
-            if (IsDefeat) return;
 
 
-            for (int i = 0; i < inventory.items.Length; i++)
+    /// <summary>
+    /// Move with bound and collision in mind 
+    /// </summary>
+    /// <param name="v"></param>
+    /// <param name="bypass"></param>
+    public virtual void Move(Vector v,bool bypass = false)
+    {
+        if (v == Vector.zero) return;
+        var b = GameManager.CurrentBattle;
+        var e =  CurrentTile.Position + v;
+
+        if (e.x < 0) e.x = 0;if (e.x > b.map.Width) e.x = b.map.Width - 1;
+        if (e.y < 0) e.y = 0; if (e.y > b.map.Length) e.y = b.map.Length - 1;
+        if(!bypass)
+        for (int x = 0; x < b.map.Width; x++)
+        {
+           
+            for (int y = 0; y < b.map.Length; y++)
             {
 
                 if (a is Gold)
@@ -360,35 +434,40 @@ public struct Vector
 
         public Map.Tile CurrentTile = new Map.Tile();
 
-        public Vector TilePosition
-        {
-            get { return CurrentTile.Position; }
-        }
-        //Act for one turn. Must be in a battle
+    public Queue<Vector> Path = new Queue<Vector>();
+    public void Teleport(Map.Tile where)
+    {
+        if(CurrentTile != null) CurrentTile.OnQuitting();
+        CurrentTile = where;      
+        CurrentTile.Enter(this);
 
-        public int SpAvaillableThisTurn = 3;
-        public virtual void Turn(Battle battle)
-        {
-            if (IsDefeat) return;
-            if (SP < 0) SP = 0;
-            if (Defending)
-            {
-                Defending = false;
-                battle.EndTurn();
-                return;
-            }
+    }
+    /// <summary>
+    /// Create a path toward X
+    /// </summary>
+    /// <param name="where"></param>
+    public void CreatePath(Map.Tile where)
+    {
 
 
             //This turn
             SP = GetStats.MaximumSP;
             this.TileWalkedThisTurn = 0;
 
-            if (SP > GetStats.MaximumSP) SP = GetStats.MaximumSP;
+        /*
+        for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
+        for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
+        */
+        Map e;
+        if (GameManager.BattleMode) e = GameManager.CurrentBattle.map;
+        else e = GameManager.Map;
 
-            SpAvaillableThisTurn = SP;
-            if (OnTurn != null) OnTurn(battle.ThisTurn);
-            //Act Here - Add logic for monster here             
-
+        if (Math.Abs(x) > Math.Abs(y) || e.AtPos(TilePosition + Vector.up * b).Actor != null)
+        {
+            for (int i = 1; i <= Math.Abs(x); i++)
+            { if (TilePosition + Vector.up * i * b == TilePosition) continue; Path.Enqueue(TilePosition + Vector.right * i * a); }
+            // y +1
+            for (int i = 1; i <= Math.Abs(y)  ; i++) Path.Enqueue( TilePosition + Vector.right * x + Vector.up * i * b);
         }
         public virtual void OnTurnEnded()
         {
@@ -406,10 +485,30 @@ public struct Vector
 
         }
 
+    bool CanMoveThere(Map.Tile Where)
+    {
+        var e = true;
+        var s = Where.collider;
+        if (Where == CurrentTile) e = false;
+        if (Where.x > TilePosition.x && (s == Map.Tile.ColliderType.Left || CurrentTile.collider == Map.Tile.ColliderType.Right) ) e = false;
+        if (Where.x < TilePosition.x && ( s == Map.Tile.ColliderType.Right || CurrentTile.collider == Map.Tile.ColliderType.Left) ) e = false;
+        if (Where.y > TilePosition.y && (s == Map.Tile.ColliderType.Down || CurrentTile.collider == Map.Tile.ColliderType.Up)) e = false;
+        if (Where.y < TilePosition.y && (s == Map.Tile.ColliderType.Up || CurrentTile.collider == Map.Tile.ColliderType.Down)) e = false;
+        if(s == Map.Tile.ColliderType.All) e = false;
+     
+
+        return e;
 
 
-        //Move with bound and collision in mind 
-        public virtual void Move(Vector v, bool bypass = false)
+    }
+
+
+    public virtual void Move(Map.Tile where)
+    {
+       var v = Vector.Distance(where.Position,CurrentTile.Position);
+
+     
+        if (where.Actor != null || !CanMoveThere(where))
         {
             if (v == Vector.zero) return;
             var b = GameManager.CurrentBattle;
@@ -454,8 +553,34 @@ public struct Vector
         }
         //Position In Battle
 
-        public Queue<Vector> Path = new Queue<Vector>();
-        public void Teleport(Map.Tile where)
+        Path.Clear();
+        CreatePath(where);
+        return;
+ 
+    }
+    public bool IsTeamWith(Actor a)
+    {
+        return GameManager.CurrentBattle.IsTeamWith(this, a);
+    }
+   public void CantMove(Vector v)
+    {
+        //DEBUG
+        UnityEngine.Debug.Log("Couldn't move to " + v);
+   
+        Path.Clear();
+    }
+    protected Transform _transform;
+    /// <summary>
+    /// World-Related Variables (Position, Direction )
+    /// </summary>
+    public Transform transform
+    {
+        get{ return _transform; }
+       
+    }
+    public struct Transform
+    {
+         public  enum Direction
         {
             CurrentTile.OnQuitting();
             CurrentTile = where;
@@ -532,13 +657,31 @@ public struct Vector
 
         }
 
-        public void CantMove(Vector v)
+        public List<Weapon> GetWeapons
         {
-            //DEBUG
-            UnityEngine.Debug.Log("Couldn't move to " + v);
-            Path.Clear();
+            get
+            {
+                if (Slot.Length == 0) return null;
+                if (!HasWeapon) return null;
+
+                List < Weapon > w = new List<Weapon>();
+                foreach (var item in Slot)              
+                    if (item.item is Weapon)
+                        w.Add(item.item as Weapon);
+                return w; 
+
+            }
         }
-        protected Transform _transform;
+        public bool HasWeapon
+        {
+            get
+            {
+                for (int i = 0; i < Slot.Length; i++)             
+                    if (Slot[i].item is Weapon) return true;               
+                return false;
+            }
+        }
+
         /// <summary>
         /// World-Related Variables (Position, Direction )
         /// </summary>
@@ -557,6 +700,13 @@ public struct Vector
                 Left = 4
             }
 
+                e.items = new Item[3];
+                e.Slot = new EquipementSlot[4];
+                e.Slot[0] = new EquipementSlot(Equipement.Slot.Armor);
+                e.Slot[1] = new EquipementSlot(Equipement.Slot.Head);
+                e.Slot[2] = new EquipementSlot(Equipement.Slot.Weapon);
+                e.Slot[3] = new EquipementSlot(Equipement.Slot.Accessory);
+                // foreach (var ITEM in e.Slot) ITEM.item.OnItemBreak += e.OnItemBreak;
 
             public Vector position
             {
@@ -649,18 +799,24 @@ public struct Vector
                     return t;
                 }
             }
-            public struct EquipementSlot
+        }
+        public class EquipementSlot
+        {
+
+            public EquipementSlot(  Equipement.Slot type)
             {
-                public string SlotName;
-                public Equipement item;
-                public Equipement.Slot SlotType;
-                public void Equip(Equipement q)
-                {
-                    if (q.slot != SlotType) return;
-                    item = q;
+                this.SlotName = type.ToString();
+                this.SlotType = type;
+            }
+            public string SlotName;
+            public Equipement item;
+            public Equipement.Slot SlotType;
+            public void Equip(Equipement q)
+            {
+                if (q.slot != SlotType) return;
+                item = q;
+                 
 
-
-                }
             }
         }
 
@@ -674,10 +830,56 @@ public struct Vector
         }
 
 
-        //Functionality
-        public static Actor operator ++(Actor a)
-        {
-            a.AddExp((a.RequiredEXP - a.EXP) + 1);
+        if (t == x) (t + GetStats.LUC).CompareTo(x + other.GetStats.LUC);
+        return t.CompareTo(x); 
+    }
+ 
+ 
+}
+
+
+[Flags]
+public enum _stats
+{
+    STR = 1, AGI = 2, END =4, WIS = 8, INT = 16, LUC = 32 
+}
+[Flags]
+public enum DamageType
+{
+    None = 0,
+    Melee =1,
+    Magic =2,
+    Pierce = 4,
+    Slashing = 8,
+    Blunt = 16,
+    Physical = Melee | Pierce | Slashing | Blunt,
+    Magical = Magic
+}
+/// <summary>
+/// Stats of any living being.
+/// </summary>
+public struct Stat : IComparable<Stat>
+{
+
+    public delegate void OnStatsGainHandler();
+    public event OnStatsGainHandler OnGainStats;
+    public int STR, AGI, END, WIS, INT, LUC;
+    //For fine tuning turn order
+    public int Priority;
+    //For fine tuning targeting
+    public int Threat;
+    public int DamageBonus, DefenseBonus;
+    public float PhysDEF { get { return ( STR / 2 + END + AGI / 4)/2; } }
+    public float MagDEF { get { return (INT + WIS * 2)/2; } }
+    public float MaximumHP { get { if (END == 0) return 1; return END * 2; } }
+    public float MaximumMP { get { return WIS * 5; } }
+    public float CriticalHitPercentage { get { return CriticalHitFlat + LUC; } }
+    public float CriticalHitFlat;
+    public int MaximumSP { get {
+
+            int a = 2;
+            a += (int)((STR + AGI + END + WIS + INT + LUC) / 22.8571428571);
+            if (a > 7) a = 7;
             return a;
         }
         public override string ToString()
@@ -719,105 +921,23 @@ public struct Vector
     /// </summary>
     public struct Stat : IComparable<Stat>
     {
-
-        public delegate void OnStatsGainHandler();
-        public event OnStatsGainHandler OnGainStats;
-        public int STR, AGI, END, WIS, INT, LUC;
-        //For fine tuning turn order
-        public int Priority;
-        //For fine tuning targeting
-        public int Threat;
-        public int DamageBonus, DefenseBonus;
-        public float PhysDEF { get { return (STR / 2 + END + AGI / 4) / 2; } }
-        public float MagDEF { get { return (INT + WIS * 2) / 2; } }
-        public float MaximumHP { get { if (END == 0) return 1; return END * 2; } }
-        public float MaximumMP { get { return WIS * 5; } }
-        public float CriticalHitPercentage { get { return CriticalHitFlat + LUC; } }
-        public float CriticalHitFlat;
-        public int MaximumSP
-        {
-            get
-            {
-
-                int a = 2;
-                a += (int)((STR + AGI + END + WIS + INT + LUC) / 22.8571428571);
-                if (a > 7) a = 7;
-                return a;
-            }
-        }
-
-        public int Magnitude { get { return (STR + AGI + END + WIS + INT + LUC) / 6; } }
-
-        public void AddStats(int x, _stats s)
-        {
-            switch (s)
-            {
-                case _stats.STR:
-                    STR += x;
-                    break;
-                case _stats.AGI:
-                    AGI += x;
-                    break;
-                case _stats.END:
-                    END += x;
-                    break;
-                case _stats.WIS:
-                    WIS += x;
-                    break;
-                case _stats.INT:
-                    INT += x;
-                    break;
-                case _stats.LUC:
-                    LUC += x;
-                    break;
-                default:
-                    break;
-            }
-            OnGainStats();
-        }
-        public void AddStats(Stat a)
-        {
-            this += a;
-            if (OnGainStats != null) OnGainStats();
-            else Console.WriteLine("No OnGainStats");
-        }
-
-        public int CompareTo(Stat other)
-        {
-            return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
-        }
-
-        //Useful Functions
-
-
-        public static Stat zero
-        {
-            get { return new Stat(); }
-        }
-        public static Stat operator +(Stat a, Stat b)
-        {
-            var e = new Stat();
-            e.STR = a.STR + b.STR;
-            e.INT = a.INT + b.INT;
-            e.AGI = a.AGI + b.AGI;
-            e.WIS = a.WIS + b.WIS;
-            e.END = a.END + b.END;
-            e.LUC = a.LUC + b.LUC;
-            e.OnGainStats += a.OnGainStats + b.OnGainStats;
-
-            return e;
-        }
-        public static Stat operator *(Stat a, int b)
-        {
-            var e = new Stat();
-            e.STR = a.STR * b;
-            e.INT = a.INT * b;
-            e.AGI = a.AGI * b;
-            e.WIS = a.WIS * b;
-            e.END = a.END * b;
-            e.LUC = a.LUC * b;
-            e.OnGainStats += a.OnGainStats;
-            return e;
-        }
+        var e = new Stat();
+        e.STR = a.STR * b;
+        e.INT = a.INT * b;
+        e.AGI = a.AGI * b;
+        e.WIS = a.WIS * b;
+        e.END = a.END * b;
+        e.LUC = a.LUC * b;
+        e.OnGainStats += a.OnGainStats;
+        return e;
     }
 
+    public override string ToString()
+    {
+        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC;
+    }
+}
+
+
+
+        //Useful Functions

@@ -1,0 +1,188 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: InGameActor
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: 181af5daffc2dbd428a83238dca27be1,
+      type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Name
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Name
+    value: Nana
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: bar
+    value: 
+    objectReference: {fileID: 114619573125941264, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: ActorColor.r
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorColor.g
+    value: 0.023529414
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorColor.b
+    value: 0.023529414
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorColor.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Indicator
+    value: 
+    objectReference: {fileID: 212184242459566762, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: Position.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Position.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: anim.Array.size
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: anim.Array.data[0]
+    value: 
+    objectReference: {fileID: 95914254102835392, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: sprity.Array.size
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sprity.Array.data[0]
+    value: 
+    objectReference: {fileID: 212589635915499512, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: sprity.Array.data[1]
+    value: 
+    objectReference: {fileID: 212490046157143646, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: ExpBar
+    value: 
+    objectReference: {fileID: 114332419729820768, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: StepDuration
+    value: 0.35
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Speed
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: offset.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: offset.y
+    value: 0.91
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: InverseSprite
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: DistanceToPos
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: isAI
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Wep.Array.size
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: Wep.Array.data[0]
+    value: 
+    objectReference: {fileID: 4555022134371854, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: Wep.Array.data[1]
+    value: 
+    objectReference: {fileID: 4613236465270536, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: MyTurn
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: OverrideStats
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.AGI
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.STR
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.INT
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.LUC
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.WIS
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.END
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ActorStats.EXPGain
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: OnActorItem
+    value: 
+    objectReference: {fileID: 212504019604083746, guid: 754cf4726fec5dc46b5d0ebe252edb0d,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: IGW.Array.size
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: UIPrefab
+    value: 
+    objectReference: {fileID: 1121437313290120, guid: e5aee91ed702015478fe9f6471be9791,
+      type: 2}

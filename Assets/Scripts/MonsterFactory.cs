@@ -35,65 +35,69 @@ using System.Text;
         abstract public MonsterFactory CreateBandit();
     }
 
-    class MonsterControllerFactory : MonsterFactory
+class MonsterControllerFactory : MonsterFactory
+{
+    static Random random = new Random();
+
+    public MonsterControllerFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
     {
-        public MonsterControllerFactory(string Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
-        {
-            base.Name = Name;
-            base.baseStats = baseStats;
-            base.Controllable = Controllable;
-            base.AnimatorPath = AnimatorP;
-        }
-
-        public override MonsterFactory CreateBandit()
-        {
-            return new Bandit(Name, baseStats, Controllable, AnimatorPath);
-        }
-
-        public override MonsterFactory CreateKodama()
-        {
-            return new Kodama(Name, baseStats, Controllable, AnimatorPath);
-        }
-
-        public override MonsterFactory CreateKuku()
-        {
-            return new Kuku(Name, baseStats, Controllable, AnimatorPath);
-        }
-
-        static Random random;
-        public static void SpawnMonsters()
-        {
-            // randomize here
-            int chances = random.Next(0, 100); // quels monstres ? = aleatoire
-            int number = random.Next(4, 6); // nombre de monstres a faire spawn
-            var factories = new List<MonsterControllerFactory>();
-            if (chances > 66)
-            {
-                for (int i = 0; i < number; i++) 
-                {
-                    factories.Add(new Kuku("Kuku " + i.ToString(), new Stat(), false, "AnimatorP"));
-                }
-            }
-            else if (chances < 33) 
-            {
-                for (int i = 0; i < number; i++)
-                {
-                    factories.Add(new Kodama("Kodama " + i.ToString(), new Stat(), false, "AnimatorP"));
-                }
-            }
-            else
-            {
-                for (int i = 0; i < number; i++)
-                {
-                    factories.Add(new Bandit("Bandit " + i.ToString(), new Stat(), false, "AnimatorP"));
-                }
-            }
-            //SpawnMonsters(random.range(0, Monsterlist.count);
-
-            //MonsterControllerFactory factory = factories[random.Next(0, factories.Count)];
-            //factories.Remove(factory);
-
-        }
+        base.Name = Name;
+        base.baseStats = baseStats;
+        base.Controllable = Controllable;
+        base.AnimatorPath = AnimatorP;
     }
 
+    public override MonsterFactory CreateBandit()
+    {
+        return new Bandit(Name, baseStats, Controllable, AnimatorPath);
+    }
+
+    public override MonsterFactory CreateKodama()
+    {
+        return new Kodama(Name, baseStats, Controllable, AnimatorPath);
+    }
+
+    public override MonsterFactory CreateKuku()
+    {
+        return new Kuku(Name, baseStats, Controllable, AnimatorPath);
+    }
+
+    public static Actor[] SpawnMonsters()
+    {
+        // randomize here
+        int chances = random.Next(0, 100); // quels monstres ? = aleatoire
+        int number = random.Next(4, 6); // nombre de monstres a faire spawn
+        var monsters = new List<MonsterControllerFactory>();
+        if (chances > 66)
+        {
+            for (int i = 0; i < number; i++)
+            {
+                monsters.Add(new Kuku("Kuku " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+            }
+            
+            return monsters.ToArray();
+        }
+        else if (chances < 33)
+        {
+            for (int i = 0; i < number; i++)
+            {
+                monsters.Add(new Kodama("Kodama " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+            }
+            return monsters.ToArray();
+        }
+        else
+        {
+            for (int i = 0; i < number; i++)
+            {
+                monsters.Add(new Bandit("Bandit " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+            }
+            return monsters.ToArray();
+        }
+        //SpawnMonsters(random.range(0, Monsterlist.count);
+
+        //MonsterControllerFactory factory = factories[random.Next(0, factories.Count)];
+        //factories.Remove(factory);
+
+    }
+}
 
