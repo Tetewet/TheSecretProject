@@ -89,7 +89,7 @@ public class Profession
     {
         this.BaseStats = s;
         this.type = profession;
-        Skills = SkillManager.GetSkillsByProfession(profession);
+        Skills = SkillDao.GetSkillsByProfession(profession);
 
     }
 

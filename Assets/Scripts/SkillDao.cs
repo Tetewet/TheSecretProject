@@ -7,11 +7,8 @@ using System.Text;
 using Mono.Data.Sqlite;
 using UnityEngine;
 
-static class SkillManager
+static class SkillDao
 {
-
-
-
     public static Skill[] GetSkillsByActor(Actor actor)
     {
         List<Skill> skills = new List<Skill>();
