@@ -19,21 +19,14 @@ public class InGameWeapon : MonoBehaviour {
     public static GameObject GenerateInGameWeapon(Weapon w)
     {
         var path =  "Sprites/Weapon/" + w.WeaponType.ToString() + "/";
-
-        var s = Instantiate(Resources.Load<GameObject>(path + "PREFAB"),Vector3.zero,Quaternion.identity).GetComponent<InGameWeapon>();
-        
+        var s = Instantiate(Resources.Load<GameObject>(path + "PREFAB"),Vector3.zero,Quaternion.identity).GetComponent<InGameWeapon>();      
         s.Enchant.enabled = s.Hilt.enabled = s.Blade.enabled = false;
         var B = Resources.LoadAll<Sprite>(path + "Blades/" );
         var H = Resources.LoadAll<Sprite>( path + "Hilts/");
         var E = Resources.LoadAll<Sprite>(path + "Enchants/");
-
-
- 
         s.weapon = w;
         if (!w.HasEquipementData)
         {
-
-       
             //Random For now to test the system
             var b = Random.Range(0, B.Length - 1);
             var h = Random.Range(0, H.Length - 1);

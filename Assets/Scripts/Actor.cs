@@ -48,9 +48,7 @@ public struct Vector
     {
         var e = new Vector(a.x, a.y);
         e.x  += b.x;
-        e.y  += b.y;
-
-   
+        e.y  += b.y;    
         return e;
     }
     public static Vector operator -(Vector a, Vector b)
@@ -344,7 +342,7 @@ public abstract class Actor : IComparable<Actor> {
         HP -= x;
         if (HP <= 0) { Ondeath(x, f, a);  HP = 0; }
     
-        if (OnDamage != null && f.DmgType == DamageType.Offensive) OnDamage(x,f);
+        if (OnDamage != null && (f.DmgType & DamageType.Offensive) != 0) OnDamage(x,f);
     }
     
     public virtual void Ondeath(float x, Skill f , Actor a = null)

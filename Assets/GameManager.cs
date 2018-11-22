@@ -32,10 +32,15 @@ public class GameManager : MonoBehaviour
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject SkillsPrefab;
+    [Header("SFX")]
+    public AudioClip click;
+    public AudioClip select;
+
+
     [Header("UI")]
     public Image DarknessMyOldFriend;
     public RectTransform BattleStartGameObject;
-    public GameObject SkillsCursorPos;
+    public GameObject SkillsCursorPos; 
 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
@@ -59,6 +64,7 @@ public class GameManager : MonoBehaviour
 
 
     AudioSource audi;
+    public AudioSource audiSFX;
 
     [System.Serializable]
     public struct BattleField
@@ -235,6 +241,22 @@ public class GameManager : MonoBehaviour
         foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right;
         yield return new WaitForSeconds(.25f);
 
+
+
+
+
+
+
+
+
+        var sp = new Consumeable("Orange Potion", "Items/SP_POTION")
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };
+        Protags[1].Grab(sp);
+
+        
+
+
+
         StartCoroutine(Transition(Color.clear));
         yield return new WaitForSeconds(1.0f);
         BattleStartGameObject.gameObject.SetActive(true);
@@ -250,6 +272,10 @@ public class GameManager : MonoBehaviour
         CurrentBattle.Proceed();
         GM.CanInteract = true;
         BattleStartGameObject.gameObject.SetActive(false);
+
+
+
+
         yield break;
     }
     /// <summary>
@@ -314,7 +340,7 @@ public class GameManager : MonoBehaviour
 
         // for (int i = 0; i < Random.Range(1, 5); i++)
         //     nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-        StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+    StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
       
 
         Protags[1].Equip(
@@ -332,11 +358,10 @@ public class GameManager : MonoBehaviour
 
         //Debug
 
-        /*
-                 CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-                  { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
-                  CreateNewItemOnField(Item.Gold, new Vector(2, 5));
-                */
+
+
+       // CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+        
 
     }
 
@@ -1035,7 +1060,7 @@ public class GameManager : MonoBehaviour
 
         if (a == null)
         {
-            print(a);
+            print(a+ " IS NULL ");
             return;
         }
         /*OnHover.text =
@@ -1071,11 +1096,10 @@ public class GameManager : MonoBehaviour
                 {
                     Inventory[i].transform.parent.gameObject.SetActive(true);
                     Inventory[i].enabled = true;
-
-                    if (Inventory[i].sprite == null)
-                    {
+              
+                  
                         Inventory[i].sprite = LoadSprite(a.inventory.items[i].ResourcePath);
-                    }
+                   
                 }
                 else
                 {
@@ -1124,6 +1148,7 @@ public class GameManager : MonoBehaviour
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
             GetInGameFromActor(SelectedActor).UseItem(curtile.Actor, SelectedItem);
+           
             CloseInventory();
         }
         else
@@ -1138,7 +1163,9 @@ public class GameManager : MonoBehaviour
             {
                 Tabmenu = false;
                 GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
-
+                audiSFX.clip = click;
+                audiSFX.Play();
+               
                 CloseInventory();
 
                 return;
@@ -1155,7 +1182,8 @@ public class GameManager : MonoBehaviour
 
         if (Tabmenu) return;
 
-        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
+        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; audiSFX.clip = click;
+            audiSFX.Play(); return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
         if (HasSelectedActor)
@@ -1277,6 +1305,9 @@ public class GameManager : MonoBehaviour
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
+                audiSFX.clip = select;
+                audiSFX.Play();
+               
 
                 OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
                 var u = new Vector(h, -v);
@@ -1454,6 +1485,12 @@ public class GameManager : MonoBehaviour
         InfoBar.transform.parent.gameObject.SetActive(true);
         InfoBar.text = a.Description;
     }
+    void ShowItemDescInfo(Item a)
+    {
+        if (a == null) { InfoBar.transform.parent.gameObject.SetActive(false); return; }
+        InfoBar.transform.parent.gameObject.SetActive(true);
+        InfoBar.text = a.Description;
+    }
     /// <summary>
     /// Logic about the menu - run on update
     /// </summary>
@@ -1472,6 +1509,12 @@ public class GameManager : MonoBehaviour
                 SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
             }
 
+            if (inventorySelected && SelectedItem == null)
+            {
+                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+            }
+
         }
         if (Input.GetKeyDown(KeyCode.S))
         {
@@ -1482,10 +1525,31 @@ public class GameManager : MonoBehaviour
             {
                 SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
             }
+            if (inventorySelected && SelectedItem == null)
+            {
+                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+            }
 
         }
-        if (Input.GetKeyDown(KeyCode.A)) { invUIItem--; if (TabChoice == 3) TabChoice = 0; }
-        if (Input.GetKeyDown(KeyCode.D)) { invUIItem++; if (TabChoice < 3) TabChoice = 3; ; }
+        if (Input.GetKeyDown(KeyCode.A)) {
+            invUIItem--;
+            if (inventorySelected && SelectedItem == null)
+            {
+                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+            }
+
+            if (TabChoice == 3) TabChoice = 0; }
+        if (Input.GetKeyDown(KeyCode.D)) {
+            invUIItem++;
+            if (inventorySelected && SelectedItem == null)
+            {
+                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+            }
+
+            if (TabChoice < 3) TabChoice = 3; ; }
 
         if (TabChoice > 3) TabChoice = 0;
         if (TabChoice < 0) TabChoice = 3;
@@ -1506,8 +1570,8 @@ public class GameManager : MonoBehaviour
                 {
 
 
-                    if (SelectedItem != null) SelectedItem = null;
-                    else if (inventorySelected) inventorySelected = false;
+                    if (SelectedItem != null) { ShowItemDescInfo(SelectedItem); SelectedItem = null; }
+                    else if (inventorySelected) { inventorySelected = false; InfoBar.transform.parent.gameObject.SetActive(false); } 
                     else CloseInventory();
                 }
                 else if (SkillsSelected)
@@ -1543,7 +1607,9 @@ public class GameManager : MonoBehaviour
                 {
                     var e = SelectedActor.inventory.items[invUIItem];
                     SelectedItem = e;
-
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                    audiSFX.clip = click;
+                    audiSFX.Play();
                     return;
                 }
                 else
@@ -1552,6 +1618,9 @@ public class GameManager : MonoBehaviour
                     var e = SelectedActor.Class.UsableSkill[skillUI];
                     if (PathUI.Count > 0)
                         PathUI.Clear();
+
+                    audiSFX.clip = click;
+                    audiSFX.Play();
 
                     StartCoroutine(_freezecam(.25f));
                     SelectedSkill = e;
@@ -1570,6 +1639,8 @@ public class GameManager : MonoBehaviour
                 {
                     skillUI = 0;
 
+                    audiSFX.clip = click;
+                    audiSFX.Play();
 
                     SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
                     SkillsSelected = true;
@@ -1584,17 +1655,26 @@ public class GameManager : MonoBehaviour
                     }
                     SkillList.SetActive(true);
                 }
-                else if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; }
+                else if (TabChoice == 1) {
+                    inventorySelected = true;
+
+                  
+                    audiSFX.clip = click;
+                    audiSFX.Play(); invUIItem = 0;
+                    if (SelectedActor.inventory.items.Length > 0) ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
                 else if (TabChoice == 2 && SelectedActor.SP > 0)
                 {
-
+                    audiSFX.clip = click;
+                    audiSFX.Play();
                     GetInGameFromActor(SelectedActor).EnterDefenseMode();
                     ShowTabMenu(false);
 
                 }
                 if (TabChoice == 3 && SelectedActor.SP > 0)
                 {
-
+                    audiSFX.clip = click;
+                    audiSFX.Play();
                     GetInGameFromActor(SelectedActor).EndTurn();
                     ShowTabMenu(false);
                 }
@@ -1622,6 +1702,7 @@ public class GameManager : MonoBehaviour
         SelectedSkill = null;
         SelectedItem = null;
         inventorySelected = false;
+        InfoBar.transform.parent.gameObject.SetActive(false);
         invUIItem = 0;
     }
 

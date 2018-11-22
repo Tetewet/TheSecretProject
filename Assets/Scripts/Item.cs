@@ -44,6 +44,7 @@ public abstract class Item : IDisposable
     {
 
         UnityEngine.Debug.Log(a.ToString() + " takes  " + Name);
+        if(Ongrabbed!= null)
         Ongrabbed( a);
     }
     public void OnDispose()
@@ -51,6 +52,7 @@ public abstract class Item : IDisposable
         OnDispose();
     }
     public static List<Item> Inventory = new List<Item>();
+    public string Description;
     public Skill.TargetType targetType;
     public Map.Tile CurrentTile = new Map.Tile();
     public Effects effect;
@@ -108,7 +110,7 @@ public abstract class Item : IDisposable
     {
         if (Inventory.Contains(this)) Inventory.Remove(this);
         if(CurrentTile!=null) CurrentTile.Items.Remove(this);
-        onDispose();
+       if(onDispose!=null) onDispose();
         GC.SuppressFinalize(this);
     }
 }
@@ -140,6 +142,7 @@ public class Equipement : Item
 
     public Equipement(string Name, string Path = "") : base(Name, Path)
     {
+        ResourcePath = Path;
     }
 
     public bool Useable

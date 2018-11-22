@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Skill 
 {
-    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int mpCost,int hpCost,int spCost, int level, bool unlocked = true) {
+    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, bool unlocked = true) {
         this.name = name;
         this.Description = description;
         this.profType = profType;

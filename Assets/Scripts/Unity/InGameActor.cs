@@ -189,7 +189,7 @@ public class InGameActor : MonoBehaviour {
         if (isAI)
         targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
         actor.TileWalkedThisTurn = 0;
-
+        GameManager.GM.ShowUI(actor);
         if (sprity[0] != null)
             sprity[0].color = Color.white;
         MyTurn = true;
@@ -231,7 +231,9 @@ public class InGameActor : MonoBehaviour {
     /// </summary>
     public void AnimatedAttack()
     {
+      
         if (!MyTurn) return;
+       
         GameManager.GM.Cam.orthographicSize = 5.2f;
         AITImer = 0;
         Actor[] e = new Actor[1];
