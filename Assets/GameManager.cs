@@ -1038,7 +1038,7 @@ public class GameManager : MonoBehaviour {
 + a.GetLevel.ToString("00") + "\n[ hp  "
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
-+ a.SP.ToString("00") + " ]";*/
++ a.SP.ToString("00") + " ]";*/ //TODO Language.db
 
         OnHover.text = "[" + a.Name + "]" + "  Level " + a.GetLevel;
         Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
