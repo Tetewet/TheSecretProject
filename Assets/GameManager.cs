@@ -1466,7 +1466,7 @@ public class GameManager : MonoBehaviour
             invUIItem++; TabChoice--;
             skillUI--;
             skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
-            if (SkillsSelected)
+            if (SkillsSelected && SelectedSkill == null)
             {
 
                 SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
@@ -1478,7 +1478,7 @@ public class GameManager : MonoBehaviour
             invUIItem--; TabChoice++;
             skillUI++;
             skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
-            if (SkillsSelected)
+            if (SkillsSelected && SelectedSkill == null)
             {
                 SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
             }

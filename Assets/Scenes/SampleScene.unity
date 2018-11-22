@@ -442,7 +442,7 @@ Tilemap:
   - first: {x: -1, y: 0, z: 0}
     second:
       m_TileIndex: 11
-      m_TileSpriteIndex: 13
+      m_TileSpriteIndex: 22
       m_TileMatrixIndex: 0
       m_TileColorIndex: 10
       m_ObjectToInstantiate: {fileID: 0}
@@ -712,26 +712,26 @@ Tilemap:
     m_Data: {fileID: 21300002, guid: df52fddbe4b2a72498444298151c9123, type: 3}
   - m_RefCount: 6
     m_Data: {fileID: 21300004, guid: df52fddbe4b2a72498444298151c9123, type: 3}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   - m_RefCount: 1
     m_Data: {fileID: 21300000, guid: e236667b381f0284f885784e676704b9, type: 3}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
   m_TileMatrixArray:
   - m_RefCount: 25
     m_Data:
@@ -16892,6 +16892,20 @@ Prefab:
       propertyPath: Events.Array.data[1]
       value: 
       objectReference: {fileID: 509534516}
+    - target: {fileID: 224506610741954818, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1966270072180348, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 223824956397208646, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: m_SortingOrder
+      value: 36
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
   m_IsPrefabAsset: 0
@@ -18338,7 +18352,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!156049354 &1995968911
 Grid:
   m_ObjectHideFlags: 0

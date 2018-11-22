@@ -45,7 +45,7 @@ static class SkillDao
         dbconn.Open(); //Open connection to the database.
         IDbCommand dbcmd = dbconn.CreateCommand();
         string sqlQuery = "SELECT * " + "FROM Skills " + "WHERE ProfessionType = " + (int)profession;
-        Debug.Log(profession);
+        Debug.Log("Profession DB : Class "  + profession + " has being loaded! ");
         dbcmd.CommandText = sqlQuery;
         IDataReader reader = dbcmd.ExecuteReader();
         while (reader.Read())

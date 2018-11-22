@@ -90,6 +90,8 @@ public abstract class Actor : IComparable<Actor> {
     public event OnGainEXP OnExpGain;
     public delegate void OnKillHandler(Actor a);
     public event OnKillHandler OnKillActor;
+ 
+    
     public int GetLevel
     {
         get { return Level; }
@@ -154,7 +156,22 @@ public abstract class Actor : IComparable<Actor> {
         SP = 0;                     
     }
 
+    public Functionality ActionsPermis
+    {
+        get
+        {
+            if (effects.Count == 0) return Functionality.normal;
+            var e = new Functionality();
+            foreach (var item in effects)
+                e *= item.Func;
+            return e;
 
+
+        }
+    }
+    
+    public List<Effects> effects = new List<Effects>();
+ 
     //Stats
     protected Stat baseStats = new Stat();
     public Profession Class = new Profession(new Stat());
@@ -170,6 +187,11 @@ public abstract class Actor : IComparable<Actor> {
                 {
                     if (x.item != null)
                         t += x.item.StatsBonus;
+                }
+            if(effects.Count > 0)
+                foreach (var x in effects)
+                {
+                    t += x.StatChange;
                 }
  
             return t; }
@@ -281,6 +303,26 @@ public abstract class Actor : IComparable<Actor> {
     {
         TakeDamage(x, null );
     }
+    public virtual void Apply(Effects fx)
+    {
+        effects.Add(fx);
+        OnTurn += fx.OnTurn;
+        OnDamage += fx.OnBeingHit;
+        OnAttack += fx.OnAttack;
+        fx._actor = this;
+        // We have a lot to add...
+        
+    }
+
+    public virtual void Remove(Effects fx)
+    {
+        effects.Remove(fx);
+        OnTurn -= fx.OnTurn;
+        OnDamage -= fx.OnBeingHit;
+        OnAttack -= fx.OnAttack;
+        fx._actor = null;
+
+    }
     public virtual void TakeDamage(float x, Skill f , Actor a = null)
     {
 
@@ -302,7 +344,7 @@ public abstract class Actor : IComparable<Actor> {
         HP -= x;
         if (HP <= 0) { Ondeath(x, f, a);  HP = 0; }
     
-        if (OnDamage != null) OnDamage(x,f);
+        if (OnDamage != null && f.DmgType == DamageType.Offensive) OnDamage(x,f);
     }
     
     public virtual void Ondeath(float x, Skill f , Actor a = null)
@@ -774,13 +816,17 @@ public enum _stats
 public enum DamageType
 {
     None = 0,
-    Melee =1,
-    Magic =2,
+    Melee = 1,
+    Magic = 2,
     Pierce = 4,
     Slashing = 8,
     Blunt = 16,
+    Buff = 32,
+    Debuff = 64,
     Physical = Melee | Pierce | Slashing | Blunt,
-    Magical = Magic
+    Magical = Magic,
+    Effects = Buff | Debuff,
+    Offensive = Physical | Magical
 }
 /// <summary>
 /// Stats of any living being.

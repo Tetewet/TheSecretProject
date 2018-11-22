@@ -53,6 +53,7 @@ public abstract class Item : IDisposable
     public static List<Item> Inventory = new List<Item>();
     public Skill.TargetType targetType;
     public Map.Tile CurrentTile = new Map.Tile();
+    public Effects effect;
     public Vector TilePosition
     {
         get { return CurrentTile.Position; }

@@ -50,6 +50,7 @@ public class Skill
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
     public string Description;
+    public Effects effect;
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
@@ -57,6 +58,7 @@ public class Skill
     public int HpCost { get { return hpCost; } set { hpCost = value; } }
     public int SpCost { get { return spCost; } set { spCost = value; } }
     public int Level { get { return level; } set { level = value; } }
+    //We should set a "base attack" for each character in case they deal effects naturaly ( think of Grizzly that can apply bleed with their claws)
     public static Skill Base
     {
 
@@ -70,6 +72,8 @@ public class Skill
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             e.Description = "Nonchalantly attack the target.";
+            
+            e.effect = null;
             return e;
         }
 
@@ -90,6 +94,8 @@ public class Skill
             e.Damage = .5f;
             e.Targets = w.targetType;
             e.wep = w;
+            //Effects from weapon are in weapon
+            e.effect = null;
             return e;
 
         }
