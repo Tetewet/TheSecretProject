@@ -211,7 +211,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1891695873294512}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.111454, y: -6.410258, z: 0}
+  m_LocalPosition: {x: -19.196384, y: -16.30692, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4555022134371854}
@@ -351,7 +351,7 @@ MonoBehaviour:
   - {fileID: 212490046157143646}
   ExpBar: {fileID: 114332419729820768}
   StepDuration: 0.35
-  Speed: 5
+  Speed: 4
   offset: {x: 0, y: 0.91}
   InverseSprite: 0
   DistanceToPos: 0
@@ -360,7 +360,6 @@ MonoBehaviour:
   - {fileID: 4555022134371854}
   - {fileID: 4613236465270536}
   MyTurn: 0
-  OverrideStats: 1
   ActorStats:
     AGI: 2
     STR: 1
@@ -369,6 +368,7 @@ MonoBehaviour:
     WIS: 5
     END: 1
     EXPGain: 0
+  BattleSprite: 1
   OnActorItem: {fileID: 212504019604083746}
   IGW: []
   UIPrefab: {fileID: 1121437313290120, guid: e5aee91ed702015478fe9f6471be9791, type: 2}

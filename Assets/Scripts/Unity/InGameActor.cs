@@ -102,20 +102,22 @@ public class InGameActor : MonoBehaviour {
 
     }
     //Action and Attack
+    
     public void AI(Battle.Turn Turn = null)
     {
 
-
+        GameManager.SelectedActor = null;
         if (!MyTurn) return;
 
         
-        if(AITImer > .3f && actor.Path.Count <= 1)
-        {
-            var e = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
-        
-                  Attack(e, Skill.Base);
-        }
-      
+            if (AITImer > .3f && !attacking )
+            {
+                actor.Move(targetThisTurn.TilePosition,true);
+            }
+         else if (GameManager.EstimathPath(actor, targetThisTurn.TilePosition) == 1 && CanPerformAction(Skill.Base)) Attack(targetThisTurn, Skill.Base);
+
+
+
 
     }
 
@@ -174,15 +176,18 @@ public class InGameActor : MonoBehaviour {
         GameManager.SetActor(actor);
 
     }
-
+    Actor targetThisTurn;
     /// <summary>
     /// Is called once at the start of the turn
     /// </summary>
     /// <param name="Turn"></param>
     public void OnTurn(Battle.Turn Turn)
     {
+    
         if (!gameObject.activeSelf) return;
-
+       
+        if (isAI)
+        targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
         actor.TileWalkedThisTurn = 0;
 
         if (sprity[0] != null)
@@ -191,13 +196,12 @@ public class InGameActor : MonoBehaviour {
 
         if (!isAI)
         {
-            GameManager.CursorPos = actor.TilePosition;
-            GameManager.GM.OnPressed(actor.CurrentTile);
-
-
+        
+            GameManager.CursorPos = this.actor.TilePosition;
+            GameManager. SetActor(this.actor);
         }
         else AI(Turn);
-
+        attacking = false;
 
     }
 
@@ -214,7 +218,7 @@ public class InGameActor : MonoBehaviour {
 
     public void Attack(Actor a, Skill b)
     {
-        if (MyTurn)
+        if (MyTurn && !attacking)
         {
             normattack = InitiateAttack(a, b);
             StartCoroutine(normattack);
@@ -289,7 +293,7 @@ public class InGameActor : MonoBehaviour {
         timeSinceTurn = 0;
         attacking = false;
         print(actor.Name + " " + " ends his turn.");
-        GameManager.SelectedActor = null;
+    
         GameManager.CurrentBattle.EndTurn();
     
         yield break;
@@ -320,7 +324,9 @@ public class InGameActor : MonoBehaviour {
     {
 
         if (!GameManager.BattleMode) yield break;
-        if (attacking) yield break;
+        if (attacking || anim[0].GetBool(b.DmgType.ToString()) ) {
+            anim[0].ResetTrigger(b.DmgType.ToString());
+            yield break; }
         if (!CanPerformAction(b))
         {
             EndTurn();
@@ -372,7 +378,7 @@ public class InGameActor : MonoBehaviour {
 
         // while (Vector.Distance(actor.TilePosition, a.TilePosition) > b.Reach)
         //while (GameManager.EstimathPath(actor,a.TilePosition) > b.Reach)
-        print(actor.Path.Count - b.Reach);
+   
         while (actor.Path.Count > b.Reach)
         {
 
@@ -385,10 +391,15 @@ public class InGameActor : MonoBehaviour {
             yield return null;
         }
         TurnSprite((temptarget.TilePosition - actor.TilePosition).x < 0);
-        yield return new WaitForSeconds(.3f);
+        yield return new WaitForSeconds(.2f);
 
         if (actor.CanUseSkill(b))       
-            foreach (var item in anim) item.SetTrigger(b.DmgType.ToString());
+            anim[0]. SetTrigger(b.DmgType.ToString());
+
+  
+
+
+
         attacking = false;
         yield break;
     }
@@ -633,19 +644,19 @@ public class InGameActor : MonoBehaviour {
                 actor.CantMove(actor.Path.Peek());
 
 
-                //Since PathFinding Is dumb, AI skip turn on stuck
-                if (isAI && MyTurn)
-                {
-                    if (temptarget != null && tempattack != null && target.Actor == temptarget)
-                    {
-                        if (actor.CanUseSkill(tempattack))
-                            foreach (var item in anim) item.SetTrigger(tempattack.DmgType.ToString());
-                        else EndTurn();
-                        attacking = false;
-                    }
-                    else EndTurn();
-                } 
+                 //Since PathFinding Is dumb, AI skip turn on stuck
+                 if (isAI && MyTurn)
+                 {
+                     if (temptarget != null && tempattack != null && target.Actor == temptarget && actor.CanUseSkill(tempattack)  )
+                     {
+                         //   anim[0].SetTrigger(tempattack.DmgType.ToString());
+                 
+                     }
+                     else EndTurn();
                     timer = 0;
+                } 
+                   
+                     
                 return;
             }
 

@@ -16,7 +16,7 @@ public static class TilemapManager  {
         t.gameObject.SetActive(false);
         BoundsInt bounds = t.cellBounds;
         TileBase[] allTiles = t.GetTilesBlock(bounds);
-         
+   
         for (int x = 0; x < bounds.size.x; x++)
         {
             for (int y = 0; y < bounds.size.y; y++)

@@ -31,7 +31,11 @@ public class GameManager : MonoBehaviour {
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject SkillsPrefab;
-
+    [Header("UI")]
+    public Image DarknessMyOldFriend;
+    public RectTransform BattleStartGameObject;
+    public GameObject SkillsCursorPos;
+ 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
     public RectTransform GameEnd;
@@ -42,6 +46,7 @@ public class GameManager : MonoBehaviour {
     public Vector3 CursorOffset;
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
+    
     [Header("Overworld")]
     public GameObject OverWorldGO;
     public Tilemap Main;
@@ -76,6 +81,7 @@ public class GameManager : MonoBehaviour {
         var e = Instantiate(GM.ItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameItem>();
         GM.InGameItems.Add(e);
         e.item = i;
+      
         CurrentBattle.map.AtPos(Position).AddItem(e.item);
         return e;
     }
@@ -95,7 +101,7 @@ public class GameManager : MonoBehaviour {
     public List<InGameActor> InGameActors = new List<InGameActor>(), InGameFoes = new List<InGameActor>();
     public List<InGameItem> InGameItems = new List<InGameItem>();
 
-
+    
     public static InGameActor GenerateInGameActor(Actor f)
     {
         var e = Instantiate(GM.ActorPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameActor>();
@@ -124,10 +130,24 @@ public class GameManager : MonoBehaviour {
         GM.InGameActors.Clear();
         GM.InGameFoes.Clear();
     }
+    IEnumerator Transition(Color x)
+    {
+        var e = 0f;
+
+
+        while (e < 3)
+        {
+            DarknessMyOldFriend.color = Color.Lerp(DarknessMyOldFriend.color, x,( e + 1) * Time.smoothDeltaTime );
+            e += Time.fixedDeltaTime;
+            yield return null;
+        }
+        yield break;
+    }
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
+        GM.CanInteract = false;
         GM.OverWorldGO.SetActive(false);
-
+ 
         if (IGA)
         {
             Overworld.PlayerPos = IGA.actor.TilePosition;
@@ -199,9 +219,7 @@ public class GameManager : MonoBehaviour {
         CursorPos = new Vector(9, 4);
         GM.ShowGrid = false;
         GM.ToggleGrid();
-
-        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
+ 
         CurrentBattle.StartNewTurn();
 
 
@@ -210,12 +228,30 @@ public class GameManager : MonoBehaviour {
     }
     IEnumerator BattleStart()
     {
+        var t = 0f;
         yield return new WaitForSeconds(.1f);
-        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-        yield return new WaitForSeconds(1);
+     
+        BattleStartGameObject.localPosition = new Vector3(BattleStartGameObject.localPosition.x, 0);
+        DarknessMyOldFriend.color = Color.black;
+        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right  ;
+        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right  ;
+        yield return new WaitForSeconds(.25f);
+ 
+        StartCoroutine(Transition(Color.clear));
+        yield return new WaitForSeconds(1.0f);
+        BattleStartGameObject.gameObject.SetActive(true);
+        yield return new WaitForSeconds(.2f);
+        while (t < .4f)
+        {
+            t += Time.smoothDeltaTime;
+            BattleStartGameObject.localPosition += Vector3.up * 150 *(1 + t*50) * Time.smoothDeltaTime;
+            yield return null;
+        }
+        yield return new WaitForSeconds(.1f);
         CurrentBattle.Paused = false;
         CurrentBattle.Proceed();
+        GM.CanInteract = true;
+        BattleStartGameObject.gameObject.SetActive(false);
         yield break;
     }
     /// <summary>
@@ -238,7 +274,7 @@ public class GameManager : MonoBehaviour {
     {
         Inventory = new Image[100];
         for (int i = 0; i < Inventory.Length; i++)
-            Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
+            Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).transform.GetChild(0).GetComponent<Image>();
 
         Skills = new GameObject[100];
         for (int i = 0; i < Skills.Length; i++)
@@ -526,7 +562,7 @@ public class GameManager : MonoBehaviour {
     {
         CanInteract = false;
         InfoBar.transform.parent.gameObject.SetActive(true);
-        StartCoroutine(_freezecam(.5f));
+       // StartCoroutine(_freezecam(.5f));
         yield return new WaitForSeconds(1f);
         InfoBar.transform.parent.gameObject.SetActive(false);
         CanInteract = true;
@@ -936,9 +972,9 @@ public class GameManager : MonoBehaviour {
     public void OnCursorUpdate(Map.Tile t)
     {
 
-        OnHover.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
+        OnHover.transform.parent.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
         CharacterInventory.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null);
-        Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
+        if(Cursor.gameObject.activeSelf)Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
@@ -976,11 +1012,15 @@ public class GameManager : MonoBehaviour {
         else
         {
             if (SelectedActor != null) ShowUI(SelectedActor);
-            ChangeGridColor(GridColor); }
+            ChangeGridColor(GridColor);
+        }
 
+        if (!CurrentBattle.ActingThisTurn.IsInPlayerTeam) ChangeGridColor(Color.gray);
+        Cursor.gameObject.SetActive(CurrentBattle.ActingThisTurn.IsInPlayerTeam);
         TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
     }
 
+    public Slider[] Bar;
     /// <summary>
     /// Show the On-Screen info about this actor
     /// </summary>
@@ -993,13 +1033,30 @@ public class GameManager : MonoBehaviour {
             print(a);
             return;
         }
-        OnHover.text =
-"* " + a.Name + " *\n\nlvl"//TODO Language.db
-+ a.GetLevel.ToString("00") + "\n[ hp  "//TODO Language.db
-+ a.HP.ToString("00") + " ]\n[ mp "//TODO Language.db
-+ a.MP.ToString("00") + " ]\n[ sp  "//TODO Language.db
-+ a.SP.ToString("00") + " ]";
+        /*OnHover.text =
+"* " + a.Name + " *\n\nlvl"
++ a.GetLevel.ToString("00") + "\n[ hp  "
++ a.HP.ToString("00") + " ]\n[ mp "
++ a.MP.ToString("00") + " ]\n[ sp  "
++ a.SP.ToString("00") + " ]";*/
 
+        OnHover.text = "[" + a.Name + "]" + "  Level " + a.GetLevel;
+        Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
+        Bar[1].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.MP * 2, 20);
+
+
+
+        if (a.GetStats.MaximumMP == 0)
+        {
+            Bar[1].gameObject.SetActive(false);
+        }
+        else
+        {
+            Bar[1].gameObject.SetActive(true);
+            Bar[1].value = a.MP / a.GetStats.MaximumMP;
+        }
+        Bar[0].value = a.HP /  a.GetStats.MaximumHP;
+      
         for (int i = 0; i < 100; i++)
         {
             if (i < a.inventory.items.Length)
@@ -1044,7 +1101,7 @@ public class GameManager : MonoBehaviour {
     {
         return Resources.Load<RuntimeAnimatorController>("Animators/" + path);
     }
-
+ 
     /// <summary>
     /// Is called once when the cursor activated
     /// </summary>
@@ -1095,7 +1152,7 @@ public class GameManager : MonoBehaviour {
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
-        if (SelectedActor != null)
+        if (HasSelectedActor)
         {
             if (CurrentBattle.ThisTurn.Order.Count > 0)
                 if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
@@ -1192,7 +1249,7 @@ public class GameManager : MonoBehaviour {
             if (inventorySelected)
                 Position = Inventory[invUIItem].transform.position;
             if (SkillsSelected)
-                Position = Skills[skillUI].transform.position;
+                Position = SkillsCursorPos.transform.position;//Skills[skillUI].transform.position;
 
             if (SelectedItem != null || SelectedSkill != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
         }
@@ -1296,7 +1353,7 @@ public class GameManager : MonoBehaviour {
 
         
         if (!BattleMode && !HasSelectedActor || (HasSelectedActor && SelectedActor != CurrentBattle.ActingThisTurn) ) Tabmenu = false;
-
+        if (SelectedActor == null) Tabmenu = false;
         TabButtons.SetActive(!Tabmenu && SelectedActor != null);
         MiniMenu.gameObject.SetActive(Tabmenu);
         inventorySelected = false;
@@ -1305,8 +1362,11 @@ public class GameManager : MonoBehaviour {
         SelectedItem = null;
         if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
         TabChoice = 0;
+        if (!Tabmenu)
+            InfoBar.transform.parent.gameObject.SetActive(false);
 
-        if (!a) StartCoroutine(_freezecam(.5f));
+
+        if (!a) StartCoroutine(_freezecam(.20f));
     }
     /// <summary>
     /// ToggleTheTabMenu
@@ -1379,9 +1439,14 @@ public class GameManager : MonoBehaviour {
     
     public void ActionFreeze()
     {
-        StartCoroutine(_freezecam(1.5f));
+        StartCoroutine(_freezecam(1.0f));
     }
 
+    void SkillDescOnInfo(Skill a )
+    {
+        InfoBar.transform.parent.gameObject.SetActive(true);
+        InfoBar.text = a.Description;
+    }
     /// <summary>
     /// Logic about the menu - run on update
     /// </summary>
@@ -1390,8 +1455,23 @@ public class GameManager : MonoBehaviour {
 
         if (!Tabmenu || SelectedActor == null) return;
         if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--;
-            skillUI--; }
-        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; skillUI++; }
+            skillUI--;
+            skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+            if (SkillsSelected  ) {
+
+              SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI  ]);
+            }
+           
+        }
+        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++;
+            skillUI++;
+            skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length -1);
+            if (SkillsSelected  )
+            {
+             SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI ]);
+            }
+        
+        }
         if (Input.GetKeyDown(KeyCode.A)) { invUIItem--; if (TabChoice == 3) TabChoice = 0; }
         if (Input.GetKeyDown(KeyCode.D)) { invUIItem++; if (TabChoice < 3) TabChoice = 3; ; }
 
@@ -1402,8 +1482,9 @@ public class GameManager : MonoBehaviour {
 
 
         invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length);
-
+        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+        //Hard coded, for getting less fields
+        SkillList.transform.localPosition = Vector3.Lerp(SkillList.transform.localPosition, new Vector3(-205.8f, -41 + skillUI * 82), 15 * Time.smoothDeltaTime);
 
 
         if(Tabmenu)
@@ -1421,8 +1502,18 @@ public class GameManager : MonoBehaviour {
             {
 
 
-                    if (SelectedSkill != null) { SkillList.SetActive(true); SelectedSkill = null; }
-                    else if (SkillsSelected) { SkillList.SetActive(false); SkillsSelected = false; }
+                    if (SelectedSkill != null) {
+                        SkillList.SetActive(true);
+                        InfoBar.transform.parent.gameObject.SetActive(true);
+                        InfoBar.text = SelectedSkill.Description;
+                        SelectedSkill = null;
+                      
+                    }
+                    else if (SkillsSelected) {
+                        SkillList.SetActive(false);
+                        SkillsSelected = false;
+                        InfoBar.transform.parent.gameObject.SetActive(false);
+                    }
                     else CloseInventory();
 
             }
@@ -1448,20 +1539,31 @@ public class GameManager : MonoBehaviour {
                 if (PathUI.Count > 0)
                     PathUI.Clear();
 
-                StartCoroutine(_freezecam(.4f));
+                StartCoroutine(_freezecam(.25f));
                 SelectedSkill = e;
-                return;
+                    SkillList.SetActive(false);
+
+                    InfoBar.text = "Select a target";
+                    if (e.Targets == Skill.TargetType.Self)
+                         InfoBar.text = "Apply to yourself";
+                    if (e.Targets == Skill.TargetType.AnAlly)
+                        InfoBar.text = "Select an Ally";
+               
+             
+                    return;
             }
             if (TabChoice == 0)
             {
                 skillUI = 0;
-           
+
+
+                    SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
                 SkillsSelected = true;
                 for (int i = 0; i < Skills.Length; i++)
                 {
                     if (i < SelectedActor.Class.UsableSkill.Length)
                     {
-                        Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.Class.UsableSkill[i]);
+                        Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.Class.UsableSkill[i],SelectedActor);
                         Skills[i].gameObject.SetActive(true);
                     }
                     else Skills[i].gameObject.SetActive(false);
