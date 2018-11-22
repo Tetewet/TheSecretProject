@@ -157,17 +157,10 @@ public abstract class Actor : IComparable<Actor> {
 
     //Stats
     protected Stat baseStats = new Stat();
-    public Profession Class = new Profession(new Stat()) { Skills = new Skill[1] {
-        new Skill{Name = "Quick Jab",
-            Damage = .25f, SpCost = 1,
-            MpCost = 0, Reach = 1,
-            DmgType = DamageType.Melee,
-            Unlocked = true,
-            Targets = Skill.TargetType.OneEnemy
-            ,Description = "A jab. The quick type. Get Close and Personal."},
+    public Profession Class = new Profession(new Stat());
  
-    }
-    };
+    
+    
     public Stat GetStats
     {
         get {

@@ -7,6 +7,23 @@ using UnityEngine;
 
 public class Skill 
 {
+    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int mpCost,int hpCost,int spCost, int level, bool unlocked = true) {
+        this.name = name;
+        this.Description = description;
+        this.profType = profType;
+        this.dmgType = dmgType;
+        this.reach = reach;
+        this.damage = damage;
+        this.baseCritChance = baseCritChance;
+        this.targets = target;
+        this.Unlocked = unlocked;
+        this.mpCost = mpCost;
+        this.hpCost = hpCost;
+        this.spCost = spCost;
+        this.level = level;
+    }
+
+    public Skill() { }
     public enum TargetType
     {
         Self = 0,
