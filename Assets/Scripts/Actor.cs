@@ -740,7 +740,7 @@ public abstract class Actor : IComparable<Actor> {
     }
     public override string ToString()
     {
-        return Name + " Lvl: " + GetLevel;
+        return Name + " Lvl: " + GetLevel;//TODO Language.db
     }
 
     public int CompareTo(Actor other)
@@ -879,7 +879,7 @@ public struct Stat : IComparable<Stat>
 
     public override string ToString()
     {
-        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC;
+        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC;//TODO Language.db
     }
 }
 
