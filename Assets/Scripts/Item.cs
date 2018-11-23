@@ -55,7 +55,6 @@ public abstract class Item : IDisposable
     public string Description;
     public Skill.TargetType targetType;
     public Map.Tile CurrentTile = new Map.Tile();
-    public Effects effect;
     public Vector TilePosition
     {
         get { return CurrentTile.Position; }
@@ -126,7 +125,7 @@ public class Equipement : Item
     }
     public float Durability = 10;
 
-    public override string ResourcePath
+    /*public override string ResourcePath
     {
         get
         {
@@ -134,13 +133,14 @@ public class Equipement : Item
             return "~IGW";
         }
  
-    }
+    }*/
     public Stat StatsBonus;
     public Slot slot;
     public float DEF = 0;
     public float MagDEF = 0;
 
-    
+
+    public Resistance resistance = new Resistance();
 
     public Equipement(string Name, string Path = "") : base(Name, Path)
     {
@@ -189,6 +189,9 @@ public class Weapon : Equipement
     }
     //Bonus Attacks - Raw Addtional Damage, this should be keep low 
     public int ATK = 0;
+    public int FXID = -1;
+    public int ELEID = -1;
+
     public class EquipmentSpriteData
     {
         public Component Blade, Hilt, Enchant;
@@ -235,6 +238,7 @@ public class Consumeable : Item
     public Stat StatsBonus;
     public float HPregen, MPregen;
     public int SPregen;
+    public List<int> EffectToCure = new List<int>();
 
     public Consumeable(string Name, string Path) : base(Name, Path)
     {

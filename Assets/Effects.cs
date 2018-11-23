@@ -15,6 +15,17 @@ public class Effects {
 
 
     };
+    /// <summary>
+    /// ShortHand for Core[i]
+    /// </summary>
+    /// <param name="f"></param>
+    public static implicit operator  Effects(int f)   
+    {
+        if (f < 0) return null;
+        return Core[f];
+    }
+
+
 
     public string Name = "fx";
     public string Description = "emptied fx";
@@ -157,7 +168,7 @@ public struct Element
     public string Name;
     public string imgpath;
     public int FXID;
-    int ID; 
+    internal int ID; 
     public Element(string Name, string path, List<int> priotylist,int EffectID,float chanceofEffect =0f)
     {
         ChanceOfEffect = chanceofEffect;
@@ -166,16 +177,25 @@ public struct Element
         FXID = EffectID;
         PriorityAgainst = priotylist;
         ID = 0;
-        if (!Element.Core.Contains(this))
-        {
-            ID = Element.Core.Count;
-            Element.Core.Add(this);
-        }
+  
   
     }
     //on 100%
     public float ChanceOfEffect;
-
+    public static implicit operator Element(int f)   
+    {
+        if (f < 0) return None;
+        return Core[f];
+    }
+ public static Element None
+    {
+        get
+        {
+            var e = new Element();
+            e.ID = -1;
+            return e;
+        }
+    }
     public List<int> PriorityAgainst;
     public float EfficacyFactor(int e, Actor a)
     {
@@ -195,4 +215,29 @@ public struct Element
     }
  
 
+}
+
+public class Resistance
+{
+    //ID OF ELEMENTS
+    public List<int> resistance = new List<int>();
+    public List<int> weakness = new List<int>();
+
+
+
+    public   static Resistance operator +(Resistance x, Resistance y)
+    {
+        var g = new Resistance();
+        g.resistance = new List<int>();
+        g.weakness = new List<int>();
+        foreach (var item in x.resistance)
+            g.resistance.Add(item);
+        foreach (var item in y.resistance)
+            g.resistance.Add(item);
+        foreach (var item in y.weakness)
+            g.weakness.Add(item);
+        foreach (var item in x.weakness)
+            g.weakness.Add(item);
+        return g;
+    }
 }

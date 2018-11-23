@@ -179,7 +179,8 @@ public abstract class Actor : IComparable<Actor> {
 
         }
     }
-    
+    Resistance resistance = new Resistance();
+
     public List<Effects> effects = new List<Effects>();
  
     //Stats
@@ -333,6 +334,18 @@ public abstract class Actor : IComparable<Actor> {
         fx._actor = null;
 
     }
+    public Resistance getRes
+    {
+        get
+        {
+            var e = new Resistance();
+
+            e += resistance;
+            foreach (var item in inventory.Slot)        
+               if(item.item != null) e += item.item.resistance;        
+            return e;
+        }
+    }
     public virtual void TakeDamage(float x, Skill f , Actor a = null)
     {
 
@@ -340,14 +353,26 @@ public abstract class Actor : IComparable<Actor> {
         if(f != null) 
         {
             if (Defending) x *= .5f;
+
+            if(f.element.ID >= 0)
+            {
+                foreach (var item in getRes.resistance)
+                    x *= f.element.EfficacyFactor(item, this);
+                foreach (var item in getRes.weakness)
+                    x *= f.element.EfficacyFactor(item, this);
+            }
+          
+
             if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
             else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
             if (x <= 0 && f.DmgType != DamageType.None)
             {
                 if(OnBlocked!= null)OnBlocked(x, f);
+
                 UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
                 return;
             }
+            
             UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
         }
        
@@ -536,11 +561,6 @@ public abstract class Actor : IComparable<Actor> {
                var b = 1;
                if (x < 0) a = -1;
                if (y < 0) b = -1;
-
-        /*
-        for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
-        for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
-        */
         Map e;
         if (GameManager.BattleMode) e = GameManager.CurrentBattle.map;
         else e = GameManager.Map;
@@ -559,25 +579,7 @@ public abstract class Actor : IComparable<Actor> {
             //x + 1
             for (int i = 1; i <= Math.Abs(x)  ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
         }
-
-       // if(where.Actor == null )Path.Enqueue(where.Position);
-        //We will have to move this section in the Unity section to sync the position
-        /*
-       while (Path.Count > 1)
-       {
-           CurrentTile.OnQuitting();
-           if (GameManager.CurrentBattle.map.AtPos(Path.Peek()).Actor != null)
-           {
-               CantMove();
-               break;
-           }
-           CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
-
-           CurrentTile.Enter(this);
-       }
-       */
-
-    }
+ }
 
     bool CanMoveThere(Map.Tile Where)
     {

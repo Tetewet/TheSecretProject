@@ -50,7 +50,8 @@ public class Skill
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
     public string Description;
-    public Effects effect;
+    public Effects FX;
+    public Element element;
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
@@ -72,8 +73,8 @@ public class Skill
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             e.Description = "Nonchalantly attack the target.";
-            
-            e.effect = null;
+            e.FX = null;
+ 
             return e;
         }
 
@@ -95,7 +96,9 @@ public class Skill
             e.Targets = w.targetType;
             e.wep = w;
             //Effects from weapon are in weapon
-            e.effect = null;
+            e.element = w.ELEID;
+            e.FX = w.FXID;
+            
             return e;
 
         }
