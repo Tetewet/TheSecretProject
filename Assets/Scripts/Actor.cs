@@ -23,10 +23,22 @@ public struct Vector
     }
     public float magnitude { get { return Math.Abs((x + y) / 2); } }
     public Vector normalized { get { return new Vector(x, y) / magnitude; } }
-    
+
+    /// <summary>
+    /// (0,0)
+    /// </summary>
     public static Vector zero { get { var v = new Vector(); v.x = 0; v.y = 0; return v; } }
+    /// <summary>
+    /// (1,1)
+    /// </summary>
     public static Vector one { get { var v = new Vector(); v.x = 1; v.y = 1; return v; } }
+    /// <summary>
+    /// (1,1)
+    /// </summary>
     public static Vector up { get { var v = new Vector(); v.x = 0; v.y = 1; return v; } }
+    /// <summary>
+    /// (1,0)
+    /// </summary>
     public static Vector right { get { var v = new Vector(); v.x = 1; v.y = 0; return v; } }
 
 

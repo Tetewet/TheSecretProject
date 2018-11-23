@@ -140,6 +140,8 @@ public class Equipement : Item
     public float DEF = 0;
     public float MagDEF = 0;
 
+    
+
     public Equipement(string Name, string Path = "") : base(Name, Path)
     {
         ResourcePath = Path;

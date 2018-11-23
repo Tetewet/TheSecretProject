@@ -1702,7 +1702,7 @@ public class GameManager : MonoBehaviour
         SelectedSkill = null;
         SelectedItem = null;
         inventorySelected = false;
-        InfoBar.transform.parent.gameObject.SetActive(false);
+        InfoBar.transform.parent.gameObject.SetActive(false);   
         invUIItem = 0;
     }
 
