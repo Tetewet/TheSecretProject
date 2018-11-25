@@ -421,6 +421,7 @@ public class InGameActor : MonoBehaviour {
         a.OnDamage += OnDamage;
         a.OnKillActor += OnKillingSomeone;
         a.OnEquip += OnEquip;
+        a.OnDeath += OnDeath;
         a.OnBlocked += OnBlocked;
         Indicator.color = ActorColor;
 
@@ -458,6 +459,11 @@ public class InGameActor : MonoBehaviour {
 
         }
 
+    }
+
+    private void OnDeath(float z, Skill x)
+    {
+        anim[0].SetTrigger("IsDeath");
     }
 
     private void OnBlocked(float z, Skill x)
@@ -504,8 +510,10 @@ public class InGameActor : MonoBehaviour {
         actor.OnKillActor -= OnKillingSomeone;
         actor.OnEquip -= OnEquip;
         actor.OnBlocked -= OnBlocked;
+        actor.OnDeath -= OnDeath;                
     }
 
+    
     IEnumerator ColorBlink(Color c, float x)
     {
         var e = new Color[sprity.Length];

@@ -186,6 +186,7 @@ public abstract class Actor : IComparable<Actor> {
     //Stats
     protected Stat baseStats = new Stat();
     public Profession Class = new Profession(new Stat());
+    public string Description = "A normal actor.";
  
     
     
@@ -224,7 +225,7 @@ public abstract class Actor : IComparable<Actor> {
     //Action
     public delegate void DamageHandler(float z, Skill x);
 
-    public event DamageHandler OnAttack, OnDamage, OnBlocked;
+    public event DamageHandler OnAttack, OnDamage, OnBlocked, OnDeath;
 
 
 
@@ -316,6 +317,7 @@ public abstract class Actor : IComparable<Actor> {
     }
     public virtual void Apply(Effects fx)
     {
+        if (fx == null) return;
         effects.Add(fx);
         OnTurn += fx.OnTurn;
         OnDamage += fx.OnBeingHit;
@@ -327,6 +329,7 @@ public abstract class Actor : IComparable<Actor> {
 
     public virtual void Remove(Effects fx)
     {
+        if (!effects.Contains(fx)) return;
         effects.Remove(fx);
         OnTurn -= fx.OnTurn;
         OnDamage -= fx.OnBeingHit;
@@ -350,46 +353,55 @@ public abstract class Actor : IComparable<Actor> {
     {
 
         var i = x;
-        if(f != null) 
+        if(f != null)
         {
-            if (Defending) x *= .5f;
-
-            if(f.element.ID >= 0)
+            if ((f.DmgType & DamageType.Offensive) != 0)
             {
-                foreach (var item in getRes.resistance)
-                    x *= f.element.EfficacyFactor(item, this);
-                foreach (var item in getRes.weakness)
-                    x *= f.element.EfficacyFactor(item, this);
-            }
-          
+                if (Defending) x *= .5f;
 
-            if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
-            else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
-            if (x <= 0 && f.DmgType != DamageType.None)
-            {
-                if(OnBlocked!= null)OnBlocked(x, f);
+                if (f.element.ID >= 0)
+                {
+                    foreach (var item in getRes.resistance)
+                        x *= f.element.EfficacyFactor(item, this);
+                    foreach (var item in getRes.weakness)
+                        x *= f.element.EfficacyFactor(item, this);
+                }
 
-                UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
-                return;
+
+                if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
+                else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
+                if (x <= 0 && f.DmgType != DamageType.None)
+                {
+                    if (OnBlocked != null) OnBlocked(x, f);
+
+                    UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
+                    return;
+                }
+
+                if (OnDamage != null) OnDamage(x, f);
+                UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
             }
-            
-            UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
+            Apply(f.FX);
+
         }
-       
+
+
         HP -= x;
         if (HP <= 0) { Ondeath(x, f, a);  HP = 0; }
     
-        if (OnDamage != null && (f.DmgType & DamageType.Offensive) != 0) OnDamage(x,f);
+       
     }
     
     public virtual void Ondeath(float x, Skill f , Actor a = null)
     {
+        OnDeath(x, f);
         if (GameManager.CurrentBattle.Foes.Contains(this))
             GameManager.CurrentBattle.Foes.Remove(this);
         if (GameManager.CurrentBattle.Players.Contains(this))
             GameManager.CurrentBattle.Players.Remove(this);
 
         CurrentTile.OnQuitting();
+
         UnityEngine.Debug.Log(this.Name + " is death");
     }
     public void ConsumeMP(float x )
@@ -406,7 +418,7 @@ public abstract class Actor : IComparable<Actor> {
         }
     }
 
-     public int tilewalked = 0;
+     public int tilecounter = 0;
 
     public int TileWalkedThisTurn = 0;
     public void Grab( Item a)

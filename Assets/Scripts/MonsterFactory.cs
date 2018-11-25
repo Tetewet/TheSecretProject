@@ -66,31 +66,39 @@ class MonsterControllerFactory : MonsterFactory
     {
         // randomize here
         int chances = random.Next(0, 100); // quels monstres ? = aleatoire
-        int number = random.Next(4, 6); // nombre de monstres a faire spawn
+        int number = random.Next(1, 2); // nombre de monstres a faire spawn
         var monsters = new List<MonsterControllerFactory>();
         if (chances > 66)
         {
-            for (int i = 0; i < number; i++)
+            for (int i = 0; i < number -1; i++)
             {
                 monsters.Add(new Kuku("Kuku " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
             }
-            
+            for (int i = 0; i < number  ; i++)
+                monsters.Add(new Kodama("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4,WIS =3,CriticalHitFlat = 15 }, false, "Slime"));
             return monsters.ToArray();
         }
         else if (chances < 33)
         {
-            for (int i = 0; i < number; i++)
+            for (int i = 0; i < number ; i++)
             {
                 monsters.Add(new Kodama("Kodama " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
             }
+            for (int i = 0; i < number  ; i++)
+                monsters.Add(new Kodama("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4, WIS = 3, CriticalHitFlat = 15 }, false, "Slime"));
+
+
             return monsters.ToArray();
         }
         else
         {
-            for (int i = 0; i < number; i++)
+            for (int i = 0; i < number  ; i++)
             {
                 monsters.Add(new Bandit("Bandit " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
             }
+            for (int i = 0; i < number ; i++)
+                monsters.Add(new Kodama("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4, WIS = 3, CriticalHitFlat = 15 }, false, "Slime"));
+
             return monsters.ToArray();
         }
         //SpawnMonsters(random.range(0, Monsterlist.count);

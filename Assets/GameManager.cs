@@ -40,7 +40,8 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public Image DarknessMyOldFriend;
     public RectTransform BattleStartGameObject;
-    public GameObject SkillsCursorPos; 
+    public GameObject SkillsCursorPos;
+    public UI_status uiStatus;
 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
@@ -75,7 +76,7 @@ public class GameManager : MonoBehaviour
 
     }
 
-  
+
 
     public static InGameItem CreateNewItemOnField(Item i, Vector Position)
     {
@@ -253,7 +254,7 @@ public class GameManager : MonoBehaviour
         { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };
         Protags[1].Grab(sp);
 
-        
+
 
 
 
@@ -304,6 +305,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < Skills.Length; i++)
             Skills[i] = Instantiate(SkillsPrefab, SkillList.transform);
 
+        uiStatus.main.SetActive(false);
     }
     private void Awake()
     {
@@ -318,7 +320,7 @@ public class GameManager : MonoBehaviour
         audi = GetComponent<AudioSource>();
 
 
-      // Protags[0].SetProfession(Profession.Madoshi);
+        // Protags[0].SetProfession(Profession.Madoshi);
 
     }
 
@@ -328,7 +330,7 @@ public class GameManager : MonoBehaviour
 
         GM.InitializeUI();
         GM.Cam.enabled = false;
-       
+
         foreach (var item in Protags)
         {
             item.Heal();
@@ -340,8 +342,8 @@ public class GameManager : MonoBehaviour
 
         // for (int i = 0; i < Random.Range(1, 5); i++)
         //     nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-    StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
-      
+        StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+
 
         Protags[1].Equip(
        new Weapon("Iron Sword")
@@ -360,8 +362,8 @@ public class GameManager : MonoBehaviour
 
 
 
-       // CreateNewItemOnField(Item.Gold, new Vector(2, 5));
-        
+        // CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+
 
     }
 
@@ -1060,7 +1062,7 @@ public class GameManager : MonoBehaviour
 
         if (a == null)
         {
-            print(a+ " IS NULL ");
+            print(a + " IS NULL ");
             return;
         }
         /*OnHover.text =
@@ -1096,10 +1098,10 @@ public class GameManager : MonoBehaviour
                 {
                     Inventory[i].transform.parent.gameObject.SetActive(true);
                     Inventory[i].enabled = true;
-              
-                  
-                        Inventory[i].sprite = LoadSprite(a.inventory.items[i].ResourcePath);
-                   
+
+
+                    Inventory[i].sprite = LoadSprite(a.inventory.items[i].ResourcePath);
+
                 }
                 else
                 {
@@ -1148,7 +1150,7 @@ public class GameManager : MonoBehaviour
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
             GetInGameFromActor(SelectedActor).UseItem(curtile.Actor, SelectedItem);
-           
+
             CloseInventory();
         }
         else
@@ -1163,9 +1165,8 @@ public class GameManager : MonoBehaviour
             {
                 Tabmenu = false;
                 GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
-                audiSFX.clip = click;
-                audiSFX.Play();
-               
+                audiSFX.PlayOneShot(click);
+
                 CloseInventory();
 
                 return;
@@ -1182,8 +1183,7 @@ public class GameManager : MonoBehaviour
 
         if (Tabmenu) return;
 
-        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; audiSFX.clip = click;
-            audiSFX.Play(); return; }
+        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; audiSFX.PlayOneShot(click); return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
         if (HasSelectedActor)
@@ -1193,7 +1193,7 @@ public class GameManager : MonoBehaviour
                     if (curtile.Actor == null) SelectedActor.Move(curtile);
                     else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base))
                     {
-
+                        audiSFX.PlayOneShot(click);
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
@@ -1294,6 +1294,16 @@ public class GameManager : MonoBehaviour
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position + CursorOffset, 9 * Time.smoothDeltaTime);
 
     }
+
+    public static int GetDistance(Vector a, Vector b)
+    {
+        var e = 0;
+
+        var f = a - b;
+        e += (int)Mathf.Abs(f.x) + (int)Mathf.Abs(f.y);
+        return e;
+    }
+
     public void BattlePlayerInput(Map.Tile curtile)
     {
 
@@ -1305,15 +1315,34 @@ public class GameManager : MonoBehaviour
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
-                audiSFX.clip = select;
-                audiSFX.Play();
-               
+             
 
-                OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
                 var u = new Vector(h, -v);
+             
+                if(HasSelectedActor )
+                {
+
+                    var dis = GetDistance(SelectedActor.TilePosition, CursorPos + u) -1;
+
+                    if (SelectedSkill != null)
+                    {
+                        if (dis >= (SelectedSkill.Reach))
+                            return;
+                    }
+                    else
+                    {
+                        if (dis >= ((SelectedActor.GetStats.MaximumSP * SelectedActor.GetStats.AGI) - SelectedActor.TileWalkedThisTurn))
+                            return;
+                    }
+                    
+ 
+                }
+                OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
+             
 
                 CursorPos += u;
                 timer = 0;
+                audiSFX.PlayOneShot(select);
                 OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
             }
         if (CurrentBattle.IsPlayerTurn)
@@ -1329,7 +1358,7 @@ public class GameManager : MonoBehaviour
             {
                 print(CurrentBattle.map);
             }
-            if (Input.GetKeyDown(KeyCode.Tab) && (!inventorySelected && !SkillsSelected))
+            if (Input.GetKeyDown(KeyCode.Tab) && (!inventorySelected && !SkillsSelected && !uiStatus.main.activeSelf))
             {
                 ToggleTabMenu();
             }
@@ -1399,9 +1428,14 @@ public class GameManager : MonoBehaviour
         SkillList.SetActive(false);
         SelectedItem = null;
         if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
-        TabChoice = 0;
+        TabChoice = 4;
         if (!Tabmenu)
             InfoBar.transform.parent.gameObject.SetActive(false);
+
+        if (Tabmenu)
+            audiSFX.PlayOneShot(click);
+
+
 
 
         if (!a) StartCoroutine(_freezecam(.20f));
@@ -1498,61 +1532,73 @@ public class GameManager : MonoBehaviour
     {
 
         if (!Tabmenu || SelectedActor == null) return;
-        if (Input.GetKeyDown(KeyCode.W))
+        if (!uiStatus.main.activeSelf)
         {
-            invUIItem++; TabChoice--;
-            skillUI--;
-            skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
-            if (SkillsSelected && SelectedSkill == null)
+            if (Input.GetKeyDown(KeyCode.W))
             {
+                audiSFX.PlayOneShot(select);
+                invUIItem++; TabChoice--;
+                skillUI--;
+                skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+                if (SkillsSelected && SelectedSkill == null)
+                {
 
-                SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
+                    SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
+                }
+
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
             }
-
-            if (inventorySelected && SelectedItem == null)
+            if (Input.GetKeyDown(KeyCode.S))
             {
-                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
-            }
+                audiSFX.PlayOneShot(select);
+                invUIItem--; TabChoice++;
+                skillUI++;
+                skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+                if (SkillsSelected && SelectedSkill == null)
+                {
+                    SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
+                }
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
 
+            }
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                audiSFX.PlayOneShot(select);
+                invUIItem--;
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
+                if (TabChoice == 4) TabChoice = 0;
+            }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                audiSFX.PlayOneShot(select);
+                invUIItem++;
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
+                if (TabChoice < 4) TabChoice = 4; ;
+            }
         }
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            invUIItem--; TabChoice++;
-            skillUI++;
-            skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
-            if (SkillsSelected && SelectedSkill == null)
-            {
-                SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
-            }
-            if (inventorySelected && SelectedItem == null)
-            {
-                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
-            }
 
-        }
-        if (Input.GetKeyDown(KeyCode.A)) {
-            invUIItem--;
-            if (inventorySelected && SelectedItem == null)
-            {
-                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
-            }
 
-            if (TabChoice == 3) TabChoice = 0; }
-        if (Input.GetKeyDown(KeyCode.D)) {
-            invUIItem++;
-            if (inventorySelected && SelectedItem == null)
-            {
-                invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-                ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
-            }
-
-            if (TabChoice < 3) TabChoice = 3; ; }
-
-        if (TabChoice > 3) TabChoice = 0;
-        if (TabChoice < 0) TabChoice = 3;
+        if (TabChoice > 4) TabChoice = 0;
+        if (TabChoice < 0) TabChoice = 4;
         if (skillUI < 0) skillUI = SelectedActor.Class.UsableSkill.Length - 1;
         if (skillUI > SelectedActor.Class.UsableSkill.Length - 1) skillUI = 0;
 
@@ -1566,6 +1612,12 @@ public class GameManager : MonoBehaviour
         if (Tabmenu)
             if (Input.GetKeyDown(KeyCode.Tab))
             {
+                if (uiStatus.main.activeSelf)
+                {
+                    uiStatus.main.SetActive(false);
+                    
+                }
+
                 if (inventorySelected)
                 {
 
@@ -1595,21 +1647,21 @@ public class GameManager : MonoBehaviour
                     else CloseInventory();
 
                 }
+                
 
 
             }
 
 
         if (SelectedSkill == null && SelectedItem == null)
-            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu)
+            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu )
             {
                 if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null && SelectedItem == null)
                 {
                     var e = SelectedActor.inventory.items[invUIItem];
                     SelectedItem = e;
                     ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
-                    audiSFX.clip = click;
-                    audiSFX.Play();
+                    audiSFX.PlayOneShot(click);
                     return;
                 }
                 else
@@ -1619,11 +1671,11 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count > 0)
                         PathUI.Clear();
 
-                    audiSFX.clip = click;
-                    audiSFX.Play();
+                    audiSFX.PlayOneShot(click);
 
                     StartCoroutine(_freezecam(.25f));
                     SelectedSkill = e;
+                    CursorPos = SelectedActor.TilePosition;
                     SkillList.SetActive(false);
 
                     InfoBar.text = "Select a target";
@@ -1658,25 +1710,29 @@ public class GameManager : MonoBehaviour
                 else if (TabChoice == 1) {
                     inventorySelected = true;
 
-                  
-                    audiSFX.clip = click;
-                    audiSFX.Play(); invUIItem = 0;
+                    audiSFX.PlayOneShot(click); invUIItem = 0;
                     if (SelectedActor.inventory.items.Length > 0) ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
                 }
                 else if (TabChoice == 2 && SelectedActor.SP > 0)
                 {
-                    audiSFX.clip = click;
-                    audiSFX.Play();
+                    audiSFX.PlayOneShot(click);
                     GetInGameFromActor(SelectedActor).EnterDefenseMode();
                     ShowTabMenu(false);
 
                 }
+
+                else 
                 if (TabChoice == 3 && SelectedActor.SP > 0)
                 {
-                    audiSFX.clip = click;
-                    audiSFX.Play();
+                    audiSFX.PlayOneShot(click);
+                    uiStatus.main.SetActive(false);
                     GetInGameFromActor(SelectedActor).EndTurn();
                     ShowTabMenu(false);
+                }
+                else if(TabChoice == 4 && !uiStatus.main.activeSelf)
+                {
+                    audiSFX.PlayOneShot(click);
+                    uiStatus.GetInfo(SelectedActor);
                 }
 
 
@@ -1704,6 +1760,7 @@ public class GameManager : MonoBehaviour
         inventorySelected = false;
         InfoBar.transform.parent.gameObject.SetActive(false);   
         invUIItem = 0;
+        uiStatus.main.SetActive(false);
     }
 
 

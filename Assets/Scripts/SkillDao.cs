@@ -50,14 +50,29 @@ static class SkillDao
         IDataReader reader = dbcmd.ExecuteReader();
         while (reader.Read())
         {
-    //       for (int i = 0; i < 12; i++)
-      // {
-        //      Debug.Log(reader.GetDataTypeName(i));
-        //
-        //  }
-
-            Skill newSkill = new Skill(reader.GetString(0), reader.GetString(1), profession, (DamageType)reader.GetInt32(3), reader.GetInt32(4), reader.GetFloat(5), reader.GetFloat(6), (Skill.TargetType)reader.GetInt32(7),  reader.GetInt32(8), reader.GetInt32(9), reader.GetInt32(10), reader.GetInt32(11));
-           skills.Add(newSkill);
+            //       for (int i = 0; i < 12; i++)
+            // {
+            //      Debug.Log(reader.GetDataTypeName(i));
+            //
+            //  }
+            //I had to debug this part to find reach is the wrong time . Moreover, Add element and skill
+            //  Skill newSkill = new Skill(reader.GetString(0), reader.GetString(1), profession, (DamageType)reader.GetInt32(3), reader.GetInt32(4), reader.GetFloat(5), reader.GetFloat(6), (Skill.TargetType)reader.GetInt32(7),  reader.GetInt32(8), reader.GetInt32(9), reader.GetInt32(10), reader.GetInt32(11));
+            Skill newSkill = new Skill(
+                reader.GetString(0),
+                reader.GetString(1), 
+                profession,
+                (DamageType)reader.GetInt32(3),
+                reader.GetInt32(4),
+                reader.GetFloat(5),
+                reader.GetFloat(6), 
+                (Skill.TargetType)reader.GetInt32(7),
+                reader.GetInt32(8),
+                reader.GetInt32(9),
+                reader.GetInt32(10), 
+                reader.GetInt32(11));
+            newSkill.element = reader.GetInt32(12);
+            newSkill.FX = reader.GetInt32(13);
+            skills.Add(newSkill);
 
         }
         reader.Close();
