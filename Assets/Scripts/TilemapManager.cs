@@ -5,18 +5,14 @@ using UnityEngine.Tilemaps;
 
 public static class TilemapManager  {
 
-
- 
     public static void LoadEvents(Tilemap t)
     {
-
         Debug.Log("Loading the map....");
         Debug.Log("Map size: " + t.cellBounds.size);
        
         t.gameObject.SetActive(false);
         BoundsInt bounds = t.cellBounds;
-        TileBase[] allTiles = t.GetTilesBlock(bounds);
-   
+        TileBase[] allTiles = t.GetTilesBlock(bounds);  
         for (int x = 0; x < bounds.size.x; x++)
         {
             for (int y = 0; y < bounds.size.y; y++)
@@ -25,7 +21,7 @@ public static class TilemapManager  {
                 if (tile != null)
                 {
                     var til = GameManager.Map.Tiles[x, y];
-                 
+
                     if(tile.name.Contains("F_B"))
                         til.collider = Map.Tile.ColliderType.All;
                     if (tile.name.Contains("U_B"))
@@ -39,10 +35,7 @@ public static class TilemapManager  {
                     if (tile.name.Contains("SPAWN"))
                         Overworld.SpawnPoints.Add(new Vector(x, y));
 
-
                     Debug.Log(til);
-                    //   Debug.Log("x:" + x + " y:" + y + " Name:" + tile.name);
-
                 }
                 else
                 {
@@ -51,10 +44,5 @@ public static class TilemapManager  {
                 }
             }
         }
-
-
-
-
-
     }
 }

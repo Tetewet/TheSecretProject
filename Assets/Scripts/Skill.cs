@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Skill 
 {
-    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int mpCost,int hpCost,int spCost, int level, bool unlocked = true) {
+    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, bool unlocked = true) {
         this.name = name;
         this.Description = description;
         this.profType = profType;
@@ -50,6 +50,8 @@ public class Skill
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
     public string Description;
+    public Effects FX;
+    public Element element;
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
@@ -57,6 +59,7 @@ public class Skill
     public int HpCost { get { return hpCost; } set { hpCost = value; } }
     public int SpCost { get { return spCost; } set { spCost = value; } }
     public int Level { get { return level; } set { level = value; } }
+    //We should set a "base attack" for each character in case they deal effects naturaly ( think of Grizzly that can apply bleed with their claws)
     public static Skill Base
     {
 
@@ -70,6 +73,8 @@ public class Skill
             e.Damage = .5f;
             e.Targets = TargetType.OneEnemy;
             e.Description = "Nonchalantly attack the target.";
+            e.FX = null;
+ 
             return e;
         }
 
@@ -90,6 +95,10 @@ public class Skill
             e.Damage = .5f;
             e.Targets = w.targetType;
             e.wep = w;
+            //Effects from weapon are in weapon
+            e.element = w.ELEID;
+            e.FX = w.FXID;
+            
             return e;
 
         }
@@ -104,7 +113,11 @@ public class Skill
 
         if (wep != null) x += wep.ATK;
 
-        if ((stats.CriticalHitPercentage + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
+        if ((stats.CriticalHitPercentage + BaseCritChance) > UnityEngine.Random.Range(1, 101))
+        {
+            x *= 1.50f;
+            Debug.Log("Critical Hit!");
+        } 
        
 
         target.TakeDamage(x, this, f);

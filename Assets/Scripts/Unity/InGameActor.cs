@@ -37,6 +37,7 @@ public class InGameActor : MonoBehaviour {
     public bool InverseSprite = false;
     public float DistanceToPos;
     public bool isAI = false;
+    public Image[] SFX;
     private Canvas cv;
 
     [Header("Equipements")]
@@ -68,7 +69,19 @@ public class InGameActor : MonoBehaviour {
         public float EXPGain;
     }
     public bool BattleSprite = true;
+    public void UpdateEffectUI()
+    {
+        foreach (var item in SFX)
+            item.enabled = false;
 
+
+        for (int i = 0; i < SFX.Length && i < actor.effects.Count; i++)
+        {
+            SFX[i].enabled = true;
+            SFX[i].gameObject.name = actor.effects[i].Name;
+            SFX[i].sprite = GameManager.LoadSprite("icons/" + actor.effects[i].imgpath);
+        }
+    }
     public static Actor[] ToActors(InGameActor[] s)
     {
         var e = new Actor[s.Length];
@@ -185,11 +198,11 @@ public class InGameActor : MonoBehaviour {
     {
     
         if (!gameObject.activeSelf) return;
-       
+     
         if (isAI)
         targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
         actor.TileWalkedThisTurn = 0;
-
+        GameManager.GM.ShowUI(actor);
         if (sprity[0] != null)
             sprity[0].color = Color.white;
         MyTurn = true;
@@ -202,7 +215,7 @@ public class InGameActor : MonoBehaviour {
         }
         else AI(Turn);
         attacking = false;
-
+        UpdateEffectUI();
     }
 
 
@@ -231,7 +244,9 @@ public class InGameActor : MonoBehaviour {
     /// </summary>
     public void AnimatedAttack()
     {
+      
         if (!MyTurn) return;
+       
         GameManager.GM.Cam.orthographicSize = 5.2f;
         AITImer = 0;
         Actor[] e = new Actor[1];
@@ -268,7 +283,7 @@ public class InGameActor : MonoBehaviour {
     public void EndTurn()
     {
         MyTurn = false;
-
+        UpdateEffectUI();
         StopAttacking();
         StartCoroutine(_EndTurn());
     }
@@ -419,7 +434,9 @@ public class InGameActor : MonoBehaviour {
         a.OnDamage += OnDamage;
         a.OnKillActor += OnKillingSomeone;
         a.OnEquip += OnEquip;
+        a.OnDeath += OnDeath;
         a.OnBlocked += OnBlocked;
+        a.OnApplyEffets += OnApplyEffects;
         Indicator.color = ActorColor;
 
 
@@ -456,6 +473,16 @@ public class InGameActor : MonoBehaviour {
 
         }
 
+    }
+
+    private void OnApplyEffects(Effects e)
+    {
+        UpdateEffectUI();
+    }
+
+    private void OnDeath(float z, Skill x)
+    {
+        anim[0].SetTrigger("IsDeath");
     }
 
     private void OnBlocked(float z, Skill x)
@@ -502,8 +529,11 @@ public class InGameActor : MonoBehaviour {
         actor.OnKillActor -= OnKillingSomeone;
         actor.OnEquip -= OnEquip;
         actor.OnBlocked -= OnBlocked;
+        actor.OnDeath -= OnDeath;
+        actor.OnApplyEffets -= OnApplyEffects;
     }
 
+    
     IEnumerator ColorBlink(Color c, float x)
     {
         var e = new Color[sprity.Length];

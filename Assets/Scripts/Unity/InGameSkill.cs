@@ -24,7 +24,9 @@ public class InGameSkill : MonoBehaviour {
         if (s.SpCost > 0)
             Cost.text += "SP:" + c.SpCost.ToString("00") + "/" + a.SP ;
         if (s.MpCost > 0)
-            Cost.text += " MP:" + c.MpCost.ToString() + "/" + a.MP; ;
+            Cost.text += " MP:" + c.MpCost.ToString() + "/" + a.MP;
+        if (s.HpCost > 0)
+            Cost.text += " HP:" + c.HpCost.ToString() + "/" + a.HP;
 
     }
 

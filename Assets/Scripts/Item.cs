@@ -44,6 +44,7 @@ public abstract class Item : IDisposable
     {
 
         UnityEngine.Debug.Log(a.ToString() + " takes  " + Name);
+        if(Ongrabbed!= null)
         Ongrabbed( a);
     }
     public void OnDispose()
@@ -51,6 +52,7 @@ public abstract class Item : IDisposable
         OnDispose();
     }
     public static List<Item> Inventory = new List<Item>();
+    public string Description;
     public Skill.TargetType targetType;
     public Map.Tile CurrentTile = new Map.Tile();
     public Vector TilePosition
@@ -107,7 +109,7 @@ public abstract class Item : IDisposable
     {
         if (Inventory.Contains(this)) Inventory.Remove(this);
         if(CurrentTile!=null) CurrentTile.Items.Remove(this);
-        onDispose();
+       if(onDispose!=null) onDispose();
         GC.SuppressFinalize(this);
     }
 }
@@ -123,7 +125,7 @@ public class Equipement : Item
     }
     public float Durability = 10;
 
-    public override string ResourcePath
+    /*public override string ResourcePath
     {
         get
         {
@@ -131,14 +133,18 @@ public class Equipement : Item
             return "~IGW";
         }
  
-    }
+    }*/
     public Stat StatsBonus;
     public Slot slot;
     public float DEF = 0;
     public float MagDEF = 0;
 
+
+    public Resistance resistance = new Resistance();
+
     public Equipement(string Name, string Path = "") : base(Name, Path)
     {
+        ResourcePath = Path;
     }
 
     public bool Useable
@@ -183,6 +189,9 @@ public class Weapon : Equipement
     }
     //Bonus Attacks - Raw Addtional Damage, this should be keep low 
     public int ATK = 0;
+    public int FXID = -1;
+    public int ELEID = -1;
+
     public class EquipmentSpriteData
     {
         public Component Blade, Hilt, Enchant;
@@ -229,6 +238,7 @@ public class Consumeable : Item
     public Stat StatsBonus;
     public float HPregen, MPregen;
     public int SPregen;
+    public List<int> EffectToCure = new List<int>();
 
     public Consumeable(string Name, string Path) : base(Name, Path)
     {

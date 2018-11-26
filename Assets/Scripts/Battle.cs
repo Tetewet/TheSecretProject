@@ -308,12 +308,12 @@ public class Map
             if(Actor != null)
             {
                
-                Actor.tilewalked++;
-                if (Actor.tilewalked >= Actor.GetStats.AGI)
+                Actor.tilecounter++;
+                if (Actor.tilecounter >= Actor.GetStats.AGI)
                 {
-                    Actor.tilewalked = 0;
+                    Actor.tilecounter = 0;
                     Actor.SP--;
-
+                    
                 }
 
             }
