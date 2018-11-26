@@ -323,6 +323,9 @@ public abstract class Actor : IComparable<Actor> {
         OnDamage += fx.OnBeingHit;
         OnAttack += fx.OnAttack;
         fx._actor = this;
+        UnityEngine.Debug.Log(fx.StatChange);
+
+        if (OnApplyEffets != null) OnApplyEffets(fx);
         // We have a lot to add...
         
     }
@@ -335,7 +338,7 @@ public abstract class Actor : IComparable<Actor> {
         OnDamage -= fx.OnBeingHit;
         OnAttack -= fx.OnAttack;
         fx._actor = null;
-
+        if (OnApplyEffets != null) OnApplyEffets(fx);
     }
     public Resistance getRes
     {
@@ -368,13 +371,13 @@ public abstract class Actor : IComparable<Actor> {
                 }
 
 
-                if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
-                else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
-                if (x <= 0 && f.DmgType != DamageType.None)
+                if ((f.DmgType & DamageType.Magical) != 0) x -= GetStats.MagDEF;
+                else if ((f.DmgType & DamageType.Physical) != 0) x -= GetStats.PhysDEF;
+                if (x <= 0 )
                 {
                     if (OnBlocked != null) OnBlocked(x, f);
 
-                    UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
+                    UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF + ",msef" + GetStats.MagDEF);
                     return;
                 }
 
@@ -489,6 +492,8 @@ public abstract class Actor : IComparable<Actor> {
     public event OnEquipHandler OnEquip;
     public delegate void OnTurnHandler(Battle.Turn e);
     public event OnTurnHandler OnTurn;
+    public delegate void OnApplyEffectHandler(Effects e);
+    public event OnApplyEffectHandler OnApplyEffets;
     //Position In world;
     public void Move(Vector position )
     {
@@ -918,7 +923,8 @@ public struct Stat : IComparable<Stat>
 
     public int CompareTo(Stat other)
     {
-        return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
+        return (Priority + AGI).CompareTo(other.Priority + other.AGI);
+            //(Threat + Magnitude).CompareTo(Threat + other.Magnitude);
     }
 
     //Useful Functions
@@ -938,6 +944,9 @@ public struct Stat : IComparable<Stat>
         e.END = a.END + b.END;
         e.LUC = a.LUC + b.LUC;
         e.OnGainStats += a.OnGainStats + b.OnGainStats;
+        e.CriticalHitFlat = a.CriticalHitFlat + b.CriticalHitFlat;
+        e.DamageBonus = a.DamageBonus + b.DamageBonus;
+        e.DefenseBonus = a.DefenseBonus + b.DefenseBonus;
         
         return e;
     }
@@ -950,13 +959,17 @@ public struct Stat : IComparable<Stat>
         e.WIS = a.WIS * b;
         e.END = a.END * b;
         e.LUC = a.LUC * b;
+        e.CriticalHitFlat = a.CriticalHitFlat * b;
+        e.DamageBonus = a.DamageBonus * b;
+        e.DefenseBonus = a.DamageBonus * b;
         e.OnGainStats += a.OnGainStats;
         return e;
     }
 
     public override string ToString()
     {
-        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC;
+        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC
+            + "\nCrit " + CriticalHitPercentage;
     }
 }
 

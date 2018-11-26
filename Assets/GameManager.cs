@@ -41,6 +41,7 @@ public class GameManager : MonoBehaviour
     public Image DarknessMyOldFriend;
     public RectTransform BattleStartGameObject;
     public GameObject SkillsCursorPos;
+    public Canvas TextAndUI;
     public UI_status uiStatus;
 
     [Header("BattleMode")]
@@ -159,7 +160,7 @@ public class GameManager : MonoBehaviour
             IGA.gameObject.SetActive(false);
         }
         GM.Cam.enabled = true;
-
+        GM.TextAndUI.worldCamera = GM.Cam;
         GM.Cursor.gameObject.SetActive(true);
 
         map = Mathf.Clamp(map, 0, GM.Battlefields.Length - 1);
@@ -311,8 +312,10 @@ public class GameManager : MonoBehaviour
     {
         Protags = new List<Actor>
     {
-        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"){ inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage)},
-        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian"){ inventory = Actor.Inventory.Light}
+        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
+        { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
+        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
+        { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
     };
         if (!GM) GM = this;
         else Destroy(this.gameObject);
@@ -553,6 +556,7 @@ public class GameManager : MonoBehaviour
         ClearActor();
 
         GM.Cam.enabled = false;
+        TextAndUI.worldCamera = OverworldCam;
         //------------------------------------------------------
 
         OverWorldGO.SetActive(true);

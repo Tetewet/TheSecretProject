@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class UI_status : MonoBehaviour {
 
     public GameObject main;
-    public Text Name, Stats, Lvl, Desc;
+    public Text Name, Stats, Lvl, Desc,stats2;
     
     public void GetInfo(Actor a)
     {
@@ -23,6 +23,9 @@ public class UI_status : MonoBehaviour {
             + "\nEXP: " + a.GetEXP.ToString("0000") +
             "\nNEXT: " + a.RequiredEXP.ToString("0000");
         Desc.text = a.Description;
+        stats2.text = "DEF: " + a.GetStats.PhysDEF  + " MDEF: " + a.GetStats.MagDEF 
+            + " WLK:" + (a.GetStats.MaximumSP * a.GetStats.AGI)  + "\nCRIT:" + a.GetStats.CriticalHitPercentage.ToString("00.0")
+        + "% SPD: "+ (a.GetStats.Priority + a.GetStats.AGI)  + " SP: "+ a.GetStats.MaximumSP;
 
     }
 }

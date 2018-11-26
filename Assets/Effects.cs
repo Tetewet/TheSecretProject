@@ -6,6 +6,7 @@ public class Effects {
 
     public static List<Effects> Core = new List<Effects>()
     {
+        new Poison("null","null", new Functionality(),Vector.right ,duration:5),
         new Poison("Poison","poison.png", new Functionality(),Vector.right ,duration:5),
         new Effects("Paralyze","paralyze.png",new Functionality(){CanMove = false}),
         new Burning ("Burning", "burning.png",new Functionality(),Vector.right,EffectToCause:4,chanceToEffect:5),
@@ -21,7 +22,8 @@ public class Effects {
     /// <param name="f"></param>
     public static implicit operator  Effects(int f)   
     {
-        if (f < 0) return null;
+        if (f <= 0) return null;
+   
         return Core[f];
     }
 
@@ -40,8 +42,14 @@ public class Effects {
     internal int remainingturn = 1;
     public Effects(string name, string Path, Functionality fun, Stat statchange = new Stat(), int duration = 3,bool incurable = false)
     {
+        Name = name;
+        imgpath = Path;
+        Func = fun;
+        StatChange = statchange;
+        Duration = duration;
         remainingturn = Duration;
         Curse = incurable;
+        
 
     }
     public virtual void OnTurn(Battle.Turn t)
@@ -161,9 +169,10 @@ public struct Element
 {
     public static List<Element> Core = new List<Element>
     {
-    new Element("Pyrus","fire.png",  new List<int>(){2},-1,5){ID =0 },
-    new Element("Aqus","water.png",  new List<int>(){0},-1,5){ID =1 },
-    new Element("Viridis","Wire.png",new List<int>(){1},-1,10){ID =2 },
+         new Element("null","null",  new List<int>(){0},0,0){ID =0 },
+    new Element("Pyrus","fire",  new List<int>(){3},-1,5){ID =0 },
+    new Element("Aqus","water",  new List<int>(){1},-1,5){ID =1 },
+    new Element("Viridis","wind",new List<int>(){2},-1,10){ID =2 },
     };  //Contains elements that we are going to used
     public string Name;
     public string imgpath;
@@ -184,7 +193,7 @@ public struct Element
     public float ChanceOfEffect;
     public static implicit operator Element(int f)   
     {
-        if (f < 0) return None;
+        if (f <= 0) return None;
         return Core[f];
     }
  public static Element None

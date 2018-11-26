@@ -113,7 +113,11 @@ public class Skill
 
         if (wep != null) x += wep.ATK;
 
-        if ((stats.CriticalHitPercentage + BaseCritChance) > UnityEngine.Random.Range(1, 101)) Damage *= 1.50f;
+        if ((stats.CriticalHitPercentage + BaseCritChance) > UnityEngine.Random.Range(1, 101))
+        {
+            x *= 1.50f;
+            Debug.Log("Critical Hit!");
+        } 
        
 
         target.TakeDamage(x, this, f);
