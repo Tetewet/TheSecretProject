@@ -196,7 +196,7 @@ public struct Element
         if (f <= 0) return None;
         return Core[f];
     }
- public static Element None
+    public static Element None
     {
         get
         {

@@ -261,6 +261,17 @@ public class Map
         public List<Item> Items = new List<Item>();
         public Vector Position;
         public int Heigth = 0;
+        /// <summary>
+        /// Return Null if has no wall or no actor. Return a wall if there is one;
+        /// </summary>
+        public Wall HasWall
+        {
+            get { if (Actor == null) return null;
+                else if (Actor is Wall) return Actor as Wall;
+                else return null;
+
+            }
+        }
         public int x
         {
             get { return (int)Position.x; }
