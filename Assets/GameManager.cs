@@ -345,7 +345,7 @@ public class GameManager : MonoBehaviour
 
         // for (int i = 0; i < Random.Range(1, 5); i++)
         //     nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-        StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+       // StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
 
 
         Protags[1].Equip(
@@ -475,7 +475,7 @@ public class GameManager : MonoBehaviour
 
         GameEnd.gameObject.SetActive(true);
 
-
+        
         spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";
         var s = CurrentBattle.BattleTime; var m = 0;
         while ((s - 60) > 0)
