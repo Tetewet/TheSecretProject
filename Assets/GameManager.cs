@@ -402,7 +402,7 @@ public class GameManager : MonoBehaviour
             IGA = z;
         }
 
-        var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    //TODO Language.db
+        var ev1 = new TextBox(new Vector(28, 31), "Okay, this is Epic.");
         AddEvent(ev1);
         UpdateEvents();
         OverWorldGO.SetActive(true);
@@ -475,14 +475,15 @@ public class GameManager : MonoBehaviour
 
         GameEnd.gameObject.SetActive(true);
 
-        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";//TODO Language.db
+        
+        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";
         var s = CurrentBattle.BattleTime; var m = 0;
         while ((s - 60) > 0)
         {
             s -= 60;
             m++;
         }
-        spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");//TODO Language.db
+        spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");
         spoils_BattleTime.enabled = false;
         spoils_Gold.enabled = false;
         spoils_grade.text = CurrentBattle.Grade;
@@ -759,7 +760,7 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";//TODO Language.db
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -864,7 +865,7 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";//TODO Language.db
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -962,7 +963,7 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";//TODO Language.db
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -1073,7 +1074,7 @@ public class GameManager : MonoBehaviour
 + a.GetLevel.ToString("00") + "\n[ hp  "
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
-+ a.SP.ToString("00") + " ]";*/ //TODO Language.db
++ a.SP.ToString("00") + " ]";*/
 
         OnHover.text = "[" + a.Name + "]" + "  Level " + a.GetLevel;
         Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
@@ -1161,8 +1162,9 @@ public class GameManager : MonoBehaviour
         {
             if (GameManager.EstimathPath(SelectedActor, GameManager.CursorPos, 99) > SelectedSkill.Reach)
             {
-                GiveInfo("Can't reach there");//TODO Language.db
-                return;}
+                GiveInfo("Can't reach there");
+                return;
+            }
             else
             {
                 Tabmenu = false;
@@ -1179,7 +1181,7 @@ public class GameManager : MonoBehaviour
         }
         else if (HasSelectedActor && SelectedSkill != null)
         {
-            GiveInfo("No targets!");//TODO Language.db
+            GiveInfo("No targets!");
             return;
         }
 

@@ -29,7 +29,7 @@ using System.Text;
         //    //find a way to scale on player's level
         //}
 
-        // randomize the creation of monsters 
+        // randomize the creation of monsters (later)
         abstract public MonsterFactory CreateKuku();
         abstract public MonsterFactory CreateKodama();
         abstract public MonsterFactory CreateBandit();
@@ -67,7 +67,7 @@ class MonsterControllerFactory : MonsterFactory
         // randomize here
         int chances = random.Next(0, 100); // quels monstres ? = aleatoire
         int number = random.Next(1, 2); // nombre de monstres a faire spawn
-        var monsters = new List<MonsterControllerFactory>(); //TODO refactor pour avoir un meilleur code
+        var monsters = new List<MonsterControllerFactory>();
         if (chances > 66)
         {
             for (int i = 0; i < number -1; i++)

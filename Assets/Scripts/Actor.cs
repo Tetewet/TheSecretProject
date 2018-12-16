@@ -826,7 +826,7 @@ public abstract class Actor : IComparable<Actor> {
     }
     public override string ToString()
     {
-        return Name + " Lvl: " + GetLevel;//TODO Language.db
+        return Name + " Lvl: " + GetLevel;
     }
 
     public int CompareTo(Actor other)
