@@ -343,9 +343,9 @@ public class GameManager : MonoBehaviour
         //14 6
         //var nGroup = new List<Monster>();
 
-        // for (int i = 0; i < Random.Range(1, 5); i++)
-        //     nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-       // StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+         //for (int i = 0; i < Random.Range(1, 5); i++)
+           //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+      //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
 
 
         Protags[1].Equip(

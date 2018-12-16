@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Skill 
 {
-    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, bool unlocked = true) {
+    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element , Effects fX, bool unlocked = true) {
         this.name = name;
         this.Description = description;
         this.profType = profType;
@@ -16,11 +16,13 @@ public class Skill
         this.damage = damage;
         this.baseCritChance = baseCritChance;
         this.targets = target;
-        this.Unlocked = unlocked;
-        this.mpCost = mpCost;
         this.hpCost = hpCost;
+        this.mpCost = mpCost;
         this.spCost = spCost;
         this.level = level;
+        this.element = element;
+        this.FX = fX;
+        this.Unlocked = unlocked;
     }
 
     public Skill() { }
@@ -50,8 +52,8 @@ public class Skill
     public TargetType Targets { get { return targets; } set { targets = value; } }
     public bool Unlocked;
     public string Description;
-    public Effects FX;
-    public Element element;
+    public Effects FX { get; set; }
+    public Element element { get; set; }
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
