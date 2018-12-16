@@ -22,7 +22,24 @@ static class SkillDao
         IDataReader reader = dbcmd.ExecuteReader();
         while (reader.Read())
         {
-            Skill newSkill = new Skill(reader.GetString(0),reader.GetString(1),(Profession.ProfessionType)reader.GetInt32(2),(DamageType)reader.GetInt32(3),reader.GetInt32(4),reader.GetFloat(5),reader.GetFloat(6),(Skill.TargetType)reader.GetInt32(7),reader.GetInt32(8),reader.GetInt32(9),reader.GetInt32(10),reader.GetInt32(11), reader.GetInt32(11) < actor.GetLevel);
+            Skill newSkill = new Skill(
+                reader.GetString(0),//name
+                reader.GetString(1), //description
+                (Profession.ProfessionType)reader.GetInt32(2),//profession
+                (DamageType)reader.GetInt32(3),//damage type
+                reader.GetInt32(4),//reach
+                reader.GetFloat(5),//damage amount
+                reader.GetFloat(6), //base crit chance
+                (Skill.TargetType)reader.GetInt32(7),// target
+                reader.GetInt32(8),//hpCost
+                reader.GetInt32(9),//mpCost
+                reader.GetInt32(10), //spCost
+                reader.GetInt32(11),//level
+                reader.GetInt32(12),//element
+                reader.GetInt32(13),//effects
+                reader.GetInt32(11) < actor.GetLevel);//unlocked
+
+
             skills.Add(newSkill);
 
         }
@@ -55,23 +72,22 @@ static class SkillDao
             //      Debug.Log(reader.GetDataTypeName(i));
             //
             //  }
-            //I had to debug this part to find reach is the wrong time . Moreover, Add element and skill
-            //  Skill newSkill = new Skill(reader.GetString(0), reader.GetString(1), profession, (DamageType)reader.GetInt32(3), reader.GetInt32(4), reader.GetFloat(5), reader.GetFloat(6), (Skill.TargetType)reader.GetInt32(7),  reader.GetInt32(8), reader.GetInt32(9), reader.GetInt32(10), reader.GetInt32(11));
+            
             Skill newSkill = new Skill(
-                reader.GetString(0),
-                reader.GetString(1), 
-                profession,
-                (DamageType)reader.GetInt32(3),
-                reader.GetInt32(4),
-                reader.GetFloat(5),
-                reader.GetFloat(6), 
-                (Skill.TargetType)reader.GetInt32(7),
-                reader.GetInt32(8),
-                reader.GetInt32(9),
-                reader.GetInt32(10), 
-                reader.GetInt32(11));
-            newSkill.element = reader.GetInt32(12);
-            newSkill.FX = reader.GetInt32(13);
+                reader.GetString(0),//name
+                reader.GetString(1), //description
+                profession,//profession
+                (DamageType)reader.GetInt32(3),//damage type
+                reader.GetInt32(4),//reach
+                reader.GetFloat(5),//damage amount
+                reader.GetFloat(6), //base crit chance
+                (Skill.TargetType)reader.GetInt32(7),// target
+                reader.GetInt32(8),//hpCost
+                reader.GetInt32(9),//mpCost
+                reader.GetInt32(10), //spCost
+                reader.GetInt32(11),//level
+                reader.GetInt32(12),//element
+                reader.GetInt32(13));//effects
             skills.Add(newSkill);
 
         }

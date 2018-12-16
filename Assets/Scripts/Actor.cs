@@ -377,7 +377,7 @@ public abstract class Actor : IComparable<Actor> {
                 {
                     if (OnBlocked != null) OnBlocked(x, f);
 
-                    UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF + ",msef" + GetStats.MagDEF);
+                    UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against  def:" + GetStats.PhysDEF + ",mDef" + GetStats.MagDEF);
                     return;
                 }
 
@@ -562,6 +562,13 @@ public abstract class Actor : IComparable<Actor> {
         CurrentTile.Enter(this);
 
     }
+
+    public void test(Func<int,int,int> t)
+    {
+        DamageHandler g = (x,y) => { y.DmgType.ToString(); } ;
+        test((x, y) => { return x + y; });
+
+    }
     /// <summary>
     /// Create a path toward X
     /// </summary>
@@ -573,6 +580,7 @@ public abstract class Actor : IComparable<Actor> {
                int x = (int)(where.x -TilePosition.x );
                int y = (int)(where.y - TilePosition.y );
         UnityEngine.Debug.Log(Name + ": Creating Path : from "+TilePosition.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y +"}" );
+
 
                 var a = 1;
                var b = 1;

@@ -99,6 +99,7 @@ public class Poison : Effects
     }
 
 }
+
 public class Burning : Poison
 {
     public int FXID = 0;
@@ -120,6 +121,7 @@ public class Burning : Poison
 
 
 }
+
 public class Bonus : Effects
 {
     public Bonus(string name, string Path, Functionality fun, Stat statchange = default(Stat), int duration = 3, bool incurable = false) : base(name, Path, fun, statchange, duration, incurable)
@@ -127,9 +129,6 @@ public class Bonus : Effects
         IsNegative = false;
     }
 }
-
-
-
 
 public class Functionality
 {
@@ -161,19 +160,15 @@ public class Functionality
     }
 }
 
-
-
-
-
 public struct Element
 {
     public static List<Element> Core = new List<Element>
     {
-         new Element("null","null",  new List<int>(){0},0,0){ID =0 },
-    new Element("Pyrus","fire",  new List<int>(){3},-1,5){ID =0 },
-    new Element("Aqus","water",  new List<int>(){1},-1,5){ID =1 },
+    new Element("null","null",  new List<int>(){0},0,0){ID =0 },
+    new Element("Pyrus","fire",  new List<int>(){3},3,5){ID =0 },
+    new Element("Aqus","water",  new List<int>(){1},4,5){ID =1 },
     new Element("Viridis","wind",new List<int>(){2},-1,10){ID =2 },
-    };  //Contains elements that we are going to used
+    };  //Contains elements that we are going to use
     public string Name;
     public string imgpath;
     public int FXID;
@@ -196,7 +191,7 @@ public struct Element
         if (f <= 0) return None;
         return Core[f];
     }
- public static Element None
+    public static Element None
     {
         get
         {
