@@ -261,6 +261,17 @@ public class Map
         public List<Item> Items = new List<Item>();
         public Vector Position;
         public int Heigth = 0;
+        /// <summary>
+        /// Return Null if has no wall or no actor. Return a wall if there is one;
+        /// </summary>
+        public Wall HasWall
+        {
+            get { if (Actor == null) return null;
+                else if (Actor is Wall) return Actor as Wall;
+                else return null;
+
+            }
+        }
         public int x
         {
             get { return (int)Position.x; }
@@ -308,12 +319,12 @@ public class Map
             if(Actor != null)
             {
                
-                Actor.tilewalked++;
-                if (Actor.tilewalked >= Actor.GetStats.AGI)
+                Actor.tilecounter++;
+                if (Actor.tilecounter >= Actor.GetStats.AGI)
                 {
-                    Actor.tilewalked = 0;
+                    Actor.tilecounter = 0;
                     Actor.SP--;
-
+                    
                 }
 
             }

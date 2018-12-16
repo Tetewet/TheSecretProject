@@ -44,17 +44,7 @@ public class Profession
 
         get
         {
-            return new Profession(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage, new Skill[1]
-            { new Skill { Name = "Firebolt",
-                Damage = .5f,
-               MpCost = 10,
-               BaseCritChance = 5f,
-               Reach = 5,
-               SpCost = 2,
-               Targets = Skill.TargetType.OneEnemy,
-               DmgType = DamageType.Magic,
-               Unlocked = true
-            } });
+            return new Profession(new Stat { AGI = 1, WIS = 2, INT = 1 }, ProfessionType.Mage);
         }
     }
 
@@ -95,11 +85,11 @@ public class Profession
         
     }
 
-    public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer, Skill[] sk = null)
+    public Profession(Stat s, ProfessionType profession = ProfessionType.Adventurer)
     {
         this.BaseStats = s;
         this.type = profession;
-        Skills = sk;
+        Skills = SkillDao.GetSkillsByProfession(profession);
 
     }
 

@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
     /// <summary>
     /// Are we in battle mode?
     /// </summary>
@@ -31,6 +32,17 @@ public class GameManager : MonoBehaviour {
     public GameObject ActorPrefab;
     public GameObject ItemPrefab;
     public GameObject SkillsPrefab;
+    [Header("SFX")]
+    public AudioClip click;
+    public AudioClip select;
+
+
+    [Header("UI")]
+    public Image DarknessMyOldFriend;
+    public RectTransform BattleStartGameObject;
+    public GameObject SkillsCursorPos;
+    public Canvas TextAndUI;
+    public UI_status uiStatus;
 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
@@ -42,6 +54,7 @@ public class GameManager : MonoBehaviour {
     public Vector3 CursorOffset;
     public static Actor SelectedActor;
     public static Actor ActorAtCursor = null;
+
     [Header("Overworld")]
     public GameObject OverWorldGO;
     public Tilemap Main;
@@ -53,6 +66,7 @@ public class GameManager : MonoBehaviour {
 
 
     AudioSource audi;
+    public AudioSource audiSFX;
 
     [System.Serializable]
     public struct BattleField
@@ -62,6 +76,7 @@ public class GameManager : MonoBehaviour {
         public GameObject Map;
 
     }
+
 
 
     public static InGameItem CreateNewItemOnField(Item i, Vector Position)
@@ -76,6 +91,7 @@ public class GameManager : MonoBehaviour {
         var e = Instantiate(GM.ItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InGameItem>();
         GM.InGameItems.Add(e);
         e.item = i;
+
         CurrentBattle.map.AtPos(Position).AddItem(e.item);
         return e;
     }
@@ -86,11 +102,7 @@ public class GameManager : MonoBehaviour {
     /// <summary>
     /// The Protagonists
     /// </summary>
-    public static List<Actor> Protags = new List<Actor>
-    {
-        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =4, LUC =2 , STR = 1, WIS =5 }, true, "Mage"){ inventory = Actor.Inventory.Light},
-        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian"){ inventory = Actor.Inventory.Light}
-    };
+    public static List<Actor> Protags;
 
     public List<InGameActor> InGameActors = new List<InGameActor>(), InGameFoes = new List<InGameActor>();
     public List<InGameItem> InGameItems = new List<InGameItem>();
@@ -124,17 +136,31 @@ public class GameManager : MonoBehaviour {
         GM.InGameActors.Clear();
         GM.InGameFoes.Clear();
     }
+    IEnumerator Transition(Color x)
+    {
+        var e = 0f;
+
+
+        while (e < 3)
+        {
+            DarknessMyOldFriend.color = Color.Lerp(DarknessMyOldFriend.color, x, (e + 1) * Time.smoothDeltaTime);
+            e += Time.fixedDeltaTime;
+            yield return null;
+        }
+        yield break;
+    }
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
+        GM.CanInteract = false;
         GM.OverWorldGO.SetActive(false);
 
         if (IGA)
         {
             Overworld.PlayerPos = IGA.actor.TilePosition;
             IGA.gameObject.SetActive(false);
-        } 
+        }
         GM.Cam.enabled = true;
-        
+        GM.TextAndUI.worldCamera = GM.Cam;
         GM.Cursor.gameObject.SetActive(true);
 
         map = Mathf.Clamp(map, 0, GM.Battlefields.Length - 1);
@@ -200,8 +226,6 @@ public class GameManager : MonoBehaviour {
         GM.ShowGrid = false;
         GM.ToggleGrid();
 
-        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
         CurrentBattle.StartNewTurn();
 
 
@@ -210,12 +234,50 @@ public class GameManager : MonoBehaviour {
     }
     IEnumerator BattleStart()
     {
+        var t = 0f;
         yield return new WaitForSeconds(.1f);
-        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right * 1; ;
-        yield return new WaitForSeconds(1);
+
+        BattleStartGameObject.localPosition = new Vector3(BattleStartGameObject.localPosition.x, 0);
+        DarknessMyOldFriend.color = Color.black;
+        foreach (var item in GM.InGameActors) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right;
+        foreach (var item in GM.InGameFoes) item.transform.position = (Vector2)GameManager.Battlefied[(int)item.actor.TilePosition.x, (int)item.actor.TilePosition.y].transform.position + item.offset + Vector2.right;
+        yield return new WaitForSeconds(.25f);
+
+
+
+
+
+
+
+
+
+        var sp = new Consumeable("Orange Potion", "Items/SP_POTION")
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };
+        Protags[1].Grab(sp);
+
+
+
+
+
+        StartCoroutine(Transition(Color.clear));
+        yield return new WaitForSeconds(1.0f);
+        BattleStartGameObject.gameObject.SetActive(true);
+        yield return new WaitForSeconds(.2f);
+        while (t < .4f)
+        {
+            t += Time.smoothDeltaTime;
+            BattleStartGameObject.localPosition += Vector3.up * 150 * (1 + t * 50) * Time.smoothDeltaTime;
+            yield return null;
+        }
+        yield return new WaitForSeconds(.1f);
         CurrentBattle.Paused = false;
         CurrentBattle.Proceed();
+        GM.CanInteract = true;
+        BattleStartGameObject.gameObject.SetActive(false);
+
+
+
+
         yield break;
     }
     /// <summary>
@@ -238,22 +300,30 @@ public class GameManager : MonoBehaviour {
     {
         Inventory = new Image[100];
         for (int i = 0; i < Inventory.Length; i++)
-            Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).GetComponentInChildren<Image>();
+            Inventory[i] = Instantiate(InventoryCeil, CharacterInventory.transform).transform.GetChild(0).GetComponent<Image>();
 
         Skills = new GameObject[100];
         for (int i = 0; i < Skills.Length; i++)
             Skills[i] = Instantiate(SkillsPrefab, SkillList.transform);
 
+        uiStatus.main.SetActive(false);
     }
     private void Awake()
     {
+        Protags = new List<Actor>
+    {
+        new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
+        { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
+        new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
+        { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
+    };
         if (!GM) GM = this;
         else Destroy(this.gameObject);
         DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
 
-        Protags[0].SetProfession(Profession.Madoshi);
+        // Protags[0].SetProfession(Profession.Madoshi);
 
     }
 
@@ -263,6 +333,7 @@ public class GameManager : MonoBehaviour {
 
         GM.InitializeUI();
         GM.Cam.enabled = false;
+
         foreach (var item in Protags)
         {
             item.Heal();
@@ -270,11 +341,11 @@ public class GameManager : MonoBehaviour {
         GenerateOverworld(Main);
 
         //14 6
-       //var nGroup = new List<Monster>();
+        //var nGroup = new List<Monster>();
 
-       // for (int i = 0; i < Random.Range(1, 5); i++)
-       //     nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-         StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)),0); 
+         //for (int i = 0; i < Random.Range(1, 5); i++)
+           //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+      //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
 
 
         Protags[1].Equip(
@@ -292,15 +363,14 @@ public class GameManager : MonoBehaviour {
 
         //Debug
 
-        /*
-                 CreateNewItemOnField(new Consumeable("Orange Potion", "Items/SP_POTION")
-                  { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3 }, new Vector(11, 5));
-                  CreateNewItemOnField(Item.Gold, new Vector(2, 5));
-                */
+
+
+        // CreateNewItemOnField(Item.Gold, new Vector(2, 5));
+
 
     }
 
-    public static Events[,] EventList = new global::Events[1000,1000];
+    public static Events[,] EventList = new global::Events[1000, 1000];
     public static InGameActor IGA;
     public bool CanInteract = true;
     void GenerateOverworld(Tilemap r)
@@ -308,7 +378,7 @@ public class GameManager : MonoBehaviour {
 
         var e = new Vector(r.cellBounds.size.x, r.cellBounds.size.y);
         Map = new Overworld(e);
-   
+
         foreach (var item in Events)
         {
             if (item.size.magnitude > Main.size.magnitude)
@@ -332,7 +402,7 @@ public class GameManager : MonoBehaviour {
             IGA = z;
         }
 
-        var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    
+        var ev1 = new TextBox(new Vector(28, 31), "Okay, this is Epic.");
         AddEvent(ev1);
         UpdateEvents();
         OverWorldGO.SetActive(true);
@@ -351,15 +421,15 @@ public class GameManager : MonoBehaviour {
     public static void AddEvent(Events e)
     {
         EventList[(int)e.ID.x, (int)e.ID.y] = e;
-        print("New event:"  + "["+ e.Name + "] "+ e.ID);
+        print("New event:" + "[" + e.Name + "] " + e.ID);
 
- 
+
         for (int x = 0; x < Map.Width; x++)
         {
             for (int y = 0; y < Map.Length; y++)
             {
 
-                if(x == e.ID.x && y == e.ID.y) Map.AtPos(x, y).Event = EventList[x, y];
+                if (x == e.ID.x && y == e.ID.y) Map.AtPos(x, y).Event = EventList[x, y];
             }
         }
     }
@@ -386,29 +456,29 @@ public class GameManager : MonoBehaviour {
         {
             item.AddExp(CurrentBattle.BattleExp / Protags.Count);
         }
-       
+
         StartCoroutine(BattleEndTransition());
 
     }
 
     public GridLayoutGroup Spoils;
-   List<GameObject> spoils_Inventory = new List<GameObject>();
+    List<GameObject> spoils_Inventory = new List<GameObject>();
     public Text spoils_Gold, spoils_grade, spoils_BattleTime;
 
     //THE END
     IEnumerator BattleEndTransition()
     {
         yield return new WaitForSeconds(1.5f);
-        GameEnd.anchorMax = new Vector2(0.5f,1);
-        GameEnd.anchorMin = new Vector2(0.5f,1);
+        GameEnd.anchorMax = new Vector2(0.5f, 1);
+        GameEnd.anchorMin = new Vector2(0.5f, 1);
         GameEnd.anchoredPosition = Vector2.zero + Vector2.up * 25;
- 
-        GameEnd.gameObject.SetActive(true);
- 
 
-        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold"    ;
+        GameEnd.gameObject.SetActive(true);
+
+        
+        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";
         var s = CurrentBattle.BattleTime; var m = 0;
-        while ((s -60) > 0)
+        while ((s - 60) > 0)
         {
             s -= 60;
             m++;
@@ -446,7 +516,7 @@ public class GameManager : MonoBehaviour {
             }
             else
             {
-     
+
                 var h = Instantiate(InventoryCeil, Spoils.transform);
                 spoils_Inventory.Add(h);
                 yield return new WaitForSeconds(.1f);
@@ -472,13 +542,13 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < InGameItems.Count; i++)
         {
             Destroy(InGameItems[i].gameObject);
-        } 
+        }
 
 
         GameEnd.gameObject.SetActive(false);
-    
+
         InGameItems.Clear();
-         
+
 
         foreach (var item in Battlefields)
             item.Map.gameObject.SetActive(false);
@@ -486,20 +556,21 @@ public class GameManager : MonoBehaviour {
         ClearActor();
 
         GM.Cam.enabled = false;
+        TextAndUI.worldCamera = OverworldCam;
         //------------------------------------------------------
 
-            OverWorldGO.SetActive(true);
+        OverWorldGO.SetActive(true);
 
         if (IGA)
         {
-            IGA.actor.Teleport(Map.AtPos( Overworld.PlayerPos));
+            IGA.actor.Teleport(Map.AtPos(Overworld.PlayerPos));
             IGA.gameObject.SetActive(true);
-          
+
             IGA.actor.Defending = false;
             if (IGA.actor.HP <= 0) IGA.actor.HP = 1;
         }
 
- 
+
         yield break;
     }
     float timer = 0;
@@ -526,7 +597,7 @@ public class GameManager : MonoBehaviour {
     {
         CanInteract = false;
         InfoBar.transform.parent.gameObject.SetActive(true);
-        StartCoroutine(_freezecam(.5f));
+        // StartCoroutine(_freezecam(.5f));
         yield return new WaitForSeconds(1f);
         InfoBar.transform.parent.gameObject.SetActive(false);
         CanInteract = true;
@@ -534,12 +605,12 @@ public class GameManager : MonoBehaviour {
     }
 
     public Text Textbox;
-    
- 
+
+
     public static void ShowText(string t)
     {
-        
-    
+
+
         if (GM._lasttext != null)
             GM.StopCoroutine(GM._lasttext);
         GM._lasttext = GM._ShowText(t);
@@ -552,29 +623,29 @@ public class GameManager : MonoBehaviour {
         Textbox.gameObject.GetComponentInChildren<Image>().enabled = false;
         Textbox.gameObject.transform.parent.gameObject.SetActive(true);
         Textbox.text = "";
-        for (int i = 0; i < t.Length ; i++)
+        for (int i = 0; i < t.Length; i++)
         {
 
-            if(t[i] == '\\')
+            if (t[i] == '\\')
             {
-                if(i+1 < t.Length)
+                if (i + 1 < t.Length)
                 {
-                    if(t[i+1] == 'n')
+                    if (t[i + 1] == 'n')
                     {
                         Textbox.text += "\n";
                         continue;
                     }
                 }
             }
-            else if(t[i] == 'n')
+            else if (t[i] == 'n')
             {
                 if (i - 1 > 0)
                     if (t[i - 1] == '\\') continue;
             }
-            
+
             Textbox.text += t[i];
             yield return new WaitForSeconds(.05f);
-            if(t[i] == '.' || t[i] == '!' || t[i] == ',') yield return new WaitForSeconds(.1f);
+            if (t[i] == '.' || t[i] == '!' || t[i] == ',') yield return new WaitForSeconds(.1f);
         }
         Textbox.text = t;
         yield return new WaitForSeconds(.25f);
@@ -835,7 +906,7 @@ public class GameManager : MonoBehaviour {
         var b = 1;
         if (x < 0) a = -1;
         if (y < 0) b = -1;
- 
+
 
         var maximumtile = maximum;
 
@@ -936,9 +1007,9 @@ public class GameManager : MonoBehaviour {
     public void OnCursorUpdate(Map.Tile t)
     {
 
-        OnHover.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
+        OnHover.transform.parent.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null || Tabmenu);
         CharacterInventory.gameObject.SetActive(ActorAtCursor != null || SelectedActor != null);
-        Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
+        if (Cursor.gameObject.activeSelf) Cursor.SetBool("Hover", ActorAtCursor != null || Tabmenu);
         ActorAtCursor = t.Actor;
         if (ActorAtCursor != null)
         {
@@ -962,7 +1033,8 @@ public class GameManager : MonoBehaviour {
             ShowUI(ActorAtCursor);
 
         }
-        else if (SelectedItem != null) {
+        else if (SelectedItem != null)
+        {
             ShowUI(SelectedActor);
             if (PathUI.Count == 1) ChangeGridColor(Color.cyan);
             else ChangeGridColor(Color.cyan + Color.blue);
@@ -976,11 +1048,15 @@ public class GameManager : MonoBehaviour {
         else
         {
             if (SelectedActor != null) ShowUI(SelectedActor);
-            ChangeGridColor(GridColor); }
+            ChangeGridColor(GridColor);
+        }
 
+        if (!CurrentBattle.ActingThisTurn.IsInPlayerTeam) ChangeGridColor(Color.gray);
+        Cursor.gameObject.SetActive(CurrentBattle.ActingThisTurn.IsInPlayerTeam);
         TabButtons.SetActive(!Tabmenu && SelectedActor != null && SelectedActor == CurrentBattle.ThisTurn.Order[0]);
     }
 
+    public Slider[] Bar;
     /// <summary>
     /// Show the On-Screen info about this actor
     /// </summary>
@@ -990,15 +1066,32 @@ public class GameManager : MonoBehaviour {
 
         if (a == null)
         {
-            print(a);
+            print(a + " IS NULL ");
             return;
         }
-        OnHover.text =
+        /*OnHover.text =
 "* " + a.Name + " *\n\nlvl"
 + a.GetLevel.ToString("00") + "\n[ hp  "
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
-+ a.SP.ToString("00") + " ]";
++ a.SP.ToString("00") + " ]";*/
+
+        OnHover.text = "[" + a.Name + "]" + "  Level " + a.GetLevel;
+        Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
+        Bar[1].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.MP * 2, 20);
+
+
+
+        if (a.GetStats.MaximumMP == 0)
+        {
+            Bar[1].gameObject.SetActive(false);
+        }
+        else
+        {
+            Bar[1].gameObject.SetActive(true);
+            Bar[1].value = a.MP / a.GetStats.MaximumMP;
+        }
+        Bar[0].value = a.HP / a.GetStats.MaximumHP;
 
         for (int i = 0; i < 100; i++)
         {
@@ -1010,10 +1103,9 @@ public class GameManager : MonoBehaviour {
                     Inventory[i].transform.parent.gameObject.SetActive(true);
                     Inventory[i].enabled = true;
 
-                    if (Inventory[i].sprite == null)
-                    {
-                        Inventory[i].sprite = LoadSprite(a.inventory.items[i].ResourcePath);
-                    }
+
+                    Inventory[i].sprite = LoadSprite(a.inventory.items[i].ResourcePath);
+
                 }
                 else
                 {
@@ -1062,6 +1154,7 @@ public class GameManager : MonoBehaviour {
         if (HasSelectedActor && curtile.Actor != null && SelectedItem != null)
         {
             GetInGameFromActor(SelectedActor).UseItem(curtile.Actor, SelectedItem);
+
             CloseInventory();
         }
         else
@@ -1070,21 +1163,23 @@ public class GameManager : MonoBehaviour {
             if (GameManager.EstimathPath(SelectedActor, GameManager.CursorPos, 99) > SelectedSkill.Reach)
             {
                 GiveInfo("Can't reach there");
-                return;}
+                return;
+            }
             else
             {
                 Tabmenu = false;
                 GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
-              
+                audiSFX.PlayOneShot(click);
+
                 CloseInventory();
 
                 return;
             }
-            
 
-            
+
+
         }
-        else if(HasSelectedActor && SelectedSkill != null)
+        else if (HasSelectedActor && SelectedSkill != null)
         {
             GiveInfo("No targets!");
             return;
@@ -1092,16 +1187,17 @@ public class GameManager : MonoBehaviour {
 
         if (Tabmenu) return;
 
-        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; return; }
+        if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; audiSFX.PlayOneShot(click); return; }
         else if (SelectedActor == curtile.Actor) SelectedActor = null;
 
-        if (SelectedActor != null)
+        if (HasSelectedActor)
         {
             if (CurrentBattle.ThisTurn.Order.Count > 0)
                 if (GetInGameFromActor(SelectedActor).MyTurn && SelectedActor.Controllable)
                     if (curtile.Actor == null) SelectedActor.Move(curtile);
-                    else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base)) {
-
+                    else if (curtile.Actor != null && SelectedActor.CanUseSkill(Skill.Base))
+                    {
+                        audiSFX.PlayOneShot(click);
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
@@ -1125,7 +1221,7 @@ public class GameManager : MonoBehaviour {
         if (SelectedItem != null || SelectedSkill != null)
             campos = Cursor.transform.position;
         campos.z = Cam.transform.position.z;
-        Cam.orthographicSize = Mathf.Lerp(Cam.orthographicSize, 5,12 * Time.smoothDeltaTime);
+        Cam.orthographicSize = Mathf.Lerp(Cam.orthographicSize, 5, 12 * Time.smoothDeltaTime);
         if (freezeCam) campos = Cam.transform.position;
         Cam.transform.position = Vector3.Lerp(Cam.transform.position, campos, 10 * Time.smoothDeltaTime);
     }
@@ -1162,7 +1258,7 @@ public class GameManager : MonoBehaviour {
     void OverWordLogic()
     {
         var campos = IGA.transform.position;
-         campos.z = Cam.transform.position.z;
+        campos.z = Cam.transform.position.z;
 
         OverworldCam.transform.position = Vector3.Lerp(OverworldCam.transform.position, campos, 10 * Time.smoothDeltaTime);
 
@@ -1192,7 +1288,7 @@ public class GameManager : MonoBehaviour {
             if (inventorySelected)
                 Position = Inventory[invUIItem].transform.position;
             if (SkillsSelected)
-                Position = Skills[skillUI].transform.position;
+                Position = SkillsCursorPos.transform.position;//Skills[skillUI].transform.position;
 
             if (SelectedItem != null || SelectedSkill != null) Position = GameManager.Battlefied[(int)CursorPos.x, (int)CursorPos.y].transform.position;
         }
@@ -1202,6 +1298,16 @@ public class GameManager : MonoBehaviour {
         Cursor.transform.position = Vector3.Lerp(Cursor.transform.position, Position + CursorOffset, 9 * Time.smoothDeltaTime);
 
     }
+
+    public static int GetDistance(Vector a, Vector b)
+    {
+        var e = 0;
+
+        var f = a - b;
+        e += (int)Mathf.Abs(f.x) + (int)Mathf.Abs(f.y);
+        return e;
+    }
+
     public void BattlePlayerInput(Map.Tile curtile)
     {
 
@@ -1209,16 +1315,38 @@ public class GameManager : MonoBehaviour {
         var h = Input.GetAxisRaw("Horizontal");
         var v = Input.GetAxisRaw("Vertical");
 
-        
+
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
+             
 
-                OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
                 var u = new Vector(h, -v);
+             
+                if(HasSelectedActor )
+                {
+
+                    var dis = GetDistance(SelectedActor.TilePosition, CursorPos + u) -1;
+
+                    if (SelectedSkill != null)
+                    {
+                        if (dis >= (SelectedSkill.Reach))
+                            return;
+                    }
+                    else
+                    {
+                        if (dis >= ((SelectedActor.GetStats.MaximumSP * SelectedActor.GetStats.AGI) - SelectedActor.TileWalkedThisTurn))
+                            return;
+                    }
+                    
+ 
+                }
+                OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
+             
 
                 CursorPos += u;
                 timer = 0;
+                audiSFX.PlayOneShot(select);
                 OnCursorEnter(CurrentBattle.map.AtPos(CursorPos));
             }
         if (CurrentBattle.IsPlayerTurn)
@@ -1234,7 +1362,7 @@ public class GameManager : MonoBehaviour {
             {
                 print(CurrentBattle.map);
             }
-            if (Input.GetKeyDown(KeyCode.Tab) && (!inventorySelected && !SkillsSelected))
+            if (Input.GetKeyDown(KeyCode.Tab) && (!inventorySelected && !SkillsSelected && !uiStatus.main.activeSelf))
             {
                 ToggleTabMenu();
             }
@@ -1294,9 +1422,9 @@ public class GameManager : MonoBehaviour {
     {
         Tabmenu = a;
 
-        
-        if (!BattleMode && !HasSelectedActor || (HasSelectedActor && SelectedActor != CurrentBattle.ActingThisTurn) ) Tabmenu = false;
 
+        if (!BattleMode && !HasSelectedActor || (HasSelectedActor && SelectedActor != CurrentBattle.ActingThisTurn)) Tabmenu = false;
+        if (SelectedActor == null) Tabmenu = false;
         TabButtons.SetActive(!Tabmenu && SelectedActor != null);
         MiniMenu.gameObject.SetActive(Tabmenu);
         inventorySelected = false;
@@ -1304,9 +1432,17 @@ public class GameManager : MonoBehaviour {
         SkillList.SetActive(false);
         SelectedItem = null;
         if (!Tabmenu && HasSelectedActor) CursorPos = SelectedActor.TilePosition;
-        TabChoice = 0;
+        TabChoice = 4;
+        if (!Tabmenu)
+            InfoBar.transform.parent.gameObject.SetActive(false);
 
-        if (!a) StartCoroutine(_freezecam(.5f));
+        if (Tabmenu)
+            audiSFX.PlayOneShot(click);
+
+
+
+
+        if (!a) StartCoroutine(_freezecam(.20f));
     }
     /// <summary>
     /// ToggleTheTabMenu
@@ -1363,7 +1499,7 @@ public class GameManager : MonoBehaviour {
     public GameObject SkillList;
     Skill SelectedSkill;
     int skillUI = 0;
-    
+
     bool inventorySelected, SkillsSelected;
     int invUIItem = 0;
     Item SelectedItem;
@@ -1376,12 +1512,23 @@ public class GameManager : MonoBehaviour {
         freezeCam = false;
         yield break;
     }
-    
+
     public void ActionFreeze()
     {
-        StartCoroutine(_freezecam(1.5f));
+        StartCoroutine(_freezecam(1.0f));
     }
 
+    void SkillDescOnInfo(Skill a)
+    {
+        InfoBar.transform.parent.gameObject.SetActive(true);
+        InfoBar.text = a.Description;
+    }
+    void ShowItemDescInfo(Item a)
+    {
+        if (a == null) { InfoBar.transform.parent.gameObject.SetActive(false); return; }
+        InfoBar.transform.parent.gameObject.SetActive(true);
+        InfoBar.text = a.Description;
+    }
     /// <summary>
     /// Logic about the menu - run on update
     /// </summary>
@@ -1389,111 +1536,221 @@ public class GameManager : MonoBehaviour {
     {
 
         if (!Tabmenu || SelectedActor == null) return;
-        if (Input.GetKeyDown(KeyCode.W)) { invUIItem++; TabChoice--;
-            skillUI--; }
-        if (Input.GetKeyDown(KeyCode.S)) { invUIItem--; TabChoice++; skillUI++; }
-        if (Input.GetKeyDown(KeyCode.A)) { invUIItem--; if (TabChoice == 3) TabChoice = 0; }
-        if (Input.GetKeyDown(KeyCode.D)) { invUIItem++; if (TabChoice < 3) TabChoice = 3; ; }
+        if (!uiStatus.main.activeSelf)
+        {
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                audiSFX.PlayOneShot(select);
+                invUIItem++; TabChoice--;
+                skillUI--;
+                skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+                if (SkillsSelected && SelectedSkill == null)
+                {
 
-        if (TabChoice > 3) TabChoice = 0;
-        if (TabChoice < 0) TabChoice = 3;
+                    SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
+                }
+
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
+            }
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                audiSFX.PlayOneShot(select);
+                invUIItem--; TabChoice++;
+                skillUI++;
+                skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+                if (SkillsSelected && SelectedSkill == null)
+                {
+                    SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
+                }
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
+            }
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                audiSFX.PlayOneShot(select);
+                invUIItem--;
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
+                if (TabChoice == 4) TabChoice = 0;
+            }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                audiSFX.PlayOneShot(select);
+                invUIItem++;
+                if (inventorySelected && SelectedItem == null)
+                {
+                    invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+
+                if (TabChoice < 4) TabChoice = 4; ;
+            }
+        }
+
+
+        if (TabChoice > 4) TabChoice = 0;
+        if (TabChoice < 0) TabChoice = 4;
         if (skillUI < 0) skillUI = SelectedActor.Class.UsableSkill.Length - 1;
         if (skillUI > SelectedActor.Class.UsableSkill.Length - 1) skillUI = 0;
 
 
         invUIItem = Mathf.Clamp(invUIItem, 0, SelectedActor.inventory.items.Length - 1);
-        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length);
+        skillUI = Mathf.Clamp(skillUI, 0, SelectedActor.Class.UsableSkill.Length - 1);
+        //Hard coded, for getting less fields
+        SkillList.transform.localPosition = Vector3.Lerp(SkillList.transform.localPosition, new Vector3(-205.8f, -41 + skillUI * 82), 15 * Time.smoothDeltaTime);
 
 
-
-        if(Tabmenu)
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            if (inventorySelected)
+        if (Tabmenu)
+            if (Input.GetKeyDown(KeyCode.Tab))
             {
+                if (uiStatus.main.activeSelf)
+                {
+                    uiStatus.main.SetActive(false);
                     
+                }
 
-                    if (SelectedItem != null) SelectedItem = null;
-                else if (inventorySelected) inventorySelected = false;
-                else CloseInventory();
-            }
-            else if ( SkillsSelected)
-            {
+                if (inventorySelected)
+                {
 
 
-                    if (SelectedSkill != null) { SkillList.SetActive(true); SelectedSkill = null; }
-                    else if (SkillsSelected) { SkillList.SetActive(false); SkillsSelected = false; }
+                    if (SelectedItem != null) { ShowItemDescInfo(SelectedItem); SelectedItem = null; }
+                    else if (inventorySelected) { inventorySelected = false; InfoBar.transform.parent.gameObject.SetActive(false); } 
+                    else CloseInventory();
+                }
+                else if (SkillsSelected)
+                {
+
+
+                    if (SelectedSkill != null)
+                    {
+                        SkillList.SetActive(true);
+                        InfoBar.transform.parent.gameObject.SetActive(true);
+                        InfoBar.text = SelectedSkill.Description;
+                        SelectedSkill = null;
+
+                    }
+                    else if (SkillsSelected)
+                    {
+                        SkillList.SetActive(false);
+                        SkillsSelected = false;
+                        InfoBar.transform.parent.gameObject.SetActive(false);
+                    }
                     else CloseInventory();
 
-            }
-
-
-        }
-
-
-        if(SelectedSkill == null && SelectedItem == null)
-        if (Input.GetKeyDown(KeyCode.Space) && Tabmenu)
-        {
-            if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null &&  SelectedItem == null)
-            {
-                var e = SelectedActor.inventory.items[invUIItem];
-                SelectedItem = e;
-            
-                return;
-            }
-            else
-            if(SkillsSelected && SelectedActor.Class.UsableSkill[skillUI] != null && SelectedSkill == null )
-            {
-                var e  = SelectedActor.Class.UsableSkill[skillUI];
-                if (PathUI.Count > 0)
-                    PathUI.Clear();
-
-                StartCoroutine(_freezecam(.4f));
-                SelectedSkill = e;
-                return;
-            }
-            if (TabChoice == 0)
-            {
-                skillUI = 0;
-           
-                SkillsSelected = true;
-                for (int i = 0; i < Skills.Length; i++)
-                {
-                    if (i < SelectedActor.Class.UsableSkill.Length)
-                    {
-                        Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.Class.UsableSkill[i]);
-                        Skills[i].gameObject.SetActive(true);
-                    }
-                    else Skills[i].gameObject.SetActive(false);
                 }
-                SkillList.SetActive(true);
+                
+
+
             }
-            else if (TabChoice == 1) { inventorySelected = true; invUIItem = 0; } 
-            else if (TabChoice == 2 && SelectedActor.SP > 0 ) {
-              
-                GetInGameFromActor(SelectedActor).EnterDefenseMode();
-                ShowTabMenu(false);
-             
-            }
-            if (TabChoice == 3 && SelectedActor.SP > 0)
+
+
+        if (SelectedSkill == null && SelectedItem == null)
+            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu )
             {
+                if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null && SelectedItem == null)
+                {
+                    var e = SelectedActor.inventory.items[invUIItem];
+                    SelectedItem = e;
+                    ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                    audiSFX.PlayOneShot(click);
+                    return;
+                }
+                else
+                if (SkillsSelected && SelectedActor.Class.UsableSkill[skillUI] != null && SelectedSkill == null)
+                {
+                    var e = SelectedActor.Class.UsableSkill[skillUI];
+                    if (PathUI.Count > 0)
+                        PathUI.Clear();
 
-                GetInGameFromActor(SelectedActor).EndTurn();
-                ShowTabMenu(false);
+                    audiSFX.PlayOneShot(click);
+
+                    StartCoroutine(_freezecam(.25f));
+                    SelectedSkill = e;
+                    CursorPos = SelectedActor.TilePosition;
+                    SkillList.SetActive(false);
+
+                    InfoBar.text = "Select a target";
+                    if (e.Targets == Skill.TargetType.Self)
+                        InfoBar.text = "Apply to yourself";
+                    if (e.Targets == Skill.TargetType.AnAlly)
+                        InfoBar.text = "Select an Ally";
+
+
+                    return;
+                }
+                if (TabChoice == 0)
+                {
+                    skillUI = 0;
+
+                    audiSFX.clip = click;
+                    audiSFX.Play();
+
+                    SkillDescOnInfo(SelectedActor.Class.UsableSkill[skillUI]);
+                    SkillsSelected = true;
+                    for (int i = 0; i < Skills.Length; i++)
+                    {
+                        if (i < SelectedActor.Class.UsableSkill.Length)
+                        {
+                            Skills[i].GetComponent<InGameSkill>().ShowSkill(SelectedActor.Class.UsableSkill[i], SelectedActor);
+                            Skills[i].gameObject.SetActive(true);
+                        }
+                        else Skills[i].gameObject.SetActive(false);
+                    }
+                    SkillList.SetActive(true);
+                }
+                else if (TabChoice == 1) {
+                    inventorySelected = true;
+
+                    audiSFX.PlayOneShot(click); invUIItem = 0;
+                    if (SelectedActor.inventory.items.Length > 0) ShowItemDescInfo(SelectedActor.inventory.items[invUIItem]);
+                }
+                else if (TabChoice == 2 && SelectedActor.SP > 0)
+                {
+                    audiSFX.PlayOneShot(click);
+                    GetInGameFromActor(SelectedActor).EnterDefenseMode();
+                    ShowTabMenu(false);
+
+                }
+
+                else 
+                if (TabChoice == 3 && SelectedActor.SP > 0)
+                {
+                    audiSFX.PlayOneShot(click);
+                    uiStatus.main.SetActive(false);
+                    GetInGameFromActor(SelectedActor).EndTurn();
+                    ShowTabMenu(false);
+                }
+                else if(TabChoice == 4 && !uiStatus.main.activeSelf)
+                {
+                    audiSFX.PlayOneShot(click);
+                    uiStatus.GetInfo(SelectedActor);
+                }
+
+
             }
 
 
-        }
-
- 
         //Inventory
-      
+
 
 
 
     }
 
-    
+
     /// <summary>
     /// Close the Inventory
     /// </summary>
@@ -1505,10 +1762,12 @@ public class GameManager : MonoBehaviour {
         SelectedSkill = null;
         SelectedItem = null;
         inventorySelected = false;
+        InfoBar.transform.parent.gameObject.SetActive(false);   
         invUIItem = 0;
+        uiStatus.main.SetActive(false);
     }
-    
- 
+
+
     /// <summary>
     /// Return true if there is a actor selected
     /// </summary>

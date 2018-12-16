@@ -23,10 +23,22 @@ public struct Vector
     }
     public float magnitude { get { return Math.Abs((x + y) / 2); } }
     public Vector normalized { get { return new Vector(x, y) / magnitude; } }
-    
+
+    /// <summary>
+    /// (0,0)
+    /// </summary>
     public static Vector zero { get { var v = new Vector(); v.x = 0; v.y = 0; return v; } }
+    /// <summary>
+    /// (1,1)
+    /// </summary>
     public static Vector one { get { var v = new Vector(); v.x = 1; v.y = 1; return v; } }
+    /// <summary>
+    /// (1,1)
+    /// </summary>
     public static Vector up { get { var v = new Vector(); v.x = 0; v.y = 1; return v; } }
+    /// <summary>
+    /// (1,0)
+    /// </summary>
     public static Vector right { get { var v = new Vector(); v.x = 1; v.y = 0; return v; } }
 
 
@@ -48,9 +60,7 @@ public struct Vector
     {
         var e = new Vector(a.x, a.y);
         e.x  += b.x;
-        e.y  += b.y;
-
-   
+        e.y  += b.y;    
         return e;
     }
     public static Vector operator -(Vector a, Vector b)
@@ -90,6 +100,8 @@ public abstract class Actor : IComparable<Actor> {
     public event OnGainEXP OnExpGain;
     public delegate void OnKillHandler(Actor a);
     public event OnKillHandler OnKillActor;
+ 
+    
     public int GetLevel
     {
         get { return Level; }
@@ -154,14 +166,30 @@ public abstract class Actor : IComparable<Actor> {
         SP = 0;                     
     }
 
+    public Functionality ActionsPermis
+    {
+        get
+        {
+            if (effects.Count == 0) return Functionality.normal;
+            var e = new Functionality();
+            foreach (var item in effects)
+                e *= item.Func;
+            return e;
 
+
+        }
+    }
+    Resistance resistance = new Resistance();
+
+    public List<Effects> effects = new List<Effects>();
+ 
     //Stats
     protected Stat baseStats = new Stat();
-    public Profession Class = new Profession(new Stat()) { Skills = new Skill[1] {
-        new Skill{Name = "Quick Jab", Damage = .25f, SpCost = 1, MpCost = 0, Reach = 1, DmgType = DamageType.Melee, Unlocked = true,Targets = Skill.TargetType.OneEnemy },
+    public Profession Class = new Profession(new Stat());
+    public string Description = "A normal actor.";
  
-    }
-    };
+    
+    
     public Stat GetStats
     {
         get {
@@ -171,6 +199,11 @@ public abstract class Actor : IComparable<Actor> {
                 {
                     if (x.item != null)
                         t += x.item.StatsBonus;
+                }
+            if(effects.Count > 0)
+                foreach (var x in effects)
+                {
+                    t += x.StatChange;
                 }
  
             return t; }
@@ -192,7 +225,7 @@ public abstract class Actor : IComparable<Actor> {
     //Action
     public delegate void DamageHandler(float z, Skill x);
 
-    public event DamageHandler OnAttack, OnDamage, OnBlocked;
+    public event DamageHandler OnAttack, OnDamage, OnBlocked, OnDeath;
 
 
 
@@ -282,38 +315,96 @@ public abstract class Actor : IComparable<Actor> {
     {
         TakeDamage(x, null );
     }
+    public virtual void Apply(Effects fx)
+    {
+        if (fx == null) return;
+        effects.Add(fx);
+        OnTurn += fx.OnTurn;
+        OnDamage += fx.OnBeingHit;
+        OnAttack += fx.OnAttack;
+        fx._actor = this;
+        UnityEngine.Debug.Log(fx.StatChange);
+
+        if (OnApplyEffets != null) OnApplyEffets(fx);
+        // We have a lot to add...
+        
+    }
+
+    public virtual void Remove(Effects fx)
+    {
+        if (!effects.Contains(fx)) return;
+        effects.Remove(fx);
+        OnTurn -= fx.OnTurn;
+        OnDamage -= fx.OnBeingHit;
+        OnAttack -= fx.OnAttack;
+        fx._actor = null;
+        if (OnApplyEffets != null) OnApplyEffets(fx);
+    }
+    public Resistance getRes
+    {
+        get
+        {
+            var e = new Resistance();
+
+            e += resistance;
+            foreach (var item in inventory.Slot)        
+               if(item.item != null) e += item.item.resistance;        
+            return e;
+        }
+    }
     public virtual void TakeDamage(float x, Skill f , Actor a = null)
     {
 
         var i = x;
-        if(f != null) 
+        if(f != null)
         {
-            if (Defending) x *= .5f;
-            if (f.DmgType == DamageType.Magic) x -= GetStats.MagDEF;
-            else if (f.DmgType == DamageType.Melee) x -= GetStats.PhysDEF;
-            if (x <= 0 && f.DmgType != DamageType.None)
+            if ((f.DmgType & DamageType.Offensive) != 0)
             {
-                if(OnBlocked!= null)OnBlocked(x, f);
-                UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against " + GetStats.PhysDEF);
-                return;
+                if (Defending) x *= .5f;
+
+                if (f.element.ID >= 0)
+                {
+                    foreach (var item in getRes.resistance)
+                        x *= f.element.EfficacyFactor(item, this);
+                    foreach (var item in getRes.weakness)
+                        x *= f.element.EfficacyFactor(item, this);
+                }
+
+
+                if ((f.DmgType & DamageType.Magical) != 0) x -= GetStats.MagDEF;
+                else if ((f.DmgType & DamageType.Physical) != 0) x -= GetStats.PhysDEF;
+                if (x <= 0 )
+                {
+                    if (OnBlocked != null) OnBlocked(x, f);
+
+                    UnityEngine.Debug.Log(f.Name + " has no effects! - " + i + " damages against  def:" + GetStats.PhysDEF + ",mDef" + GetStats.MagDEF);
+                    return;
+                }
+
+                if (OnDamage != null) OnDamage(x, f);
+                UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
             }
-            UnityEngine.Debug.Log(Name + " took " + f.DmgType + " " + x);
+            Apply(f.FX);
+
         }
-       
+
+
         HP -= x;
         if (HP <= 0) { Ondeath(x, f, a);  HP = 0; }
     
-        if (OnDamage != null) OnDamage(x,f);
+       
     }
     
     public virtual void Ondeath(float x, Skill f , Actor a = null)
     {
+        OnDeath(x, f);
         if (GameManager.CurrentBattle.Foes.Contains(this))
             GameManager.CurrentBattle.Foes.Remove(this);
         if (GameManager.CurrentBattle.Players.Contains(this))
             GameManager.CurrentBattle.Players.Remove(this);
 
         CurrentTile.OnQuitting();
+
         UnityEngine.Debug.Log(this.Name + " is death");
     }
     public void ConsumeMP(float x )
@@ -330,7 +421,7 @@ public abstract class Actor : IComparable<Actor> {
         }
     }
 
-     public int tilewalked = 0;
+     public int tilecounter = 0;
 
     public int TileWalkedThisTurn = 0;
     public void Grab( Item a)
@@ -401,6 +492,8 @@ public abstract class Actor : IComparable<Actor> {
     public event OnEquipHandler OnEquip;
     public delegate void OnTurnHandler(Battle.Turn e);
     public event OnTurnHandler OnTurn;
+    public delegate void OnApplyEffectHandler(Effects e);
+    public event OnApplyEffectHandler OnApplyEffets;
     //Position In world;
     public void Move(Vector position )
     {
@@ -409,9 +502,13 @@ public abstract class Actor : IComparable<Actor> {
         
     }
 
-     
 
-    //Move with bound and collision in mind 
+
+    /// <summary>
+    /// Move with bound and collision in mind 
+    /// </summary>
+    /// <param name="v"></param>
+    /// <param name="bypass"></param>
     public virtual void Move(Vector v,bool bypass = false)
     {
         if (v == Vector.zero) return;
@@ -465,6 +562,17 @@ public abstract class Actor : IComparable<Actor> {
         CurrentTile.Enter(this);
 
     }
+
+    public void test(Func<int,int,int> t)
+    {
+        DamageHandler g = (x,y) => { y.DmgType.ToString(); } ;
+        test((x, y) => { return x + y; });
+
+    }
+    /// <summary>
+    /// Create a path toward X
+    /// </summary>
+    /// <param name="where"></param>
     public void CreatePath(Map.Tile where)
     {
 
@@ -473,15 +581,11 @@ public abstract class Actor : IComparable<Actor> {
                int y = (int)(where.y - TilePosition.y );
         UnityEngine.Debug.Log(Name + ": Creating Path : from "+TilePosition.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y +"}" );
 
+
                 var a = 1;
                var b = 1;
                if (x < 0) a = -1;
                if (y < 0) b = -1;
-
-        /*
-        for (int i = 0; i <=  Math.Abs(x); i++) Path.Enqueue( TilePosition + Vector.right * i * a);
-        for (int i = 0; i <= Math.Abs(y) + 1; i++) Path.Enqueue(TilePosition + Vector.right * x + Vector.up * i * b);
-        */
         Map e;
         if (GameManager.BattleMode) e = GameManager.CurrentBattle.map;
         else e = GameManager.Map;
@@ -500,25 +604,7 @@ public abstract class Actor : IComparable<Actor> {
             //x + 1
             for (int i = 1; i <= Math.Abs(x)  ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
         }
-
-       // if(where.Actor == null )Path.Enqueue(where.Position);
-        //We will have to move this section in the Unity section to sync the position
-        /*
-       while (Path.Count > 1)
-       {
-           CurrentTile.OnQuitting();
-           if (GameManager.CurrentBattle.map.AtPos(Path.Peek()).Actor != null)
-           {
-               CantMove();
-               break;
-           }
-           CurrentTile = GameManager.CurrentBattle.map.AtPos(Path.Dequeue());
-
-           CurrentTile.Enter(this);
-       }
-       */
-
-    }
+ }
 
     bool CanMoveThere(Map.Tile Where)
     {
@@ -767,13 +853,17 @@ public enum _stats
 public enum DamageType
 {
     None = 0,
-    Melee =1,
-    Magic =2,
+    Melee = 1,
+    Magic = 2,
     Pierce = 4,
     Slashing = 8,
     Blunt = 16,
+    Buff = 32,
+    Debuff = 64,
     Physical = Melee | Pierce | Slashing | Blunt,
-    Magical = Magic
+    Magical = Magic,
+    Effects = Buff | Debuff,
+    Offensive = Physical | Magical
 }
 /// <summary>
 /// Stats of any living being.
@@ -841,7 +931,8 @@ public struct Stat : IComparable<Stat>
 
     public int CompareTo(Stat other)
     {
-        return (Threat + Magnitude).CompareTo(Threat + other.Magnitude);
+        return (Priority + AGI).CompareTo(other.Priority + other.AGI);
+            //(Threat + Magnitude).CompareTo(Threat + other.Magnitude);
     }
 
     //Useful Functions
@@ -861,6 +952,9 @@ public struct Stat : IComparable<Stat>
         e.END = a.END + b.END;
         e.LUC = a.LUC + b.LUC;
         e.OnGainStats += a.OnGainStats + b.OnGainStats;
+        e.CriticalHitFlat = a.CriticalHitFlat + b.CriticalHitFlat;
+        e.DamageBonus = a.DamageBonus + b.DamageBonus;
+        e.DefenseBonus = a.DefenseBonus + b.DefenseBonus;
         
         return e;
     }
@@ -873,13 +967,17 @@ public struct Stat : IComparable<Stat>
         e.WIS = a.WIS * b;
         e.END = a.END * b;
         e.LUC = a.LUC * b;
+        e.CriticalHitFlat = a.CriticalHitFlat * b;
+        e.DamageBonus = a.DamageBonus * b;
+        e.DefenseBonus = a.DamageBonus * b;
         e.OnGainStats += a.OnGainStats;
         return e;
     }
 
     public override string ToString()
     {
-        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC;
+        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC
+            + "\nCrit " + CriticalHitPercentage;
     }
 }
 

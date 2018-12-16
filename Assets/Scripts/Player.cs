@@ -13,7 +13,27 @@ public class Player : Actor
 
     
 }
+public class Wall: Actor
+{
+    public Wall(string Name, Stat BaseStats, bool Controllable, string AnimatorP) : base(Name, BaseStats, Controllable, AnimatorP)
+    {
+        this.Name = Name;
+        this.baseStats = BaseStats;
+        this.Controllable = false;
+    }
+    public override bool IsDefeat
+    {
+        get
+        {
+            return true;
+        }
+    }
+    public override void Turn(Battle battle)
+    {
 
+        battle.EndTurn();
+    }
+}
 
 public class Monster : Actor
 {
