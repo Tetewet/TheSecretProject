@@ -11,14 +11,16 @@ public static class LanguageDao
 
     public static string GetLanguage(string name, string languageCode)
     {
-        string languageTranslation;
+        string languageTranslation = "";
         IDbConnection dbConnection = new SqliteConnection(DatabasePath);
         dbConnection.Open();
         IDbCommand dbCommand = dbConnection.CreateCommand();
-        dbCommand.CommandText = "SELECT " + languageCode + " FROM language WHERE name = " + name + ";";
+        dbCommand.CommandText = "SELECT " + languageCode + " FROM language WHERE name = '" + name + "';";
         IDataReader dbReader = dbCommand.ExecuteReader();
-
-        languageTranslation = dbReader.GetString(0);
+        while (dbReader.Read())
+        {
+            languageTranslation = dbReader.GetString(0);
+        }
 
         dbReader.Close();
         dbConnection.Close();

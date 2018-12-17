@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 19599726}
   - component: {fileID: 19599725}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: save
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -910,7 +910,7 @@ Prefab:
     - target: {fileID: 224814665380387676, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 224284083740479776, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
@@ -935,7 +935,7 @@ Prefab:
     - target: {fileID: 224490079852751036, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 8
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 223641181674203494, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
@@ -946,6 +946,31 @@ Prefab:
         type: 2}
       propertyPath: m_SortingOrder
       value: 103
+      objectReference: {fileID: 0}
+    - target: {fileID: 114418618435523532, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: uiStatus
+      value: 
+      objectReference: {fileID: 530581259}
+    - target: {fileID: 114418618435523532, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: TextAndUI
+      value: 
+      objectReference: {fileID: 643914291}
+    - target: {fileID: 114418618435523532, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: click
+      value: 
+      objectReference: {fileID: 8300000, guid: 83c65331d45562845aac4cd0b0a3c886, type: 3}
+    - target: {fileID: 114418618435523532, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: select
+      value: 
+      objectReference: {fileID: 8300000, guid: 803224c79f67f7c4fb3d1ef399c1543c, type: 3}
+    - target: {fileID: 114418618435523532, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: audiSFX
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
@@ -1749,6 +1774,12 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &530581259 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114103547675053442, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+    type: 2}
+  m_PrefabInternal: {fileID: 377637399}
+  m_Script: {fileID: 11500000, guid: 9c543f946b8e1694b9969e869eede356, type: 3}
 --- !u!1 &562432839
 GameObject:
   m_ObjectHideFlags: 0
@@ -1908,6 +1939,11 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 639791475}
   m_CullTransparentMesh: 0
+--- !u!223 &643914291 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 223641181674203494, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+    type: 2}
+  m_PrefabInternal: {fileID: 377637399}
 --- !u!1 &648307732
 GameObject:
   m_ObjectHideFlags: 0
@@ -3186,7 +3222,7 @@ GameObject:
   - component: {fileID: 919954019}
   - component: {fileID: 919954018}
   m_Layer: 0
-  m_Name: tesxt --> status
+  m_Name: status
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16110,7 +16146,7 @@ GameObject:
   - component: {fileID: 1950749071}
   - component: {fileID: 1950749070}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: quit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

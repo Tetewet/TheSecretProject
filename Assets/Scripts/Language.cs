@@ -14,9 +14,9 @@ public enum LanguageCode
 
 public class Language
 {
-    public LanguageCode languageCode;
+    public static LanguageCode languageCode;
 
-    public void Initialize()
+    public static void Initialize()
     {
         LanguageDao.DatabasePath = "URI=file:" + Application.dataPath + "/Databases/Languages.db";
         PlayerPrefs.SetString("lang", languageCode.ToString().ToLower());
@@ -25,7 +25,7 @@ public class Language
         //var languageTranslation = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
     }
 
-    private void LoadLanguage(string lang)
+    private static void LoadLanguage(string lang)
     {
         Text[] bigTranslator = GameManager.GM.TextAndUI.GetComponentsInChildren<Text>();
         for (int i = 0; i < bigTranslator.Length; i++) 
