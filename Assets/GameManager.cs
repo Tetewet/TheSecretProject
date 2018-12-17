@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
     public UI_status uiStatus;
-    public string language = "fr";
+    public static string language = "fr";
 
 
     [Header("BattleMode")]
@@ -333,7 +333,7 @@ public class GameManager : MonoBehaviour
 
 
         var sp = new Consumeable("Orange Potion", "Items/SP_POTION")
-        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };  //TODO alonso desc traduction
         Protags[1].Grab(sp);
 
 
@@ -394,14 +394,14 @@ public class GameManager : MonoBehaviour
         if (!GM) GM = this;
         else Destroy(this.gameObject);
         LOG += "-" + System.Security.Principal.WindowsIdentity.GetCurrent().Name+ "" + System.DateTime.Now + "-\n";
-        Protags = new List<Actor>
+        Protags = new List<Actor> 
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
         { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
         new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
-    };
-    
+    }; //TODO alonso desc traduction
+
         DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
@@ -486,7 +486,7 @@ public class GameManager : MonoBehaviour
             IGA = z;
         }
 
-        var ev1 = new TextBox(new Vector(28,31),"Okay, this is Epic.");    //TODO Language.db -NOT THERE! This is a Test event
+        var ev1 = new TextBox(new Vector(28, 31), LanguageDao.GetLanguage("epic", language));
         AddEvent(ev1);
         UpdateEvents();
         OverWorldGO.SetActive(true);
@@ -562,14 +562,14 @@ public class GameManager : MonoBehaviour
 
         GameEnd.gameObject.SetActive(true);
 
-        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";//TODO Language.db
+        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " " + LanguageDao.GetLanguage("gold", GameManager.language);
         var s = CurrentBattle.BattleTime; var m = 0;
         while ((s - 60) > 0)
         {
             s -= 60;
             m++;
         }
-        spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");//TODO Language.db
+        spoils_BattleTime.text = LanguageDao.GetLanguage("battletime", GameManager.language) + " " + m.ToString("00") + ":" + s.ToString("00");
         spoils_BattleTime.enabled = false;
         spoils_Gold.enabled = false;
         spoils_grade.text = CurrentBattle.Grade;
@@ -846,7 +846,7 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";//TODO Language.db
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -951,7 +951,7 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";//TODO Language.db
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -1049,7 +1049,7 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
-        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";//TODO Language.db
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -1160,9 +1160,9 @@ public class GameManager : MonoBehaviour
 + a.GetLevel.ToString("00") + "\n[ hp  "
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
-+ a.SP.ToString("00") + " ]";*/ //TODO Language.db
++ a.SP.ToString("00") + " ]";*/ 
 
-        OnHover.text = "[" + a.Name + "]" + "  Level " + a.GetLevel;
+        OnHover.text = "[" + a.Name + "]" + "  " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + a.GetLevel;
         Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
         Bar[1].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.MP * 2, 20);
 
@@ -1248,7 +1248,7 @@ public class GameManager : MonoBehaviour
         {
             if (GameManager.EstimathPath(SelectedActor, GameManager.CursorPos, 99) > SelectedSkill.Reach)
             {
-                GiveInfo("Can't reach there");//TODO Language.db
+                GiveInfo(LanguageDao.GetLanguage("cantreach", GameManager.language));
                 return;}
             else
             {
@@ -1266,7 +1266,7 @@ public class GameManager : MonoBehaviour
         }
         else if (HasSelectedActor && SelectedSkill != null)
         {
-            GiveInfo("No targets!");//TODO Language.db
+            GiveInfo(LanguageDao.GetLanguage("notargets", GameManager.language));
             return;
         }
 
@@ -1767,11 +1767,11 @@ public class GameManager : MonoBehaviour
                     CursorPos = SelectedActor.TilePosition;
                     SkillList.SetActive(false);
 
-                    InfoBar.text = "Select a target";
+                    InfoBar.text = LanguageDao.GetLanguage("selecttarget", GameManager.language);
                     if (e.Targets == Skill.TargetType.Self)
-                        InfoBar.text = "Apply to yourself";
+                        InfoBar.text = LanguageDao.GetLanguage("applyyou", GameManager.language);
                     if (e.Targets == Skill.TargetType.AnAlly)
-                        InfoBar.text = "Select an Ally";
+                        InfoBar.text = LanguageDao.GetLanguage("applyally", GameManager.language);
 
 
                     return;

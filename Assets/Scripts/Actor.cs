@@ -827,7 +827,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     }
     public override string ToString()
     {
-        return Name + " Lvl: " + GetLevel;//TODO Language.db
+        return Name + " " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + GetLevel;
     }
 
     public int CompareTo(Actor other)
@@ -980,8 +980,13 @@ public struct Stat : IComparable<Stat>
 
     public override string ToString()
     {
-        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC
-            + "\nCrit " + CriticalHitPercentage;
+        return "Stats: \n" + LanguageDao.GetLanguage("statstr", GameManager.language) + " " + STR
+            + "\n" + LanguageDao.GetLanguage("statagi", GameManager.language) + " " + AGI
+            + "\n" + LanguageDao.GetLanguage("statwis", GameManager.language) + " " + WIS
+            + "\n" + LanguageDao.GetLanguage("statend", GameManager.language) + " " + END
+            + "\n" + LanguageDao.GetLanguage("statint", GameManager.language) + " " + INT
+            + "\n" + LanguageDao.GetLanguage("statluc", GameManager.language) + " " + LUC
+            + "\n" + LanguageDao.GetLanguage("statcrit", GameManager.language) + " " + CriticalHitPercentage;
     }
 }
 
