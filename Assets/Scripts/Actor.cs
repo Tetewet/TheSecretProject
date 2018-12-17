@@ -17,6 +17,7 @@ public struct Vector
         this.x = x;
         this.y = y;
     }
+   
     public static float Distance(Vector a, Vector b)
     {
         return Math.Abs( (float)Math.Sqrt(Math.Pow((b.x - a.x),2) + Math.Pow((b.y - b.y),2)) );
@@ -826,7 +827,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     }
     public override string ToString()
     {
-        return Name + " Lvl: " + GetLevel;//TODO Language.db
+        return Name + " " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + GetLevel;
     }
 
     public int CompareTo(Actor other)
