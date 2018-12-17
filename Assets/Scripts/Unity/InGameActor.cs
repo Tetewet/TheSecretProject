@@ -164,9 +164,9 @@ public class InGameActor : MonoBehaviour {
         var r = s.Targets;
         if (!actor.CanUseSkill(s)) { Error(LanguageDao.GetLanguage("notenough", GameManager.language)); return; }
 
-        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
-        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
-        if (r == Skill.TargetType.Self && to != actor) { Error("Can only target yourself"); return; }
+        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error(LanguageDao.GetLanguage("applyally", GameManager.language)); return; }
+        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error(LanguageDao.GetLanguage("applyennemy", GameManager.language)); return; }
+        if (r == Skill.TargetType.Self && to != actor) { Error(LanguageDao.GetLanguage("applyyou", GameManager.language)); return; }
 
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
