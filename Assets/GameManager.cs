@@ -85,6 +85,8 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
     public UI_status uiStatus;
+    public string language = "fr";
+
 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
@@ -405,7 +407,7 @@ public class GameManager : MonoBehaviour
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
-
+        Language.Initialize();
     }
 
     public void Start()

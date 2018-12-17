@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 19599726}
   - component: {fileID: 19599725}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: save
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -575,7 +575,7 @@ GameObject:
   - component: {fileID: 278149376}
   - component: {fileID: 278149375}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: options
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -900,7 +900,7 @@ Prefab:
     - target: {fileID: 224717397891964390, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 224355410529198852, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
@@ -910,22 +910,22 @@ Prefab:
     - target: {fileID: 224814665380387676, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 224284083740479776, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224730529684566428, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 224761520377119042, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 224130398107525376, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
@@ -935,7 +935,7 @@ Prefab:
     - target: {fileID: 224490079852751036, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_RootOrder
-      value: 8
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 223641181674203494, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
@@ -3960,6 +3960,12 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &530581259 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114103547675053442, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+    type: 2}
+  m_PrefabInternal: {fileID: 377637399}
+  m_Script: {fileID: 11500000, guid: 9c543f946b8e1694b9969e869eede356, type: 3}
 --- !u!1 &562432839
 GameObject:
   m_ObjectHideFlags: 0
@@ -3972,7 +3978,7 @@ GameObject:
   - component: {fileID: 562432842}
   - component: {fileID: 562432841}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: items
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4119,6 +4125,11 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 639791475}
   m_CullTransparentMesh: 0
+--- !u!223 &643914291 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 223641181674203494, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+    type: 2}
+  m_PrefabInternal: {fileID: 377637399}
 --- !u!1 &648307732
 GameObject:
   m_ObjectHideFlags: 0
@@ -4357,7 +4368,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: -1, y: -1, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -696.76, y: -41.700012}
+  m_AnchoredPosition: {x: -696.75977, y: -41.700195}
   m_SizeDelta: {x: 1119, y: 179.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &766824743
@@ -5397,7 +5408,7 @@ GameObject:
   - component: {fileID: 919954019}
   - component: {fileID: 919954018}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: status
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19392,7 +19403,7 @@ GameObject:
   - component: {fileID: 1950749071}
   - component: {fileID: 1950749070}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: quit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19518,7 +19529,7 @@ GameObject:
   - component: {fileID: 2003753069}
   - component: {fileID: 2003753068}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: skill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
