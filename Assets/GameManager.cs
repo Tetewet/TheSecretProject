@@ -7,6 +7,45 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     /// <summary>
+    /// Index of everything in the program. That ways we can call everything from any point at any time. Good for Events.
+    /// </summary>
+    public static Dictionary<string, object> Index = new Dictionary<string, object>();
+    [TextArea]
+    public string LOG;
+    public static string GenerateID(object G)
+    {
+
+        var x = G.GetType().Name.ToUpper();
+        System.Type a = G.GetType();
+
+        if (a.BaseType != typeof(System.Object) && a.BaseType != typeof(System.ValueType))
+        while (true)
+        {
+        
+            if (a.BaseType == typeof(System.Object)) break;
+            a = a.BaseType;
+            x = a.Name.ToUpper();
+          
+
+
+        }
+        var s = "";
+        for (int i = 0; i < 3; i++)
+            s += x[i];
+
+        var oc = 0;
+        foreach (var item in Index)
+        {
+            if (item.Key.Contains(s)) oc++;
+        }
+     
+        s += 0 + oc;
+        Index.Add(s, G);
+
+        GameManager.GM.LOG += s + "(" + a.Name + ") added to INDEX\n";
+        return s;
+    }
+    /// <summary>
     /// Are we in battle mode?
     /// </summary>
     public static bool BattleMode
@@ -43,6 +82,8 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
     public UI_status uiStatus;
+    public string language = "fr";
+
 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
@@ -310,6 +351,9 @@ public class GameManager : MonoBehaviour
     }
     private void Awake()
     {
+        if (!GM) GM = this;
+        else Destroy(this.gameObject);
+        LOG +=  System.Security.Principal.WindowsIdentity.GetCurrent().Name+ " ------ " + System.DateTime.Now + "\n";
         Protags = new List<Actor>
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
@@ -317,14 +361,13 @@ public class GameManager : MonoBehaviour
         new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
     };
-        if (!GM) GM = this;
-        else Destroy(this.gameObject);
+    
         DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
-
+        Language.Initialize();
     }
 
     public void Start()
@@ -339,13 +382,13 @@ public class GameManager : MonoBehaviour
             item.Heal();
         }
         GenerateOverworld(Main);
-
+        TextAndUI.worldCamera = OverworldCam;
         //14 6
         //var nGroup = new List<Monster>();
 
-         //for (int i = 0; i < Random.Range(1, 5); i++)
-           //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-      //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+        //for (int i = 0; i < Random.Range(1, 5); i++)
+        //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+        //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
 
 
         Protags[1].Equip(
@@ -1493,7 +1536,7 @@ public class GameManager : MonoBehaviour
     }
 
     int TabChoice = 0;
-    public GameObject[] MiniMenuBTN;
+    public GameObject[] MiniMenuBTN,OverWorldMenuBTN;
     public GameObject SkillList;
     Skill SelectedSkill;
     int skillUI = 0;

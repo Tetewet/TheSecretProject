@@ -13,3 +13,11 @@ class Kuku : MonsterControllerFactory
     }
 
 }
+
+//class ChefKuku : Kuku
+//{
+//    public ChefKuku(string Name, Statstring Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
+//    {
+//        base.Name = Name + " Boss";
+//    }
+//}
