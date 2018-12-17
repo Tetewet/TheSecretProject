@@ -162,7 +162,7 @@ public class InGameActor : MonoBehaviour {
     public void UseSkill(Actor to, Skill s)
     {
         var r = s.Targets;
-        if (!actor.CanUseSkill(s)) { Error("Not enough ressource"); return; }
+        if (!actor.CanUseSkill(s)) { Error("Not enough ressource"); return; } //TODO Language.db
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
@@ -376,7 +376,7 @@ public class InGameActor : MonoBehaviour {
                 if ((f != actor && f != a) || f.IsTeamWith(actor))
                 {
            
-                    Error(f.Name + " is blocking " + name);
+                    Error(f.Name + " is blocking " + name); //TODO language.db
                     attacking = false;
                     tempattack = null;
                     temptarget = null;
