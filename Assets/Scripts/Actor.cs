@@ -17,6 +17,7 @@ public struct Vector
         this.x = x;
         this.y = y;
     }
+   
     public static float Distance(Vector a, Vector b)
     {
         return Math.Abs( (float)Math.Sqrt(Math.Pow((b.x - a.x),2) + Math.Pow((b.y - b.y),2)) );
