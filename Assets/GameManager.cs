@@ -333,7 +333,7 @@ public class GameManager : MonoBehaviour
 
 
         var sp = new Consumeable("Orange Potion", "Items/SP_POTION")
-        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };  //TODO alonso desc traduction
         Protags[1].Grab(sp);
 
 
@@ -394,14 +394,14 @@ public class GameManager : MonoBehaviour
         if (!GM) GM = this;
         else Destroy(this.gameObject);
         LOG += "-" + System.Security.Principal.WindowsIdentity.GetCurrent().Name+ "" + System.DateTime.Now + "-\n";
-        Protags = new List<Actor>
+        Protags = new List<Actor> 
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
         { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
         new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
-    };
-    
+    }; //TODO alonso desc traduction
+
         DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
