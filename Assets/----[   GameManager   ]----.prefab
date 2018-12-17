@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 222104629785216682}
   - component: {fileID: 114030126584756150}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: defend
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,12 +57,12 @@ GameObject:
   - component: {fileID: 222140546259393532}
   - component: {fileID: 114481370418494532}
   m_Layer: 5
-  m_Name: BATTLE END
+  m_Name: battleend
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1028313309847748
 GameObject:
   m_ObjectHideFlags: 1
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 222977489671692856}
   - component: {fileID: 114788687983348324}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: endturn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -273,7 +273,7 @@ GameObject:
   - component: {fileID: 222621173659798302}
   - component: {fileID: 114838305021724344}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: skill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -483,7 +483,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1334427474887008
 GameObject:
   m_ObjectHideFlags: 1
@@ -511,7 +511,7 @@ GameObject:
   - component: {fileID: 222401921987426284}
   - component: {fileID: 114705503957570566}
   m_Layer: 5
-  m_Name: GRADE
+  m_Name: grade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -545,7 +545,7 @@ GameObject:
   - component: {fileID: 222853870781906628}
   - component: {fileID: 114459306918105808}
   m_Layer: 5
-  m_Name: timeR
+  m_Name: battletimer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -647,7 +647,7 @@ GameObject:
   - component: {fileID: 222174838044427536}
   - component: {fileID: 114828670407590322}
   m_Layer: 5
-  m_Name: SPOILS
+  m_Name: spoil
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -752,7 +752,7 @@ GameObject:
   - component: {fileID: 222377771976982630}
   - component: {fileID: 114942022085778276}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: status
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1077,7 +1077,7 @@ GameObject:
   - component: {fileID: 222449782020038114}
   - component: {fileID: 114966210612557932}
   m_Layer: 0
-  m_Name: tesxt
+  m_Name: items
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3702,12 +3702,12 @@ MonoBehaviour:
     type: 2}
   click: {fileID: 8300000, guid: 83c65331d45562845aac4cd0b0a3c886, type: 3}
   select: {fileID: 8300000, guid: 803224c79f67f7c4fb3d1ef399c1543c, type: 3}
+  sfxbattlestart: {fileID: 8300000, guid: 55044bad1177d8f43b689521b7cc855f, type: 3}
   DarknessMyOldFriend: {fileID: 114629091166628484}
   BattleStartGameObject: {fileID: 224385096917460312}
   SkillsCursorPos: {fileID: 1837543490828810}
   TextAndUI: {fileID: 223641181674203494}
   uiStatus: {fileID: 114103547675053442}
-  language: fr
   panel: {fileID: 1332433445606466, guid: 170a5b5153d8bb34fb136427ba59c8a5, type: 2}
   InventoryCeil: {fileID: 1078682488384832, guid: 5350f6936636c0745b63275ed156d569,
     type: 2}
@@ -3722,7 +3722,7 @@ MonoBehaviour:
   Events:
   - {fileID: 0}
   - {fileID: 0}
-  audiSFX: {fileID: 0}
+  audiSFX: {fileID: 82858301273383240}
   MapName: 
   InGameActors: []
   InGameFoes: []
@@ -4422,7 +4422,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -7158,7 +7158,7 @@ RectTransform:
   m_LocalScale: {x: 0.68160003, y: 0.68160003, z: 0.6815999}
   m_Children: []
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 1
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -7305,7 +7305,7 @@ RectTransform:
   m_Children:
   - {fileID: 224634919221829958}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 2
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -7402,7 +7402,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 3.3333334e+17}
   m_SizeDelta: {x: 9715, y: 94.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224391366791915662
@@ -7770,13 +7770,13 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224486066732311032}
-  - {fileID: 224284083740479776}
-  - {fileID: 224355410529198852}
   - {fileID: 224761520377119042}
-  - {fileID: 224730529684566428}
   - {fileID: 224717397891964390}
-  - {fileID: 224130398107525376}
+  - {fileID: 224730529684566428}
+  - {fileID: 224284083740479776}
   - {fileID: 224814665380387676}
+  - {fileID: 224130398107525376}
+  - {fileID: 224355410529198852}
   - {fileID: 224490079852751036}
   - {fileID: 224878053232166912}
   m_Father: {fileID: 4180590301637450}
@@ -8086,7 +8086,7 @@ RectTransform:
   - {fileID: 224728056862228160}
   - {fileID: 224850445459334334}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 5
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
@@ -8141,7 +8141,7 @@ RectTransform:
   m_Children:
   - {fileID: 224315378857502954}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
@@ -8186,7 +8186,7 @@ RectTransform:
   - {fileID: 224282900080442980}
   - {fileID: 224869077085542526}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 3
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -8317,7 +8317,7 @@ RectTransform:
   - {fileID: 224300662895996930}
   - {fileID: 224374303232164778}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 7
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
