@@ -286,7 +286,7 @@ public class Map
             a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
 
-         
+            if (Event != null) Event.Run();
             if (Items.Count >= 0)           
                 for (int i = 0; i < Items.Count; i++)
                 {
