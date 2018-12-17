@@ -19,7 +19,7 @@ public class Language
     private void Awake()
     {
         LanguageDao.DatabasePath = "URI=file:" + Application.dataPath + "/Databases/Languages.db";
-        languageDictionary = LanguageDao.GetAll(languageCode.ToString().ToLower());
+        //languageDictionary = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
     }
 
     public static string Get(string name)
