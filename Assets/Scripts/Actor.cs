@@ -826,7 +826,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     }
     public override string ToString()
     {
-        return Name + " Lvl: " + GetLevel;//TODO Language.db
+        return Name + " " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + GetLevel;
     }
 
     public int CompareTo(Actor other)
