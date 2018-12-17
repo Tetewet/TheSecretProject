@@ -9,7 +9,28 @@ public static class LanguageDao
 {
     public static string DatabasePath { get; set; }
 
-    /*
+    public static string GetLanguage(string name, string languageCode)
+    {
+        string languageTranslation;
+        IDbConnection dbConnection = new SqliteConnection(DatabasePath);
+        dbConnection.Open();
+        IDbCommand dbCommand = dbConnection.CreateCommand();
+        dbCommand.CommandText = "SELECT " + languageCode + " FROM language WHERE name = " + name + ";";
+        IDataReader dbReader = dbCommand.ExecuteReader();
+
+        languageTranslation = dbReader.GetString(0);
+
+        dbReader.Close();
+        dbConnection.Close();
+        return languageTranslation;
+    }
+
+    public static string ReadCommand(string enterCommand)
+    {
+        return enterCommand;
+    }
+    
+    /*                                                         this is not working, i just decided to change the logic
     //public static Dictionary<string, string> GetAll(string languageCode)
     //{
 
@@ -38,24 +59,4 @@ public static class LanguageDao
     //    return languageDictionary;
     //}*/
 
-    public static string GetLanguage(string name, string languageCode)
-    {
-        string languageTranslation;
-        IDbConnection dbConnection = new SqliteConnection(DatabasePath);
-        dbConnection.Open();
-        IDbCommand dbCommand = dbConnection.CreateCommand();
-        dbCommand.CommandText = "SELECT " + languageCode + " FROM language WHERE name = " + name + ";";
-        IDataReader dbReader = dbCommand.ExecuteReader();
-
-        languageTranslation = dbReader.GetString(0);
-
-        dbReader.Close();
-        dbConnection.Close();
-        return languageTranslation;
-    }
-
-    public static string ReadCommand(string enterCommand)
-    {
-        return enterCommand;
-    }
 }
