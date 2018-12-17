@@ -14,16 +14,14 @@ public enum LanguageCode
 public class Language
 {
     [SerializeField] LanguageCode languageCode;
-    private static Dictionary<string, string> languageDictionary = new Dictionary<string, string>();
 
     private void Awake()
     {
         LanguageDao.DatabasePath = "URI=file:" + Application.dataPath + "/Databases/Languages.db";
-        //languageDictionary = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
+        //var languageTranslation = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
     }
 
-    public static string Get(string name)
-    {
-        return languageDictionary[name];
-    }
+
 }
+//FindObjectOfAll<Text>()
+//get all the UI stuff here, and change it here (much simpler).

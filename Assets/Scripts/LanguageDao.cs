@@ -25,10 +25,10 @@ public static class LanguageDao
         return languageTranslation;
     }
 
-    public static string ReadCommand(string enterCommand)
-    {
-        return enterCommand;
-    }
+    //public static string ReadCommand(string enterCommand)
+    //{
+    //    return enterCommand;
+    //}
     
     /*                                                         this is not working, i just decided to change the logic
     //public static Dictionary<string, string> GetAll(string languageCode)
