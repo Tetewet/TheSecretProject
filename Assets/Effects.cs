@@ -2,7 +2,7 @@
 using System.Collections.Generic;
  
 
-public class Effects {
+public class Effects:IUniversalID {
 
     public static List<Effects> Core = new List<Effects>()
     {
@@ -49,7 +49,7 @@ public class Effects {
         Duration = duration;
         remainingturn = Duration;
         Curse = incurable;
-        
+        ID = GameManager.GenerateID(this);
 
     }
     public virtual void OnTurn(Battle.Turn t)
@@ -76,8 +76,11 @@ public class Effects {
     {
         return base.ToString();
     }
-
-
+    private readonly string ID;
+    public string GetID()
+    {
+        return ID;
+    }
 }
 
 public class Poison : Effects

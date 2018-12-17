@@ -7,6 +7,39 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     /// <summary>
+    /// Index of everything in the program. That ways we can call everything from any point at any time. Good for Events.
+    /// </summary>
+    public static Dictionary<string, object> Index = new Dictionary<string, object>();
+    public static string GenerateID(object G)
+    {
+
+        var x = G.GetType().Name.ToUpper();
+        System.Type a = G.GetType();
+        while (true)
+        {
+        
+            if (a.BaseType == typeof(System.Object)) break;
+            a = a.BaseType;
+            x = a.GetType().Name.ToUpper();
+         
+             
+        }
+        var s = "";
+        for (int i = 0; i < 3; i++)
+            s += x[i];
+
+        var oc = 0;
+        foreach (var item in Index)
+        {
+            if (item.Key.Contains(s)) oc++;
+        }
+     
+        s += 0 + oc;
+        Index.Add(s, G);
+        print(s + " added to INDEX");
+        return s;
+    }
+    /// <summary>
     /// Are we in battle mode?
     /// </summary>
     public static bool BattleMode
@@ -339,13 +372,13 @@ public class GameManager : MonoBehaviour
             item.Heal();
         }
         GenerateOverworld(Main);
-
+        TextAndUI.worldCamera = OverworldCam;
         //14 6
         //var nGroup = new List<Monster>();
 
-         //for (int i = 0; i < Random.Range(1, 5); i++)
-           //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-      //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+        //for (int i = 0; i < Random.Range(1, 5); i++)
+        //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+        //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
 
 
         Protags[1].Equip(
@@ -1493,7 +1526,7 @@ public class GameManager : MonoBehaviour
     }
 
     int TabChoice = 0;
-    public GameObject[] MiniMenuBTN;
+    public GameObject[] MiniMenuBTN,OverWorldMenuBTN;
     public GameObject SkillList;
     Skill SelectedSkill;
     int skillUI = 0;
