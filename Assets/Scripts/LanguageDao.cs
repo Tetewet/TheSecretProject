@@ -47,7 +47,7 @@ public static class LanguageDao
         dbCommand.CommandText = "SELECT " + languageCode + " FROM language WHERE name = " + name + ";";
         IDataReader dbReader = dbCommand.ExecuteReader();
 
-        languageTranslation = dbReader.GetString(1);
+        languageTranslation = dbReader.GetString(0);
 
         dbReader.Close();
         dbConnection.Close();
