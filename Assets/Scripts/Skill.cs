@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 
 
-public class Skill 
+public class Skill : IUniversalID
 {
     public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element , Effects fX, bool unlocked = true) {
         this.name = name;
@@ -23,6 +23,7 @@ public class Skill
         this.element = element;
         this.FX = fX;
         this.Unlocked = unlocked;
+        ID = GameManager.GenerateID(this);
     }
 
     public Skill() { }
@@ -32,7 +33,8 @@ public class Skill
         AnAlly = 1,
         OneEnemy = 2,
         Enemy = 3,
-        Anyone = 4
+        Anyone = 4,
+        Ally = 5
     }
     
     private new string name = "";
@@ -128,11 +130,11 @@ public class Skill
     {
         foreach (var item in a) { Activate(item); }
     }
-
-
-
-
-
+    private readonly string ID;
+    public string GetID()
+    {
+        return ID;
+    }
 }
 
 

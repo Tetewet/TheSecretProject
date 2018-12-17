@@ -84,7 +84,7 @@ public struct Vector
     }
 }
 
-public abstract class Actor : IComparable<Actor> {
+public abstract class Actor : IComparable<Actor>,IUniversalID {
 
     public bool IsInPlayerTeam
     {
@@ -140,7 +140,7 @@ public abstract class Actor : IComparable<Actor> {
         this.baseStats = BaseStats;
         this.Controllable = Controllable;
         this.AnimatorPath = AnimatorPath;
-
+        ID = GameManager.GenerateID(this);
     }
 
     //Oy Vey Goyim
@@ -839,8 +839,11 @@ public abstract class Actor : IComparable<Actor> {
         if (t == x) (t + GetStats.LUC).CompareTo(x + other.GetStats.LUC);
         return t.CompareTo(x); 
     }
- 
- 
+    private readonly string ID;
+    public string GetID()
+    {
+        return ID;
+    }
 }
 
 

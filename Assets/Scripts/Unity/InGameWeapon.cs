@@ -44,6 +44,8 @@ public class InGameWeapon : MonoBehaviour {
         }
 
 
+
+        ///Add logic here to have sprites reflect by their attributs
         Action<SpriteRenderer> setWeapon = x =>
         {
             x.sprite = B[w.GetSpriteData.Blade.SpriteIndex];
