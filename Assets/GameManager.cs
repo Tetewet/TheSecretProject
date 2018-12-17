@@ -10,19 +10,24 @@ public class GameManager : MonoBehaviour
     /// Index of everything in the program. That ways we can call everything from any point at any time. Good for Events.
     /// </summary>
     public static Dictionary<string, object> Index = new Dictionary<string, object>();
+    [TextArea]
+    public string LOG;
     public static string GenerateID(object G)
     {
 
         var x = G.GetType().Name.ToUpper();
         System.Type a = G.GetType();
+
+        if (a.BaseType != typeof(System.Object) && a.BaseType != typeof(System.ValueType))
         while (true)
         {
         
             if (a.BaseType == typeof(System.Object)) break;
             a = a.BaseType;
-            x = a.GetType().Name.ToUpper();
-         
-             
+            x = a.Name.ToUpper();
+          
+
+
         }
         var s = "";
         for (int i = 0; i < 3; i++)
@@ -36,7 +41,8 @@ public class GameManager : MonoBehaviour
      
         s += 0 + oc;
         Index.Add(s, G);
-        print(s + " added to INDEX");
+
+        GameManager.GM.LOG += s + "(" + a.Name + ") added to INDEX\n";
         return s;
     }
     /// <summary>
@@ -343,6 +349,9 @@ public class GameManager : MonoBehaviour
     }
     private void Awake()
     {
+        if (!GM) GM = this;
+        else Destroy(this.gameObject);
+        LOG +=  System.Security.Principal.WindowsIdentity.GetCurrent().Name+ " ------ " + System.DateTime.Now + "\n";
         Protags = new List<Actor>
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
@@ -350,8 +359,7 @@ public class GameManager : MonoBehaviour
         new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
     };
-        if (!GM) GM = this;
-        else Destroy(this.gameObject);
+    
         DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 

@@ -163,7 +163,7 @@ public class Functionality
     }
 }
 
-public struct Element
+public struct Element : IUniversalID
 {
     public static List<Element> Core = new List<Element>
     {
@@ -184,7 +184,8 @@ public struct Element
         FXID = EffectID;
         PriorityAgainst = priotylist;
         ID = 0;
-  
+        UID = "";
+        UID = GameManager.GenerateID(this);
   
     }
     //on 100%
@@ -220,8 +221,11 @@ public struct Element
 
         return x;
     }
- 
-
+    private readonly string UID;
+    public string GetID()
+    {
+        return UID;
+    }
 }
 
 public class Resistance
