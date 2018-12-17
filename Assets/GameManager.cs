@@ -248,7 +248,7 @@ public class GameManager : MonoBehaviour
 
         GM.audi.clip = GM.Battlefields[map].Sounds[0];
         GM.audi.Play();
-
+        GM.OnHover.gameObject.SetActive(true);
 
         if (CurrentBattle != null)
             ClearBattle(CurrentBattle);
