@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class Skill : IUniversalID
 {
-    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element , Effects fX, bool unlocked = true) {
+    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element, Effects fX,int aoe, bool unlocked = true) {
         this.name = name;
         this.Description = description;
         this.profType = profType;
@@ -22,6 +22,7 @@ public class Skill : IUniversalID
         this.level = level;
         this.element = element;
         this.FX = fX;
+        areaOfEffectRange = aoe;
         this.Unlocked = unlocked;
         ID = GameManager.GenerateID(this);
     }
@@ -56,6 +57,7 @@ public class Skill : IUniversalID
     public string Description;
     public Effects FX { get; set; }
     public Element element { get; set; }
+    public int areaOfEffectRange { get; set; }
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
@@ -107,7 +109,7 @@ public class Skill : IUniversalID
 
         }
     }
-    public virtual void Activate(Actor target, Stat stats = new Stat(), Actor f = null)
+    public virtual void Attack(Actor target, Stat stats = new Stat(), Actor f = null)
     {
 
         var x = Damage;
@@ -128,7 +130,7 @@ public class Skill : IUniversalID
     }
     public void Activate(Actor[] a, Actor f = null)
     {
-        foreach (var item in a) { Activate(item); }
+        foreach (var item in a) { Attack(item); }
     }
     private readonly string ID;
     public string GetID()

@@ -12,6 +12,7 @@ public class Battle{
     public int GoldEarnedThisBattle = 0;
     public float BattleExp = 0;
     bool Ended = false;
+   
     public virtual string Grade
     {
         get
@@ -149,7 +150,8 @@ public class Battle{
     public Map map;
     public bool IsTeamWith(Actor a, Actor b)
     {
-        return (Players.Contains(a) && Players.Contains(b)) || (Foes.Contains(a) && Foes.Contains(b));
+        
+        return (a != b) && (Players.Contains(a) && Players.Contains(b)) || (Foes.Contains(a) && Foes.Contains(b));
     }
     public void OnBattleEnd()
     {
@@ -280,13 +282,13 @@ public class Map
         {
             get { return (int)Position.y; }
         }
+        static bool combatbuffer =false;
         public virtual void Enter(Actor a )
         {
             Actor = a;           
             a.TileWalkedThisTurn++;
             UnityEngine.Debug.Log(a.ToString() + " enter " + Position.ToString());
 
-            if (Event != null) Event.Run();
             if (Items.Count >= 0)           
                 for (int i = 0; i < Items.Count; i++)
                 {
@@ -308,6 +310,24 @@ public class Map
 
 
             if (onEnter != null) onEnter(this);
+
+            if (Event != null)
+            {
+
+                if (Event is BattleEvent && !combatbuffer)
+                {
+                    combatbuffer = true;
+                    Event.Run();
+                }
+
+
+                else if (!(Event is BattleEvent))
+                { Event.Run();  combatbuffer = false; }   
+              
+                    
+
+
+            }
         }
         public void OnPressed(Actor a)
         {

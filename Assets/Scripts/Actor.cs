@@ -257,7 +257,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + Target.Name);
-        s.Activate(Target, GetStats, this);
+        s.Attack(Target, GetStats, this);
 
     }
     public virtual void Use(Skill s, Actor[] Target)
@@ -271,7 +271,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
         foreach (var item in Target)
-            s.Activate(item, GetStats, this);
+            s.Attack(item, GetStats, this);
 
 
     }

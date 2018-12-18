@@ -17,6 +17,7 @@ public static class TilemapManager  {
         {
             for (int y = 0; y < bounds.size.y; y++)
             {
+                
                 TileBase tile = allTiles[x + y * bounds.size.x];
                 if (tile != null)
                 {
