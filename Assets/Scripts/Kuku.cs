@@ -14,10 +14,26 @@ class Kuku : MonsterControllerFactory
 
 }
 
-//class ChefKuku : Kuku
-//{
-//    public ChefKuku(string Name, Statstring Name, Stat baseStats, bool Controllable, string AnimatorP) : base(Name, baseStats, Controllable, AnimatorP)
-//    {
-//        base.Name = Name + " Boss";
-//    }
-//}
+sealed class SingleChefKuku : Kuku
+{
+    private static SingleChefKuku chefKukuInstance;
+    private bool isLeader;
+
+    private SingleChefKuku(string Name, Stat baseStats, bool Controllable, string AnimatorP, bool isLeader) : base(Name, baseStats, Controllable, AnimatorP)
+    {
+        
+        this.isLeader = isLeader;
+    }
+
+    public static SingleChefKuku ChefKukuInstance
+    {
+        get
+        {
+            if (chefKukuInstance == null) 
+            {
+                 chefKukuInstance = new SingleChefKuku(LanguageDao.GetLanguage("chefkuku", GameManager.language), new Stat { AGI = 6, END = 5, LUC = 35, STR = 4 }, false, "~Kuku", true);
+            }
+            return chefKukuInstance;
+        }
+    }
+}

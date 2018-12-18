@@ -13,3 +13,27 @@ class Bandit : MonsterControllerFactory
     }
 
 }
+
+sealed class SingleChefBandit : Bandit
+{
+    private static SingleChefBandit chefBanditInstance;
+    private bool isLeader;
+
+    private SingleChefBandit(string Name, Stat baseStats, bool Controllable, string AnimatorP, bool isLeader) : base(Name, baseStats, Controllable, AnimatorP)
+    {
+
+        this.isLeader = isLeader;
+    }
+
+    public static SingleChefBandit ChefBanditInstance
+    {
+        get
+        {
+            if (chefBanditInstance == null)
+            {
+                chefBanditInstance = new SingleChefBandit(LanguageDao.GetLanguage("chefbandit", GameManager.language), new Stat { AGI = 6, END = 5, LUC = 35, STR = 4 }, false, "~Kuku", true);
+            }
+            return chefBanditInstance;
+        }
+    }
+}
