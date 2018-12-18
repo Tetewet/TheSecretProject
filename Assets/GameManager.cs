@@ -216,7 +216,7 @@ public class GameManager : MonoBehaviour
 
         StartBattle(F, m, map);
         Time.timeScale = 1;
-        OverworldCam.orthographicSize = 1;
+        OverworldCam.orthographicSize = f;
         yield break;
     }
     public static void OverworldStartBattle(Actor[] F, Map m, int map = 0)
