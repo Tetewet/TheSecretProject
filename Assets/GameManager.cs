@@ -87,7 +87,7 @@ public class GameManager : MonoBehaviour
     public Canvas TextAndUI;
     public UI_status uiStatus;
     public GameObject onHoverGO;
-    public static string language = "fr";
+    public static string language = "en";
 
 
     [Header("BattleMode")]
