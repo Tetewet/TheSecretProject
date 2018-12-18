@@ -17,6 +17,7 @@ public struct Vector
         this.x = x;
         this.y = y;
     }
+   
     public static float Distance(Vector a, Vector b)
     {
         return Math.Abs( (float)Math.Sqrt(Math.Pow((b.x - a.x),2) + Math.Pow((b.y - b.y),2)) );
@@ -33,14 +34,21 @@ public struct Vector
     /// </summary>
     public static Vector one { get { var v = new Vector(); v.x = 1; v.y = 1; return v; } }
     /// <summary>
-    /// (1,1)
+    /// (0,1)
     /// </summary>
     public static Vector up { get { var v = new Vector(); v.x = 0; v.y = 1; return v; } }
     /// <summary>
     /// (1,0)
     /// </summary>
     public static Vector right { get { var v = new Vector(); v.x = 1; v.y = 0; return v; } }
-
+    /// <summary>
+    /// (0,-1)
+    /// </summary>
+    public static Vector down { get { var v = new Vector(); v.x = 0; v.y = -1; return v; } }
+    /// <summary>
+    /// (-1,0)
+    /// </summary>
+    public static Vector left { get { var v = new Vector(); v.x = -1; v.y = 0; return v; } }
 
     public static Vector operator /(Vector a, float b)
     {
@@ -84,7 +92,7 @@ public struct Vector
     }
 }
 
-public abstract class Actor : IComparable<Actor> {
+public abstract class Actor : IComparable<Actor>,IUniversalID {
 
     public bool IsInPlayerTeam
     {
@@ -140,7 +148,7 @@ public abstract class Actor : IComparable<Actor> {
         this.baseStats = BaseStats;
         this.Controllable = Controllable;
         this.AnimatorPath = AnimatorPath;
-
+        ID = GameManager.GenerateID(this);
     }
 
     //Oy Vey Goyim
@@ -826,7 +834,11 @@ public abstract class Actor : IComparable<Actor> {
     }
     public override string ToString()
     {
+<<<<<<< HEAD
         return Name + " Lvl: " + GetLevel;
+=======
+        return Name + " " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + GetLevel;
+>>>>>>> master
     }
 
     public int CompareTo(Actor other)
@@ -839,8 +851,11 @@ public abstract class Actor : IComparable<Actor> {
         if (t == x) (t + GetStats.LUC).CompareTo(x + other.GetStats.LUC);
         return t.CompareTo(x); 
     }
- 
- 
+    private readonly string ID;
+    public string GetID()
+    {
+        return ID;
+    }
 }
 
 
@@ -976,8 +991,13 @@ public struct Stat : IComparable<Stat>
 
     public override string ToString()
     {
-        return "Stats: \nSTR:" + STR + "\nINT " + INT + "\nAGI " + AGI + "\nWIS " + WIS + "\nEND " + END + "\nINT " + INT + "\nLUC " + LUC
-            + "\nCrit " + CriticalHitPercentage;
+        return "Stats: \n" + LanguageDao.GetLanguage("statstr", GameManager.language) + " " + STR
+            + "\n" + LanguageDao.GetLanguage("statagi", GameManager.language) + " " + AGI
+            + "\n" + LanguageDao.GetLanguage("statwis", GameManager.language) + " " + WIS
+            + "\n" + LanguageDao.GetLanguage("statend", GameManager.language) + " " + END
+            + "\n" + LanguageDao.GetLanguage("statint", GameManager.language) + " " + INT
+            + "\n" + LanguageDao.GetLanguage("statluc", GameManager.language) + " " + LUC
+            + "\n" + LanguageDao.GetLanguage("statcrit", GameManager.language) + " " + CriticalHitPercentage;
     }
 }
 

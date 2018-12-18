@@ -22,18 +22,29 @@ public static class TilemapManager  {
                 {
                     var til = GameManager.Map.Tiles[x, y];
 
-                    if(tile.name.Contains("F_B"))
+                    if (tile.name.Contains("F_B"))
                         til.collider = Map.Tile.ColliderType.All;
+                    else
                     if (tile.name.Contains("U_B"))
                         til.collider = Map.Tile.ColliderType.Up;
+                    else
                     if (tile.name.Contains("D_B"))
                         til.collider = Map.Tile.ColliderType.Down;
+                    else
                     if (tile.name.Contains("R_B"))
                         til.collider = Map.Tile.ColliderType.Right;
+                    else
                     if (tile.name.Contains("L_B"))
                         til.collider = Map.Tile.ColliderType.Left;
+                    else
                     if (tile.name.Contains("SPAWN"))
                         Overworld.SpawnPoints.Add(new Vector(x, y));
+                    else if (tile.name.Contains("ENM"))
+                    {
+                        var e = tile.name.Split('-')[1];
+                        GameManager.AddEvent(new BattleEvent(new Vector(x, y), MonsterControllerFactory.SpawnMonsters(),float.Parse(e)/100));
+
+                    }
 
                     Debug.Log(til);
                 }

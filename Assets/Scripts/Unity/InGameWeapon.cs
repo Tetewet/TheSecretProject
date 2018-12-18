@@ -44,22 +44,24 @@ public class InGameWeapon : MonoBehaviour {
         }
 
 
-        Action<SpriteRenderer> setWeapon = x =>
+
+        ///Add logic here to have sprites reflect by their attributs
+     Action<SpriteRenderer, Sprite[]> setWeapon= (x,y) =>
         {
-            x.sprite = B[w.GetSpriteData.Blade.SpriteIndex];
+            x.sprite = y[w.GetSpriteData.Blade.SpriteIndex];
             x.enabled = true;
             x.color = IGMtoColor(w.GetSpriteData.Blade.Color);
         };
 
 
         if (B.Length > 0)
-            setWeapon(s.Blade);
+            setWeapon(s.Blade,B);
 
         if (H.Length > 0)
-            setWeapon(s.Hilt);
+            setWeapon(s.Hilt,H);
 
         if (E.Length > 0)
-            setWeapon(s.Enchant);
+            setWeapon(s.Enchant,E);
 
         s.gameObject.transform.localScale = Vector3.one;
         return s.gameObject;

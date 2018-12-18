@@ -2,7 +2,7 @@
 using System.Collections.Generic;
  
 
-public class Effects {
+public class Effects:IUniversalID {
 
     public static List<Effects> Core = new List<Effects>()
     {
@@ -49,7 +49,7 @@ public class Effects {
         Duration = duration;
         remainingturn = Duration;
         Curse = incurable;
-        
+        ID = GameManager.GenerateID(this);
 
     }
     public virtual void OnTurn(Battle.Turn t)
@@ -76,8 +76,11 @@ public class Effects {
     {
         return base.ToString();
     }
-
-
+    private readonly string ID;
+    public string GetID()
+    {
+        return ID;
+    }
 }
 
 public class Poison : Effects
@@ -160,7 +163,7 @@ public class Functionality
     }
 }
 
-public struct Element
+public struct Element : IUniversalID
 {
     public static List<Element> Core = new List<Element>
     {
@@ -181,7 +184,8 @@ public struct Element
         FXID = EffectID;
         PriorityAgainst = priotylist;
         ID = 0;
-  
+        UID = "";
+        UID = GameManager.GenerateID(this);
   
     }
     //on 100%
@@ -217,8 +221,11 @@ public struct Element
 
         return x;
     }
- 
-
+    private readonly string UID;
+    public string GetID()
+    {
+        return UID;
+    }
 }
 
 public class Resistance

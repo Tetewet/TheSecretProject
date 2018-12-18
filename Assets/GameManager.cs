@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -6,6 +7,48 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    /// <summary>
+    /// Index of everything in the program. That ways we can call everything from any point at any time. Good for Events.
+    /// </summary>
+    public static Dictionary<string, object> Index = new Dictionary<string, object>();
+
+    public string LOG;
+    public static string GenerateID(object G)
+    {
+
+        var x = G.GetType().Name.ToUpper();
+        System.Type a = G.GetType();
+        //So we can have certain Item
+
+        bool Filter = G.GetType() != typeof(Monster) && G.GetType() != typeof(Equipement);
+        if (a.BaseType != typeof(System.Object) && a.BaseType != typeof(System.ValueType) && Filter)
+            while (true)
+            {
+
+
+                if (a.BaseType == typeof(System.Object)) break;
+                a = a.BaseType;
+                x = a.Name.ToUpper();
+
+
+
+            }
+        var s = "";
+        for (int i = 0; i < 3; i++)
+            s += x[i];
+
+        var oc = 0;
+        foreach (var item in Index)
+        {
+            if (item.Key.Contains(s)) oc++;
+        }
+
+        s += 0 + oc;
+        Index.Add(s, G);
+
+        GameManager.GM.LOG += s + "(" + a.Name + ") added to INDEX\n";
+        return s;
+    }
     /// <summary>
     /// Are we in battle mode?
     /// </summary>
@@ -35,6 +78,7 @@ public class GameManager : MonoBehaviour
     [Header("SFX")]
     public AudioClip click;
     public AudioClip select;
+    public AudioClip sfxbattlestart;
 
 
     [Header("UI")]
@@ -43,6 +87,8 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
     public UI_status uiStatus;
+    public static string language = "fr";
+
 
     [Header("BattleMode")]
     public GameObject panel, InventoryCeil;
@@ -149,8 +195,42 @@ public class GameManager : MonoBehaviour
         }
         yield break;
     }
+    public IEnumerator BattleTransition(Actor[] F, Map m, int map = 0)
+    {
+        var f = OverworldCam.orthographicSize;
+        OverworldCam.orthographicSize /= 2;
+        Time.timeScale = 0;
+        yield return new WaitForSecondsRealtime(.1f);
+        audiSFX.PlayOneShot(sfxbattlestart);
+
+
+
+
+        var e = 0f;
+
+
+        while (e < 3)
+        {
+            DarknessMyOldFriend.color = Color.Lerp(DarknessMyOldFriend.color, Color.black, (e + 1) * Time.unscaledDeltaTime);
+            e += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        StartBattle(F, m, map);
+        Time.timeScale = 1;
+        OverworldCam.orthographicSize = f;
+        yield break;
+    }
+    public static void OverworldStartBattle(Actor[] F, Map m, int map = 0)
+    {
+        GM.StartCoroutine(GM.BattleTransition(F, m, map));
+    }
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
+
+
+
+
         GM.CanInteract = false;
         GM.OverWorldGO.SetActive(false);
 
@@ -170,7 +250,7 @@ public class GameManager : MonoBehaviour
 
         GM.audi.clip = GM.Battlefields[map].Sounds[0];
         GM.audi.Play();
-
+        GM.OnHover.gameObject.SetActive(true);
 
         if (CurrentBattle != null)
             ClearBattle(CurrentBattle);
@@ -205,17 +285,20 @@ public class GameManager : MonoBehaviour
 
 
         for (int i = 0; i < GM.InGameActors.Count; i++)
-            GM.InGameActors[i].actor.Teleport(CurrentBattle.map.AtPos(6 + i, 4));
+            GM.InGameActors[i].actor.Teleport(CurrentBattle.map.AtPos(0, i));
+        var mobsspawn = 0;
+        var ymob = 0;
         for (int i = 0; i < GM.InGameFoes.Count; i++)
         {
-            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(12 + i, 3 + Random.Range(-2, 2)));
+            if (i % CurrentBattle.map.Width == 0) { ymob = 0; mobsspawn++; }
+            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(CurrentBattle.map.Length - 1 - mobsspawn, ymob));
             GM.InGameFoes[i].actor.Heal();
             if (GM.InGameFoes[i].actor is Monster)
             {
                 var ggd = GM.InGameFoes[i].actor as Monster;
                 CurrentBattle.BattleExp += ggd.ExpGain;
             }
-
+            ymob++;
         }
 
 
@@ -252,7 +335,7 @@ public class GameManager : MonoBehaviour
 
 
         var sp = new Consumeable("Orange Potion", "Items/SP_POTION")
-        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };
+        { rarity = Item.Rarity.Common, GoldValue = 10, Uses = 1, SPregen = 3, Description = "A Potion that feel special. Give 3 SP." };  //TODO alonso desc traduction
         Protags[1].Grab(sp);
 
 
@@ -310,21 +393,23 @@ public class GameManager : MonoBehaviour
     }
     private void Awake()
     {
-        Protags = new List<Actor>
+        if (!GM) GM = this;
+        else Destroy(this.gameObject);
+        LOG += "-" + System.Security.Principal.WindowsIdentity.GetCurrent().Name+ "" + System.DateTime.Now + "-\n";
+        Protags = new List<Actor> 
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
         { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
         new Player("Mathew", new Stat{ STR = 6, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
-    };
-        if (!GM) GM = this;
-        else Destroy(this.gameObject);
+    }; //TODO alonso desc traduction
+
         DontDestroyOnLoad(this.gameObject);
         audi = GetComponent<AudioSource>();
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
-
+        Language.Initialize();
     }
 
     public void Start()
@@ -339,13 +424,14 @@ public class GameManager : MonoBehaviour
             item.Heal();
         }
         GenerateOverworld(Main);
+        TextAndUI.worldCamera = OverworldCam;
 
         //14 6
-        //var nGroup = new List<Monster>();
+        var nGroup = new List<Monster>();
 
-         //for (int i = 0; i < Random.Range(1, 5); i++)
-           //  nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-      //  StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
+        for (int i = 0; i < UnityEngine.Random.Range(1, 5); i++)
+            nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+        StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
 
 
         Protags[1].Equip(
@@ -402,7 +488,11 @@ public class GameManager : MonoBehaviour
             IGA = z;
         }
 
+<<<<<<< HEAD
         var ev1 = new TextBox(new Vector(28, 31), "Okay, this is Epic.");
+=======
+        var ev1 = new TextBox(new Vector(28, 31), LanguageDao.GetLanguage("epic", language));
+>>>>>>> master
         AddEvent(ev1);
         UpdateEvents();
         OverWorldGO.SetActive(true);
@@ -420,18 +510,21 @@ public class GameManager : MonoBehaviour
     }
     public static void AddEvent(Events e)
     {
-        EventList[(int)e.ID.x, (int)e.ID.y] = e;
-        print("New event:" + "[" + e.Name + "] " + e.ID);
+        EventList[(int)e.VID.x, (int)e.VID.y] = e;
+        print("New event:" + "[" + e.Name + "] " + e.VID);
 
 
-        for (int x = 0; x < Map.Width; x++)
-        {
-            for (int y = 0; y < Map.Length; y++)
-            {
+        /* redundant 
+         * 
+         * for (int x = 0; x < Map.Width; x++)
+         {
+             for (int y = 0; y < Map.Length; y++)
+             {
 
-                if (x == e.ID.x && y == e.ID.y) Map.AtPos(x, y).Event = EventList[x, y];
-            }
-        }
+                 if (new Vector(x,y) == e.VID) Map.AtPos(x, y).Event = EventList[x, y];
+             }
+         }*/
+        UpdateEvents();
     }
     /// <summary>
     /// Is called at the end of the turn
@@ -475,15 +568,23 @@ public class GameManager : MonoBehaviour
 
         GameEnd.gameObject.SetActive(true);
 
+<<<<<<< HEAD
         
         spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";
+=======
+        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " " + LanguageDao.GetLanguage("gold", GameManager.language);
+>>>>>>> master
         var s = CurrentBattle.BattleTime; var m = 0;
         while ((s - 60) > 0)
         {
             s -= 60;
             m++;
         }
+<<<<<<< HEAD
         spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");
+=======
+        spoils_BattleTime.text = LanguageDao.GetLanguage("battletime", GameManager.language) + " " + m.ToString("00") + ":" + s.ToString("00");
+>>>>>>> master
         spoils_BattleTime.enabled = false;
         spoils_Gold.enabled = false;
         spoils_grade.text = CurrentBattle.Grade;
@@ -665,6 +766,67 @@ public class GameManager : MonoBehaviour
     public static List<Vector> PathUI = new List<Vector>();
 
     /// <summary>
+    /// Create an estimate Area of Effect at the position of the cursor.
+    /// </summary>
+    /// <param name="range">range.</param>
+    /// <param name="cursorPos">Position.</param>
+    /// <returns></returns>
+    public static int EstimateAOE(int range, Vector cursorPos)
+    {
+        PathUI.Clear();
+       
+        print("Cursor:" + cursorPos +" Range:" + range);
+
+        int curX = (int)cursorPos.x;
+        int curY = (int)cursorPos.y;
+       
+        for (int j = curY - range; j <= curY + range; j++)
+        {
+           
+            if (j >= 0 && j <= CurrentBattle.map.Width)
+            {
+
+                for (int i = curX - range; i <= curX + range; i++)
+                {
+                    if (i >= 0 && i <= CurrentBattle.map.Length)
+                    {
+                        
+                        if((Mathf.Abs(i - curX) + Mathf.Abs(curY -j) ) <= range)
+                        PathUI.Add(new Vector(i,j));
+                    }
+                    
+                }
+            }
+
+           
+        }
+       
+       
+        //print("Using AOE Skill: Executing... Range:" + range + "   Distance:" + (int)Vector.Distance(cursorPos, SelectedActor.TilePosition));
+
+        return (int)Vector.Distance(cursorPos, SelectedActor.TilePosition);
+    }
+    private Actor[] GetTargets()
+    {
+        List<Actor> targets = new List<Actor>();
+        if (PathUI.Count > 0)
+        {
+            foreach (Vector tile in PathUI)
+            {
+
+                if (CurrentBattle.map.AtPos(tile).Actor != null)
+                {
+                    targets.Add(CurrentBattle.map.AtPos(tile).Actor);
+                    print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
+                }
+            }
+        }
+        else { return null; }
+
+
+        return targets.ToArray();
+    }
+    /// <summary>
     /// Create a path toward a certain position from SelectedActor
     /// </summary>
     /// <param name="Position">Where.</param>
@@ -760,7 +922,11 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
+<<<<<<< HEAD
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";
+=======
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
+>>>>>>> master
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -865,7 +1031,11 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
+<<<<<<< HEAD
         GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
+=======
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
+>>>>>>> master
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -876,7 +1046,6 @@ public class GameManager : MonoBehaviour
     }
     public static int EstimathPath(Actor Whom, Vector where, int maximum)
     {
-
 
         var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
         if (Whom == null && CurrentBattle.ThisTurn.Order[0] == null)
@@ -963,7 +1132,11 @@ public class GameManager : MonoBehaviour
                     if (PathUI.Count - 1 >= 0) PathUI.RemoveAt(PathUI.Count - 1);
 
 
+<<<<<<< HEAD
         GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
+=======
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
+>>>>>>> master
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -972,6 +1145,7 @@ public class GameManager : MonoBehaviour
 
         return PathUI.Count;
     }
+
 
     /// <summary>
     /// Set the current SelectedActor
@@ -994,6 +1168,16 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="t">The tile in question</param>
     public void OnCursorExit(Map.Tile t)
+    {
+
+
+
+    }
+    /// <summary>
+    /// Called once the cursor clicks on a tile
+    /// </summary>
+    /// <param name="t">The tile in question</param>
+    public void OnCursorClick(Map.Tile t)
     {
 
 
@@ -1074,9 +1258,13 @@ public class GameManager : MonoBehaviour
 + a.GetLevel.ToString("00") + "\n[ hp  "
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
+<<<<<<< HEAD
 + a.SP.ToString("00") + " ]";*/
+=======
++ a.SP.ToString("00") + " ]";*/ 
+>>>>>>> master
 
-        OnHover.text = "[" + a.Name + "]" + "  Level " + a.GetLevel;
+        OnHover.text = "[" + a.Name + "]" + "  " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + a.GetLevel;
         Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
         Bar[1].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.MP * 2, 20);
 
@@ -1157,34 +1345,70 @@ public class GameManager : MonoBehaviour
 
             CloseInventory();
         }
-        else
-        if (HasSelectedActor && curtile.Actor != null && SelectedSkill != null)
+        else if (SelectedSkill != null)
         {
-            if (GameManager.EstimathPath(SelectedActor, GameManager.CursorPos, 99) > SelectedSkill.Reach)
+            if (SelectedSkill.Reach >= 0)
             {
+<<<<<<< HEAD
                 GiveInfo("Can't reach there");
                 return;
             }
             else
+=======
+                if (HasSelectedActor && curtile.Actor != null)
+                {
+
+                    if (GameManager.EstimathPath(SelectedActor, GameManager.CursorPos, 99) > SelectedSkill.Reach)
+                    {
+                GiveInfo(LanguageDao.GetLanguage("cantreach", GameManager.language));
+                        return;
+                    }
+                    {
+                        Tabmenu = false;
+                        GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
+                        audiSFX.PlayOneShot(click);
+
+                        CloseInventory();
+
+                        return;
+                    }
+
+                }
+                else if (HasSelectedActor)
+                {
+                    GiveInfo(LanguageDao.GetLanguage("notargets", GameManager.language));
+                    return;
+                }
+            }
+            else if (GameManager.EstimateAOE(SelectedSkill.Reach * -1, CursorPos) <= (SelectedSkill.Reach * -1))
+>>>>>>> master
             {
+                print("Using AOE Skill:" + SelectedSkill.Name);
                 Tabmenu = false;
-                GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
+                GetInGameFromActor(SelectedActor).UseSkill(SelectedActor, curtile.Position, SelectedSkill, GetTargets());
                 audiSFX.PlayOneShot(click);
 
                 CloseInventory();
 
                 return;
             }
-
-
+            else
+            {
+                GiveInfo("Can't reach there");//TODO Language.db
+                return;
+            }
 
         }
+<<<<<<< HEAD
         else if (HasSelectedActor && SelectedSkill != null)
         {
             GiveInfo("No targets!");
             return;
         }
 
+=======
+       
+>>>>>>> master
         if (Tabmenu) return;
 
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; audiSFX.PlayOneShot(click); return; }
@@ -1207,6 +1431,8 @@ public class GameManager : MonoBehaviour
                     }
         }
     }
+
+
 
     /// <summary>
     /// Camera Update
@@ -1244,7 +1470,16 @@ public class GameManager : MonoBehaviour
         Cursorlogic();
 
         if (SelectedSkill != null)
-            EstimathPath(SelectedActor, CursorPos, 99);
+        {
+            if (SelectedSkill.Reach >= 0)
+            {
+                EstimathPath(SelectedActor, CursorPos, 99);
+            }
+            else
+            {
+                EstimateAOE(SelectedSkill.Reach * -1, CursorPos);
+            }
+        }
         else
             EstimathPath(CursorPos);
 
@@ -1319,30 +1554,34 @@ public class GameManager : MonoBehaviour
         var inputs = (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
         if (CurrentBattle.IsPlayerTurn) if (timer >= .10f && inputs && (!Tabmenu || SelectedItem != null || SelectedSkill != null))
             {
-             
+
 
                 var u = new Vector(h, -v);
-             
-                if(HasSelectedActor )
+
+                if (HasSelectedActor)
                 {
 
-                    var dis = GetDistance(SelectedActor.TilePosition, CursorPos + u) -1;
+                    var dis = GetDistance(SelectedActor.TilePosition, CursorPos + u) - 1;
 
                     if (SelectedSkill != null)
                     {
-                        if (dis >= (SelectedSkill.Reach))
+                        var absoluteReach = Mathf.Abs(SelectedSkill.Reach);
+                        if (dis >= (absoluteReach))
+                        {
                             return;
+                        }
+
                     }
                     else
                     {
                         if (dis >= ((SelectedActor.GetStats.MaximumSP * SelectedActor.GetStats.AGI) - SelectedActor.TileWalkedThisTurn))
                             return;
                     }
-                    
- 
+
+
                 }
                 OnCursorExit(CurrentBattle.map.AtPos(CursorPos));
-             
+
 
                 CursorPos += u;
                 timer = 0;
@@ -1495,7 +1734,7 @@ public class GameManager : MonoBehaviour
     }
 
     int TabChoice = 0;
-    public GameObject[] MiniMenuBTN;
+    public GameObject[] MiniMenuBTN, OverWorldMenuBTN;
     public GameObject SkillList;
     Skill SelectedSkill;
     int skillUI = 0;
@@ -1619,7 +1858,7 @@ public class GameManager : MonoBehaviour
                 if (uiStatus.main.activeSelf)
                 {
                     uiStatus.main.SetActive(false);
-                    
+
                 }
 
                 if (inventorySelected)
@@ -1627,7 +1866,7 @@ public class GameManager : MonoBehaviour
 
 
                     if (SelectedItem != null) { ShowItemDescInfo(SelectedItem); SelectedItem = null; }
-                    else if (inventorySelected) { inventorySelected = false; InfoBar.transform.parent.gameObject.SetActive(false); } 
+                    else if (inventorySelected) { inventorySelected = false; InfoBar.transform.parent.gameObject.SetActive(false); }
                     else CloseInventory();
                 }
                 else if (SkillsSelected)
@@ -1651,14 +1890,14 @@ public class GameManager : MonoBehaviour
                     else CloseInventory();
 
                 }
-                
+
 
 
             }
 
 
         if (SelectedSkill == null && SelectedItem == null)
-            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu )
+            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu)
             {
                 if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null && SelectedItem == null)
                 {
@@ -1682,11 +1921,16 @@ public class GameManager : MonoBehaviour
                     CursorPos = SelectedActor.TilePosition;
                     SkillList.SetActive(false);
 
-                    InfoBar.text = "Select a target";
+                    InfoBar.text = LanguageDao.GetLanguage("selecttarget", GameManager.language);
                     if (e.Targets == Skill.TargetType.Self)
-                        InfoBar.text = "Apply to yourself";
+                        InfoBar.text = LanguageDao.GetLanguage("applyyou", GameManager.language);
                     if (e.Targets == Skill.TargetType.AnAlly)
-                        InfoBar.text = "Select an Ally";
+                        InfoBar.text = LanguageDao.GetLanguage("applyally", GameManager.language);
+                    if (e.Targets == Skill.TargetType.Enemy || e.Targets == Skill.TargetType.Anyone)
+                        InfoBar.text = "Select targets";
+                    if (e.Targets == Skill.TargetType.Ally)
+                        InfoBar.text = "Select allies";
+
 
 
                     return;
@@ -1711,7 +1955,8 @@ public class GameManager : MonoBehaviour
                     }
                     SkillList.SetActive(true);
                 }
-                else if (TabChoice == 1) {
+                else if (TabChoice == 1)
+                {
                     inventorySelected = true;
 
                     audiSFX.PlayOneShot(click); invUIItem = 0;
@@ -1725,7 +1970,7 @@ public class GameManager : MonoBehaviour
 
                 }
 
-                else 
+                else
                 if (TabChoice == 3 && SelectedActor.SP > 0)
                 {
                     audiSFX.PlayOneShot(click);
@@ -1733,7 +1978,7 @@ public class GameManager : MonoBehaviour
                     GetInGameFromActor(SelectedActor).EndTurn();
                     ShowTabMenu(false);
                 }
-                else if(TabChoice == 4 && !uiStatus.main.activeSelf)
+                else if (TabChoice == 4 && !uiStatus.main.activeSelf)
                 {
                     audiSFX.PlayOneShot(click);
                     uiStatus.GetInfo(SelectedActor);
@@ -1762,7 +2007,7 @@ public class GameManager : MonoBehaviour
         SelectedSkill = null;
         SelectedItem = null;
         inventorySelected = false;
-        InfoBar.transform.parent.gameObject.SetActive(false);   
+        InfoBar.transform.parent.gameObject.SetActive(false);
         invUIItem = 0;
         uiStatus.main.SetActive(false);
     }

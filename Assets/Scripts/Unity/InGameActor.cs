@@ -162,16 +162,35 @@ public class InGameActor : MonoBehaviour {
     public void UseSkill(Actor to, Skill s)
     {
         var r = s.Targets;
+<<<<<<< HEAD
         if (!actor.CanUseSkill(s)) { Error("Not enough ressource"); return; }
+=======
+        if (!actor.CanUseSkill(s)) { Error(LanguageDao.GetLanguage("notenough", GameManager.language)); return; }
+>>>>>>> master
 
-        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
-        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
-        if (r == Skill.TargetType.Self && to != actor) { Error("Can only target yourself"); return; }
+        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error(LanguageDao.GetLanguage("applyally", GameManager.language)); return; }
+        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error(LanguageDao.GetLanguage("applyennemy", GameManager.language)); return; }
+        if (r == Skill.TargetType.Self && to != actor) { Error(LanguageDao.GetLanguage("applyyou", GameManager.language)); return; }
 
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
         actor.Use(s, to);
+
+        GameManager.GM.ShowTabMenu(false);
+
+    }
+    public void UseSkill(Actor player, Vector skillPosition, Skill skill,Actor[] targets)
+    {
+        var r = skill.Targets;
+        if (!actor.CanUseSkill(skill)) { Error("Not enough ressource"); return; } //TODO Language.db
+      //   if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
+      //  if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
+       
+
+        TurnSprite((skillPosition - actor.TilePosition).x < 0);
+        GameManager.GM.ActionFreeze();
+       // actor.Use(skill, to);
 
         GameManager.GM.ShowTabMenu(false);
 
@@ -375,8 +394,13 @@ public class InGameActor : MonoBehaviour {
                
                 if ((f != actor && f != a) || f.IsTeamWith(actor))
                 {
+<<<<<<< HEAD
            
                     Error(f.Name + " is blocking " + name);
+=======
+
+                    Error(f.Name + " " + LanguageDao.GetLanguage("isblocking", GameManager.language) + " " + name);
+>>>>>>> master
                     attacking = false;
                     tempattack = null;
                     temptarget = null;

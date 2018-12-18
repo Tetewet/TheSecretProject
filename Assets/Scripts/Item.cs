@@ -33,7 +33,7 @@ namespace igm
 }
 
 
-public abstract class Item : IDisposable
+public abstract class Item : IDisposable,IUniversalID
 {
     public delegate void OnGrabHandler(Actor a);
     public event OnGrabHandler Ongrabbed;
@@ -84,11 +84,13 @@ public abstract class Item : IDisposable
             g.Uses = 0;
             return g; }
     }
-    
+
     public Item (string Name, string Path)
     {
         this.Name = Name;
         resourcepath = Path;
+       ID = GameManager.GenerateID(this);
+
     }
     /// <summary>
     /// Use on
@@ -112,7 +114,19 @@ public abstract class Item : IDisposable
        if(onDispose!=null) onDispose();
         GC.SuppressFinalize(this);
     }
+
+    private readonly string ID;
+    public string GetID()
+    {
+        return ID;
+    }
 }
+
+interface IUniversalID
+{ 
+    string GetID();
+}
+
 
 public class Equipement : Item
 {
@@ -165,6 +179,9 @@ public class Equipement : Item
     {
         return slot + " " + Name.ToString();
     }
+
+  
+   
 }
 
 
