@@ -13,7 +13,8 @@ public class Effects:IUniversalID {
         new Effects("Soaked","soak.png",new Functionality(),new Stat(){ AGI =-1},duration: 2),
         new Effects("Frenzy","frenzy.png",new Functionality(){IsRational = false},duration:1),
         new Bonus("Critical +","critup",new Functionality(), duration:3, statchange: new Stat(){CriticalHitFlat = 20 }),
-        new Bonus("Healing +","heals",new Functionality(), statchange: new Stat(){ })
+        new Bonus("Healing", null,new Functionality(), statchange: new Stat(){  }),
+        new Bonus("Spawn", null,new Functionality(){ IsSpawner = true }, statchange: new Stat(){  })
         
 
     };
@@ -136,7 +137,7 @@ public class Bonus : Effects
 
 public class Functionality
 {
-    public bool CanUseItems = true, CanMove = true, CanAttack = true, CanUseSkills = true, CanDefend = true, CanReceiveHealing = true, IsRational = true;
+    public bool CanUseItems = true, CanMove = true, CanAttack = true, CanUseSkills = true, CanDefend = true, CanReceiveHealing = true, IsRational = true, IsSpawner = false;
     public  Functionality()
     {
 

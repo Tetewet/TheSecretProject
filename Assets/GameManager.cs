@@ -399,7 +399,7 @@ public class GameManager : MonoBehaviour
         Protags = new List<Actor>
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
-        { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
+        { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Sorcerer),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
         new Player("Mathew", new Stat{ STR = 16, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
     }; //TODO alonso desc traduction
@@ -1900,7 +1900,8 @@ public class GameManager : MonoBehaviour
                     SkillList.SetActive(false);
 
                     InfoBar.text = LanguageDao.GetLanguage("selecttarget", GameManager.language);
-                    if (e.Targets == Skill.TargetType.Self)
+                    
+                    if (e.Targets == Skill.TargetType.Self && !e.FX.Func.IsSpawner)
                         InfoBar.text = LanguageDao.GetLanguage("applyyou", GameManager.language);
                     if (e.Targets == Skill.TargetType.AnAlly)
                         InfoBar.text = LanguageDao.GetLanguage("applyally", GameManager.language);
