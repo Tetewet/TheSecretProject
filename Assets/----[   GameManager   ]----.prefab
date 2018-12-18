@@ -3907,7 +3907,7 @@ MonoBehaviour:
   Events:
   - {fileID: 0}
   - {fileID: 0}
-  audiSFX: {fileID: 82209407224008244}
+  audiSFX: {fileID: 82858301273383240}
   MapName: 
   InGameActors: []
   InGameFoes: []
@@ -7751,7 +7751,7 @@ RectTransform:
   m_Children:
   - {fileID: 224634919221829958}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 9
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -8233,14 +8233,14 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
-  - {fileID: 224243539251912980}
+  - {fileID: 224486066732311032}
   - {fileID: 224761520377119042}
   - {fileID: 224717397891964390}
   - {fileID: 224730529684566428}
   - {fileID: 224284083740479776}
-  - {fileID: 224130398107525376}
-  - {fileID: 224486066732311032}
   - {fileID: 224814665380387676}
+  - {fileID: 224130398107525376}
+  - {fileID: 224355410529198852}
   - {fileID: 224490079852751036}
   - {fileID: 224355410529198852}
   - {fileID: 224878053232166912}
@@ -8819,7 +8819,7 @@ RectTransform:
   - {fileID: 224300662895996930}
   - {fileID: 224374303232164778}
   m_Father: {fileID: 224556042141523542}
-  m_RootOrder: 7
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}

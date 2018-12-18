@@ -87,6 +87,7 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
     public UI_status uiStatus;
+    public GameObject onHoverGO;
     public static string language = "fr";
 
 
@@ -242,7 +243,7 @@ public class GameManager : MonoBehaviour
         GM.Cam.enabled = true;
         GM.TextAndUI.worldCamera = GM.Cam;
         GM.Cursor.gameObject.SetActive(true);
-
+        GM.onHoverGO.SetActive(true);
         map = Mathf.Clamp(map, 0, GM.Battlefields.Length - 1);
         for (int i = 0; i < GM.Battlefields.Length; i++)
             GM.Battlefields[i].Map.SetActive(false);
@@ -453,7 +454,7 @@ public class GameManager : MonoBehaviour
 
         // CreateNewItemOnField(Item.Gold, new Vector(2, 5));
 
-
+        GM.onHoverGO.SetActive(false);
     }
 
     public static Events[,] EventList = new global::Events[1000, 1000];
@@ -576,7 +577,7 @@ public class GameManager : MonoBehaviour
         spoils_Gold.enabled = false;
         spoils_grade.text = CurrentBattle.Grade;
         spoils_grade.enabled = false;
-
+        GM.onHoverGO.SetActive(false);
         ///Clean the inventory - We should spawn 100 at the start of 'em instead of doing this
         var vx = spoils_Inventory;
         for (int i = 0; i < vx.Count; i++)

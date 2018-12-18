@@ -244,7 +244,7 @@ public class InGameActor : MonoBehaviour
         if (!gameObject.activeSelf) return;
 
         if (isAI)
-            targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.Protags.Count)].actor;
+        targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.CurrentBattle.Players.Count)].actor;
         actor.TileWalkedThisTurn = 0;
         GameManager.GM.ShowUI(actor);
         if (sprity[0] != null)
