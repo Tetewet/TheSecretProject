@@ -1341,7 +1341,7 @@ public class GameManager : MonoBehaviour
                 }
                 else if (HasSelectedActor)
                 {
-                    GiveInfo("No targets!");//TODO Language.db
+                    GiveInfo(LanguageDao.GetLanguage("notargets", GameManager.language));
                     return;
                 }
             }
@@ -1363,11 +1363,7 @@ public class GameManager : MonoBehaviour
             }
 
         }
-        {
-            GiveInfo(LanguageDao.GetLanguage("notargets", GameManager.language));
-            return;
-        }
-
+       
         if (Tabmenu) return;
 
         if (curtile.Actor != null && SelectedActor == null) { SelectedActor = curtile.Actor; audiSFX.PlayOneShot(click); return; }
