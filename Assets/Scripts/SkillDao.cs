@@ -20,25 +20,35 @@ static class SkillDao
         string sqlQuery = "SELECT * " + "FROM Skills " + "WHERE ProfessionType = " + (int)actor.Class.type;
         dbcmd.CommandText = sqlQuery;
         IDataReader reader = dbcmd.ExecuteReader();
+        LanguageCode lang = (LanguageCode)Enum.Parse(typeof(LanguageCode), GameManager.language);
         while (reader.Read())
         {
+            string[] total = reader.GetString((int)lang).Split(':');
+            Debug.Log("Reading: " + (reader.GetString((int)lang)) + " from: " + (int)lang);
+            string name = "Null";
+            string desc = "Null";
+            if (total.Length > 1)
+            {
+                name = total[0];
+                desc = total[1];
+            }
             Skill newSkill = new Skill(
-                reader.GetString(0),//name
-                reader.GetString(1), //description
-                (Profession.ProfessionType)reader.GetInt32(2),//profession
-                (DamageType)reader.GetInt32(3),//damage type
-                reader.GetInt32(4),//reach
-                reader.GetFloat(5),//damage amount
-                reader.GetFloat(6), //base crit chance
-                (Skill.TargetType)reader.GetInt32(7),// target
-                reader.GetInt32(8),//hpCost
-                reader.GetInt32(9),//mpCost
-                reader.GetInt32(10), //spCost
-                reader.GetInt32(11),//level
-                reader.GetInt32(12),//element
-                reader.GetInt32(13),//effects
-                reader.GetInt32(14),//Area of Effect
-            reader.GetInt32(11) < actor.GetLevel);//unlocked
+                name,//name
+                desc, //description
+                (Profession.ProfessionType)reader.GetInt32(3),//profession
+                (DamageType)reader.GetInt32(4),//damage type
+                reader.GetInt32(5),//reach
+                reader.GetFloat(6),//damage amount
+                reader.GetFloat(7), //base crit chance
+                (Skill.TargetType)reader.GetInt32(8),// target
+                reader.GetInt32(9),//hpCost
+                reader.GetInt32(10),//mpCost
+                reader.GetInt32(11), //spCost
+                reader.GetInt32(12),//level
+                reader.GetInt32(13),//element
+                reader.GetInt32(14),//effects
+                reader.GetInt32(15),//Area of Effect
+            reader.GetInt32(12) < actor.GetLevel);//unlocked
 
 
             skills.Add(newSkill);
@@ -74,26 +84,34 @@ static class SkillDao
             //      Debug.Log(reader.GetDataTypeName(i));
             //
             //  }
-            string name = reader.GetString((int)lang).Split(':')[0];
-            string desc = reader.GetString((int)lang).Split(':')[1];
+            string[] total= reader.GetString((int)lang).Split(':');
+            Debug.Log("Reading: " +(reader.GetString((int)lang)) + " from: " + (int)lang);
+            string name = "Null";
+            string desc = "Null";
+            if (total.Length > 1)
+            {
+                 name = total[0];
+                 desc = total[1];
+            }
+          
            
 
             Skill newSkill = new Skill(
                 name,//name
                 desc, //description
                 profession,//profession
-                (DamageType)reader.GetInt32(3),//damage type
-                reader.GetInt32(4),//reach
-                reader.GetFloat(5),//damage amount
-                reader.GetFloat(6), //base crit chance
-                (Skill.TargetType)reader.GetInt32(7),// target
-                reader.GetInt32(8),//hpCost
-                reader.GetInt32(9),//mpCost
-                reader.GetInt32(10), //spCost
-                reader.GetInt32(11),//level
-                reader.GetInt32(12),//element
-                reader.GetInt32(13),//effects
-                reader.GetInt32(14));//area of effect range
+                (DamageType)reader.GetInt32(4),//damage type
+                reader.GetInt32(5),//reach
+                reader.GetFloat(6),//damage amount
+                reader.GetFloat(7), //base crit chance
+                (Skill.TargetType)reader.GetInt32(8),// target
+                reader.GetInt32(9),//hpCost
+                reader.GetInt32(10),//mpCost
+                reader.GetInt32(11), //spCost
+                reader.GetInt32(12),//level
+                reader.GetInt32(13),//element
+                reader.GetInt32(14),//effects
+                reader.GetInt32(15));//area of effect range
             skills.Add(newSkill);
 
         }
