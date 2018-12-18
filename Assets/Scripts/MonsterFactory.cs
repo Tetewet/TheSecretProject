@@ -64,12 +64,14 @@ class MonsterControllerFactory : MonsterFactory
 
     public static Actor[] SpawnMonsters()
     {
+        //int mapLength = GameManager.CurrentBattle.map.Length;
         // randomize here
         int chances = random.Next(0, 100); // quels monstres ? = aleatoire
-        int number = random.Next(1, 2); // nombre de monstres a faire spawn
+        int number = random.Next(1, GameManager.CurrentBattle.map.Length % 2); // nombre de monstres a faire spawn
         var monsters = new List<MonsterControllerFactory>(); //TODO refactor pour avoir un meilleur code
         if (chances > 66)
         {
+            monsters.Add(SingleChefKuku.ChefKukuInstance);
             for (int i = 0; i < number -1; i++)
             {
                 monsters.Add(new Kuku("Kuku " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
@@ -80,6 +82,7 @@ class MonsterControllerFactory : MonsterFactory
         }
         else if (chances < 33)
         {
+            monsters.Add(SingleChefKodama.ChefKodamaInstance);
             for (int i = 0; i < number ; i++)
             {
                 monsters.Add(new Kodama("Kodama " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
@@ -92,6 +95,7 @@ class MonsterControllerFactory : MonsterFactory
         }
         else
         {
+            monsters.Add(SingleChefBandit.ChefBanditInstance);
             for (int i = 0; i < number  ; i++)
             {
                 monsters.Add(new Bandit("Bandit " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
