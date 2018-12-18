@@ -37,7 +37,8 @@ static class SkillDao
                 reader.GetInt32(11),//level
                 reader.GetInt32(12),//element
                 reader.GetInt32(13),//effects
-                reader.GetInt32(11) < actor.GetLevel);//unlocked
+                reader.GetInt32(14),//Area of Effect
+            reader.GetInt32(11) < actor.GetLevel);//unlocked
 
 
             skills.Add(newSkill);
