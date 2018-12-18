@@ -322,9 +322,9 @@ public class Map
 
 
                 else if (!(Event is BattleEvent))
-                { Event.Run();  combatbuffer = false; }   
-              
-                    
+                { Event.Run();  }
+
+                combatbuffer = false;
 
 
             }
