@@ -66,6 +66,7 @@ static class SkillDao
         Debug.Log("Profession DB : Class " + profession + " has being loaded! ");
         dbcmd.CommandText = sqlQuery;
         IDataReader reader = dbcmd.ExecuteReader();
+        LanguageCode lang = (LanguageCode)Enum.Parse(typeof(LanguageCode),GameManager.language);
         while (reader.Read())
         {
             //       for (int i = 0; i < 12; i++)
@@ -73,8 +74,8 @@ static class SkillDao
             //      Debug.Log(reader.GetDataTypeName(i));
             //
             //  }
-            string name = reader.GetString((int)Language.languageCode).Split(':')[0];
-            string desc = reader.GetString((int)Language.languageCode).Split(':')[1];
+            string name = reader.GetString((int)lang).Split(':')[0];
+            string desc = reader.GetString((int)lang).Split(':')[1];
            
 
             Skill newSkill = new Skill(
