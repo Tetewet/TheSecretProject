@@ -489,10 +489,14 @@ public class GameManager : MonoBehaviour
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         var ev1 = new TextBox(new Vector(28, 31), "Okay, this is Epic.");
 =======
         var ev1 = new TextBox(new Vector(28, 31), LanguageDao.GetLanguage("epic", language));
 >>>>>>> master
+=======
+        var ev1 = new TextBox(new Vector(28, 31), "Okay, this is Epic.");
+>>>>>>> parent of ad0c425... Merge branch 'theo'
         AddEvent(ev1);
         UpdateEvents();
         OverWorldGO.SetActive(true);
@@ -569,11 +573,16 @@ public class GameManager : MonoBehaviour
         GameEnd.gameObject.SetActive(true);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";
 =======
         spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " " + LanguageDao.GetLanguage("gold", GameManager.language);
 >>>>>>> master
+=======
+        
+        spoils_Gold.text = CurrentBattle.GoldEarnedThisBattle.ToString("0000") + " Gold";
+>>>>>>> parent of ad0c425... Merge branch 'theo'
         var s = CurrentBattle.BattleTime; var m = 0;
         while ((s - 60) > 0)
         {
@@ -581,10 +590,14 @@ public class GameManager : MonoBehaviour
             m++;
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
         spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");
 =======
         spoils_BattleTime.text = LanguageDao.GetLanguage("battletime", GameManager.language) + " " + m.ToString("00") + ":" + s.ToString("00");
 >>>>>>> master
+=======
+        spoils_BattleTime.text = "Battle Time: " + m.ToString("00") + ":" + s.ToString("00");
+>>>>>>> parent of ad0c425... Merge branch 'theo'
         spoils_BattleTime.enabled = false;
         spoils_Gold.enabled = false;
         spoils_grade.text = CurrentBattle.Grade;
@@ -923,10 +936,14 @@ public class GameManager : MonoBehaviour
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";
 =======
         GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
 >>>>>>> master
+=======
+        GM.SpCostUI.text = ((int)(PathUI.Count / SelectedActor.GetStats.AGI)).ToString("00") + " sp";
+>>>>>>> parent of ad0c425... Merge branch 'theo'
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -1032,10 +1049,14 @@ public class GameManager : MonoBehaviour
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
 =======
         GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
 >>>>>>> master
+=======
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
+>>>>>>> parent of ad0c425... Merge branch 'theo'
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -1133,10 +1154,14 @@ public class GameManager : MonoBehaviour
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
 =======
         GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " " + LanguageDao.GetLanguage("sp", GameManager.language);
 >>>>>>> master
+=======
+        GM.SpCostUI.text = ((int)(PathUI.Count / Whom.GetStats.AGI)).ToString("00") + " sp";
+>>>>>>> parent of ad0c425... Merge branch 'theo'
 
         for (int h = 0; h < Battlefied.GetLength(0); h++)
             for (int j = 0; j < Battlefied.GetLength(1); j++)
@@ -1259,10 +1284,14 @@ public class GameManager : MonoBehaviour
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
 <<<<<<< HEAD
+<<<<<<< HEAD
 + a.SP.ToString("00") + " ]";*/
 =======
 + a.SP.ToString("00") + " ]";*/ 
 >>>>>>> master
+=======
++ a.SP.ToString("00") + " ]";*/
+>>>>>>> parent of ad0c425... Merge branch 'theo'
 
         OnHover.text = "[" + a.Name + "]" + "  " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + a.GetLevel;
         Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
@@ -1350,6 +1379,9 @@ public class GameManager : MonoBehaviour
             if (SelectedSkill.Reach >= 0)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> parent of ad0c425... Merge branch 'theo'
                 GiveInfo("Can't reach there");
                 return;
             }

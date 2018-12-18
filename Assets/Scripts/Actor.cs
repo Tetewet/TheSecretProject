@@ -835,10 +835,14 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     public override string ToString()
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
         return Name + " Lvl: " + GetLevel;
 =======
         return Name + " " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + GetLevel;
 >>>>>>> master
+=======
+        return Name + " Lvl: " + GetLevel;
+>>>>>>> parent of ad0c425... Merge branch 'theo'
     }
 
     public int CompareTo(Actor other)

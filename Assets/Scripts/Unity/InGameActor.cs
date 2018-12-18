@@ -163,10 +163,14 @@ public class InGameActor : MonoBehaviour {
     {
         var r = s.Targets;
 <<<<<<< HEAD
+<<<<<<< HEAD
         if (!actor.CanUseSkill(s)) { Error("Not enough ressource"); return; }
 =======
         if (!actor.CanUseSkill(s)) { Error(LanguageDao.GetLanguage("notenough", GameManager.language)); return; }
 >>>>>>> master
+=======
+        if (!actor.CanUseSkill(s)) { Error("Not enough ressource"); return; }
+>>>>>>> parent of ad0c425... Merge branch 'theo'
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error(LanguageDao.GetLanguage("applyally", GameManager.language)); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error(LanguageDao.GetLanguage("applyennemy", GameManager.language)); return; }
@@ -397,10 +401,13 @@ public class InGameActor : MonoBehaviour {
 <<<<<<< HEAD
            
                     Error(f.Name + " is blocking " + name);
+<<<<<<< HEAD
 =======
 
                     Error(f.Name + " " + LanguageDao.GetLanguage("isblocking", GameManager.language) + " " + name);
 >>>>>>> master
+=======
+>>>>>>> parent of ad0c425... Merge branch 'theo'
                     attacking = false;
                     tempattack = null;
                     temptarget = null;
