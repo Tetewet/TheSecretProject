@@ -55,13 +55,27 @@ public class InGameWeapon : MonoBehaviour {
 
 
         if (B.Length > 0)
-            setWeapon(s.Blade,B);
+        {
+            s.Blade.sprite = B[w.GetSpriteData.Blade.SpriteIndex];
+            s.Blade.enabled = true;
+            s.Blade.color = IGMtoColor(w.GetSpriteData.Blade.Color);
+        };
 
         if (H.Length > 0)
-            setWeapon(s.Hilt,H);
+        {
+            s.Hilt.sprite = H[w.GetSpriteData.Hilt.SpriteIndex];
+            s.Hilt.enabled = true;
+            s.Hilt.color = IGMtoColor(w.GetSpriteData.Hilt.Color);
+        };
+
 
         if (E.Length > 0)
-            setWeapon(s.Enchant,E);
+        {
+            s.Enchant.sprite = E[w.GetSpriteData.Hilt.SpriteIndex];
+            s.Enchant.enabled = true;
+            s.Enchant.color = IGMtoColor(w.GetSpriteData.Hilt.Color);
+        };
+
 
         s.gameObject.transform.localScale = Vector3.one;
         return s.gameObject;
