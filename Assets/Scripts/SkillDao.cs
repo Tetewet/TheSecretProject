@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -62,7 +62,7 @@ static class SkillDao
         dbconn.Open(); //Open connection to the database.
         IDbCommand dbcmd = dbconn.CreateCommand();
         string sqlQuery = "SELECT * " + "FROM Skills " + "WHERE ProfessionType = " + (int)profession;
-        Debug.Log("Profession DB : Class "  + profession + " has being loaded! ");
+        Debug.Log("Profession DB : Class " + profession + " has being loaded! ");
         dbcmd.CommandText = sqlQuery;
         IDataReader reader = dbcmd.ExecuteReader();
         while (reader.Read())
@@ -72,7 +72,7 @@ static class SkillDao
             //      Debug.Log(reader.GetDataTypeName(i));
             //
             //  }
-            
+           
             Skill newSkill = new Skill(
                 reader.GetString(0),//name
                 reader.GetString(1), //description
@@ -87,7 +87,8 @@ static class SkillDao
                 reader.GetInt32(10), //spCost
                 reader.GetInt32(11),//level
                 reader.GetInt32(12),//element
-                reader.GetInt32(13));//effects
+                reader.GetInt32(13),//effects
+                reader.GetInt32(14));//area of effect range
             skills.Add(newSkill);
 
         }

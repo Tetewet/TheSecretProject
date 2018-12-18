@@ -777,7 +777,7 @@ public class GameManager : MonoBehaviour
                     if (i >= 0 && i <= CurrentBattle.map.Length)
                     {
 
-                        if ((Mathf.Abs(i - curX) + Mathf.Abs(curY - j)) <= range)
+                        if ((Mathf.Abs(i - curX) + Mathf.Abs(curY - j)) < range)
                             PathUI.Add(new Vector(i, j));
                     }
 
@@ -796,43 +796,7 @@ public class GameManager : MonoBehaviour
         return (int)Vector.Distance(cursorPos, SelectedActor.TilePosition);
     }
 
-    public static int EstimateRange(int range, Vector cursorPos)
-    {
-        PathUI.Clear();
-
-
-        int curX = (int)cursorPos.x;
-        int curY = (int)cursorPos.y;
-
-        for (int j = curY - range; j <= curY + range; j++)
-        {
-
-            if (j >= 0 && j <= CurrentBattle.map.Width)
-            {
-
-                for (int i = curX - range; i <= curX + range; i++)
-                {
-                    if (i >= 0 && i <= CurrentBattle.map.Length)
-                    {
-
-                        if ((Mathf.Abs(i - curX) + Mathf.Abs(curY - j)) <= range)
-                            PathUI.Add(new Vector(i, j));
-                    }
-
-                }
-            }
-        }
-        for (int h = 0; h < Battlefied.GetLength(0); h++)
-            for (int j = 0; j < Battlefied.GetLength(1); j++)
-                foreach (var ff in Battlefied[h, j].Sprite)
-                    ff.enabled = PathUI.Contains(Battlefied[h, j].tile.Position);
-
-
-
-        //print("Using AOE Skill: Executing... Range:" + range + "   Distance:" + (int)Vector.Distance(cursorPos, SelectedActor.TilePosition));
-
-        return (int)Vector.Distance(cursorPos, SelectedActor.TilePosition);
-    }
+ 
     private Actor[] GetTargets()
     {
         List<Actor> targets = new List<Actor>();
@@ -1385,7 +1349,7 @@ public class GameManager : MonoBehaviour
                     return;
                 }
             }
-            else if (GameManager.EstimateAOE(SelectedSkill.Reach * -1, CursorPos) <= (SelectedSkill.Reach * -1))
+            else if (GameManager.EstimateAOE(SelectedSkill.areaOfEffectRange, CursorPos) <= (SelectedSkill.Reach * -1))
             {
                 print("Using AOE Skill:" + SelectedSkill.Name + " at " + SelectedActor.TilePosition);
                 Tabmenu = false;
@@ -1472,7 +1436,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                EstimateAOE(SelectedSkill.Reach * -1, CursorPos);
+                EstimateAOE(SelectedSkill.areaOfEffectRange, CursorPos);
             }
         }
         else

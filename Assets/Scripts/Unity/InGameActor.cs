@@ -182,7 +182,7 @@ public class InGameActor : MonoBehaviour
         var r = skill.Targets;
         List<Actor> validActors = new List<Actor>();
         if (!actor.CanUseSkill(skill)) { return; } //TODO Language.db
-        if (r == Skill.TargetType.Ally)
+        if (r == Skill.TargetType.Ally || r == Skill.TargetType.AnAlly)
         {
             foreach (Actor target in targets)
             {
@@ -192,7 +192,8 @@ public class InGameActor : MonoBehaviour
                 }
             }
         }
-        if (r == Skill.TargetType.Enemy)
+
+        if (r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy)
         {
             foreach (Actor target in targets)
             {
