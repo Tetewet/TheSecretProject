@@ -64,51 +64,71 @@ class MonsterControllerFactory : MonsterFactory
 
     public static Actor[] SpawnMonsters()
     {
-        //int mapLength = GameManager.CurrentBattle.map.Length;
+        int difficulty = (int)Overworld.PlayerPos.y;
+        UnityEngine.Debug.Log("DIFFICULTY OF ENCOUNTER " + difficulty);
+        if (difficulty < 1)
+        {
+            difficulty = 2;
+        }
+        if (difficulty > 5)
+        {
+            difficulty = 5;
+        }
         // randomize here
         int chances = random.Next(0, 100); // quels monstres ? = aleatoire
-        int number = random.Next(1, GameManager.CurrentBattle.map.Length % 2); // nombre de monstres a faire spawn
+        int number = random.Next(2, difficulty); // nombre de monstres a faire spawn
         var monsters = new List<MonsterControllerFactory>(); //TODO refactor pour avoir un meilleur code
-        if (chances > 66)
+        bool once = true;
+        UnityEngine.Debug.Log("Spawning " + number + " ennemies");
+        if (chances < 100)
         {
-            monsters.Add(SingleChefKuku.ChefKukuInstance);
-            for (int i = 0; i < number -1; i++)
+            for (int i = 0; i < number; i++)
             {
                 monsters.Add(new Kuku("Kuku " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+                ++i;
+                monsters.Add(new Kuku("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4, WIS = 3, CriticalHitFlat = 15 }, false, "Slime"));
+                if (once && ++i < number)
+                {
+                    monsters.Add(SingleChefKuku.ChefKukuInstance);
+                    once = false;
+                }
             }
-            for (int i = 0; i < number  ; i++)
-                monsters.Add(new Kodama("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4,WIS =3,CriticalHitFlat = 15 }, false, "Slime"));
             return monsters.ToArray();
         }
-        else if (chances < 33)
+        else if (chances < 0)
         {
-            monsters.Add(SingleChefKodama.ChefKodamaInstance);
-            for (int i = 0; i < number ; i++)
+            for (int i = 0; i < number; i++)
             {
                 monsters.Add(new Kodama("Kodama " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
-            }
-            for (int i = 0; i < number  ; i++)
+                ++i;
                 monsters.Add(new Kodama("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4, WIS = 3, CriticalHitFlat = 15 }, false, "Slime"));
-
-
+                if (once && ++i < number)
+                {
+                    monsters.Add(SingleChefKodama.ChefKodamaInstance);
+                    once = false;
+                }
+            }
             return monsters.ToArray();
         }
         else
         {
-            monsters.Add(SingleChefBandit.ChefBanditInstance);
-            for (int i = 0; i < number  ; i++)
+            for (int i = 0; i < number; i++)
             {
                 monsters.Add(new Bandit("Bandit " + i.ToString(), new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
+                ++i;
+                monsters.Add(new Bandit("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4, WIS = 3, CriticalHitFlat = 15 }, false, "Slime"));
+                if (once && ++i < number)
+                {
+                    monsters.Add(SingleChefBandit.ChefBanditInstance);
+                    once = false;
+                }
             }
-            for (int i = 0; i < number ; i++)
-                monsters.Add(new Kodama("Slime " + i.ToString(), new Stat { AGI = 1, END = 2, LUC = 5, STR = 4, WIS = 3, CriticalHitFlat = 15 }, false, "Slime"));
-
             return monsters.ToArray();
         }
-        //SpawnMonsters(random.range(0, Monsterlist.count);
-
-        //MonsterControllerFactory factory = factories[random.Next(0, factories.Count)];
-        //factories.Remove(factory);
-
     }
+    //SpawnMonsters(random.range(0, Monsterlist.count);
+
+    //MonsterControllerFactory factory = factories[random.Next(0, factories.Count)];
+    //factories.Remove(factory);
 }
+
