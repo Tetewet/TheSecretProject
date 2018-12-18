@@ -176,6 +176,21 @@ public class InGameActor : MonoBehaviour {
         GameManager.GM.ShowTabMenu(false);
 
     }
+    public void UseSkill(Actor player, Vector skillPosition, Skill skill,Actor[] targets)
+    {
+        var r = skill.Targets;
+        if (!actor.CanUseSkill(skill)) { Error("Not enough ressource"); return; } //TODO Language.db
+      //   if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error("Can only Target an ally"); return; }
+      //  if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error("Can only target a enemy"); return; }
+       
+
+        TurnSprite((skillPosition - actor.TilePosition).x < 0);
+        GameManager.GM.ActionFreeze();
+       // actor.Use(skill, to);
+
+        GameManager.GM.ShowTabMenu(false);
+
+    }
     void Error(string s)
     {
         GameManager.GiveInfo(s);
