@@ -107,7 +107,7 @@ public class Skill : IUniversalID
 
         }
     }
-    public virtual void Activate(Actor target, Stat stats = new Stat(), Actor f = null)
+    public virtual void Attack(Actor target, Stat stats = new Stat(), Actor f = null)
     {
 
         var x = Damage;
@@ -128,7 +128,7 @@ public class Skill : IUniversalID
     }
     public void Activate(Actor[] a, Actor f = null)
     {
-        foreach (var item in a) { Activate(item); }
+        foreach (var item in a) { Attack(item); }
     }
     private readonly string ID;
     public string GetID()
