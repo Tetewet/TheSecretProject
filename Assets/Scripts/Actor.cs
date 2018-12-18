@@ -34,14 +34,21 @@ public struct Vector
     /// </summary>
     public static Vector one { get { var v = new Vector(); v.x = 1; v.y = 1; return v; } }
     /// <summary>
-    /// (1,1)
+    /// (0,1)
     /// </summary>
     public static Vector up { get { var v = new Vector(); v.x = 0; v.y = 1; return v; } }
     /// <summary>
     /// (1,0)
     /// </summary>
     public static Vector right { get { var v = new Vector(); v.x = 1; v.y = 0; return v; } }
-
+    /// <summary>
+    /// (0,-1)
+    /// </summary>
+    public static Vector down { get { var v = new Vector(); v.x = 0; v.y = -1; return v; } }
+    /// <summary>
+    /// (-1,0)
+    /// </summary>
+    public static Vector left { get { var v = new Vector(); v.x = -1; v.y = 0; return v; } }
 
     public static Vector operator /(Vector a, float b)
     {
@@ -250,7 +257,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + Target.Name);
-        s.Activate(Target, GetStats, this);
+        s.Attack(Target, GetStats, this);
 
     }
     public virtual void Use(Skill s, Actor[] Target)
@@ -264,7 +271,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
         foreach (var item in Target)
-            s.Activate(item, GetStats, this);
+            s.Attack(item, GetStats, this);
 
 
     }
