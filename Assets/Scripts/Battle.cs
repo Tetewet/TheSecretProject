@@ -310,24 +310,23 @@ public class Map
 
 
             if (onEnter != null) onEnter(this);
-
-            if (Event != null)
+            if(!GameManager.BattleMode)
             {
-
-                if (Event is BattleEvent && !combatbuffer)
+                if (Event != null && !combatbuffer)
                 {
-                    combatbuffer = true;
+
+                    if (Event is BattleEvent)
+                        combatbuffer = true;
+
+
                     Event.Run();
+
                 }
-
-
-                else if (!(Event is BattleEvent))
-                { Event.Run();  }
-
-                combatbuffer = false;
-
-
+                
             }
+
+              
+
         }
         public void OnPressed(Actor a)
         {
@@ -348,6 +347,7 @@ public class Map
                 }
 
             }
+            if(!GameManager.BattleMode) combatbuffer = false;
 
             if (onExits != null) onExits(this);
             Actor = null;
