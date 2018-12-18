@@ -26,7 +26,7 @@ public class UI_status : MonoBehaviour {
         stats2.text = LanguageDao.GetLanguage("def", GameManager.language) + ": " + a.GetStats.PhysDEF  + " " 
             + LanguageDao.GetLanguage("mdef", GameManager.language) + ": " + a.GetStats.MagDEF 
             + " " + LanguageDao.GetLanguage("walk", GameManager.language) + ":" + (a.GetStats.MaximumSP * a.GetStats.AGI)  
-            + "\n" + LanguageDao.GetLanguage("crit", GameManager.language) + ":" + a.GetStats.CriticalHitPercentage.ToString("00.0")
+            + "\n" + LanguageDao.GetLanguage("statcrit", GameManager.language) + ":" + a.GetStats.CriticalHitPercentage.ToString("00.0")
         + "% " + "" + LanguageDao.GetLanguage("speed", GameManager.language) + ": " + (a.GetStats.Priority + a.GetStats.AGI)  + " " 
         + LanguageDao.GetLanguage("sp", GameManager.language) + ": " + a.GetStats.MaximumSP;
 
