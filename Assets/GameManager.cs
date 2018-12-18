@@ -814,9 +814,14 @@ public class GameManager : MonoBehaviour
             }
         }
         else { return null; }
+        if (targets.Count > 0)
+        {
 
-
-        return targets.ToArray();
+            return targets.ToArray();
+        }
+        else {
+            return null;
+        }
     }
     /// <summary>
     /// Create a path toward a certain position from SelectedActor
@@ -1332,7 +1337,8 @@ public class GameManager : MonoBehaviour
                     {
                         GiveInfo(LanguageDao.GetLanguage("cantreach", GameManager.language));
                         return;
-                    }else
+                    }
+                    else
                     {
                         Tabmenu = false;
                         GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, SelectedSkill);
@@ -1352,14 +1358,23 @@ public class GameManager : MonoBehaviour
             }
             else if (GameManager.EstimateAOE(SelectedSkill.areaOfEffectRange, CursorPos) <= (SelectedSkill.Reach * -1))
             {
-                print("Using AOE Skill:" + SelectedSkill.Name + " at " + SelectedActor.TilePosition);
-                Tabmenu = false;
-                GetInGameFromActor(SelectedActor).UseSkill(SelectedSkill, GetTargets());
-                audiSFX.PlayOneShot(click);
+                if (GetTargets() != null)
+                {
+                    print("Using AOE Skill:" + SelectedSkill.Name + " at " + SelectedActor.TilePosition);
+                    Tabmenu = false;
+                    GetInGameFromActor(SelectedActor).UseSkill(SelectedSkill, GetTargets());
+                    audiSFX.PlayOneShot(click);
 
-                CloseInventory();
+                    CloseInventory();
 
-                return;
+                    return;
+                }
+                else
+                {
+                    GiveInfo(LanguageDao.GetLanguage("notargets", GameManager.language));
+                    return;
+
+                }
             }
             else
             {
