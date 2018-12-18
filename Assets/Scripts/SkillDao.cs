@@ -73,10 +73,13 @@ static class SkillDao
             //      Debug.Log(reader.GetDataTypeName(i));
             //
             //  }
+            string name = reader.GetString((int)Language.languageCode).Split(':')[0];
+            string desc = reader.GetString((int)Language.languageCode).Split(':')[1];
            
+
             Skill newSkill = new Skill(
-                reader.GetString(0),//name
-                reader.GetString(1), //description
+                name,//name
+                desc, //description
                 profession,//profession
                 (DamageType)reader.GetInt32(3),//damage type
                 reader.GetInt32(4),//reach
