@@ -415,7 +415,6 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-        Language.Initialize();
 
         GM.InitializeUI();
         GM.Cam.enabled = false;
@@ -426,6 +425,7 @@ public class GameManager : MonoBehaviour
         }
         GenerateOverworld(Main);
         TextAndUI.worldCamera = OverworldCam;
+        Language.Initialize();
 
         //14 6
         //var nGroup = new List<Monster>();
