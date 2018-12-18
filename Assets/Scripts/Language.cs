@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum LanguageCode
 {
@@ -13,17 +14,25 @@ public enum LanguageCode
 
 public class Language
 {
-    [SerializeField] LanguageCode languageCode;
-    private static Dictionary<string, string> languageDictionary = new Dictionary<string, string>();
+    public static LanguageCode languageCode;
 
-    private void Awake()
+    public static void Initialize()
     {
         LanguageDao.DatabasePath = "URI=file:" + Application.dataPath + "/Databases/Languages.db";
-        //languageDictionary = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
+        PlayerPrefs.SetString("lang", languageCode.ToString().ToLower());
+        PlayerPrefs.Save();
+        LoadLanguage(PlayerPrefs.GetString("lang"));
+        //var languageTranslation = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
     }
 
-    public static string Get(string name)
+    private static void LoadLanguage(string lang)
     {
-        return languageDictionary[name];
+        Text[] bigTranslator = GameManager.GM.TextAndUI.GetComponentsInChildren<Text>();
+        for (int i = 0; i < bigTranslator.Length; i++) 
+        {
+            bigTranslator[i].text = LanguageDao.GetLanguage(bigTranslator[i].name, lang);
+        }
     }
 }
+//FindObjectOfAll<Text>()
+//get all the UI stuff here, and change it here (much simpler).
