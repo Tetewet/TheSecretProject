@@ -104,5 +104,50 @@ static class SkillDao
         return skills.ToArray();
     }
 
+
+
+    public static Skill[] InsertValues()//Still WIP
+    {
+        List<Skill> skills = new List<Skill>();
+        string conn = "URI=file:" + Application.dataPath + "/Databases/Skills.db"; //Path to database.
+        using (SqliteConnection dbconn = new SqliteConnection(conn))
+        {
+            dbconn.Open(); //Open connection to the database.
+            using (SqliteCommand dbcmd = dbconn.CreateCommand())
+            {
+                string sqlQuery = "SELECT * " + "FROM Skills ";
+               // Debug.Log("Profession DB : Class " + profession + " has being loaded! ");
+                dbcmd.CommandText = sqlQuery;
+                using (SqliteDataReader reader = dbcmd.ExecuteReader())
+                {
+                    while (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+
+
+                            string col0 = reader.GetString(0);//name
+                            string col1 = reader.GetString(1); //description
+                            string sqlInsert = "Update  Skills Set Name= '" + col0 + "::' ,Description='" + col1 + "::'";
+                            using (SqliteCommand command = new SqliteCommand(sqlInsert, dbconn))
+                            {
+                                command.ExecuteNonQuery();
+                            }
+
+                        }
+                        reader.NextResult();
+                    }
+                    reader.Close();
+                }
+                dbcmd.Dispose();
+            }
+            dbconn.Close();
+            
+        }
+        
+
+        return skills.ToArray();
+    }
+
 }
 
