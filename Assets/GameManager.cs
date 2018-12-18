@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +10,7 @@ public class GameManager : MonoBehaviour
     /// Index of everything in the program. That ways we can call everything from any point at any time. Good for Events.
     /// </summary>
     public static Dictionary<string, object> Index = new Dictionary<string, object>();
-
+ 
     public string LOG;
     public static string GenerateID(object G)
     {
@@ -22,17 +21,16 @@ public class GameManager : MonoBehaviour
 
         bool Filter = G.GetType() != typeof(Monster) && G.GetType() != typeof(Equipement);
         if (a.BaseType != typeof(System.Object) && a.BaseType != typeof(System.ValueType) && Filter)
-            while (true)
-            {
+        while (true)
+        {
+        
+            if (a.BaseType == typeof(System.Object)) break;
+            a = a.BaseType;
+            x = a.Name.ToUpper();
+          
 
 
-                if (a.BaseType == typeof(System.Object)) break;
-                a = a.BaseType;
-                x = a.Name.ToUpper();
-
-
-
-            }
+        }
         var s = "";
         for (int i = 0; i < 3; i++)
             s += x[i];
@@ -42,7 +40,7 @@ public class GameManager : MonoBehaviour
         {
             if (item.Key.Contains(s)) oc++;
         }
-
+     
         s += 0 + oc;
         Index.Add(s, G);
 
@@ -87,6 +85,7 @@ public class GameManager : MonoBehaviour
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
     public UI_status uiStatus;
+    public GameObject onHoverGO;
     public static string language = "fr";
 
 
@@ -198,20 +197,20 @@ public class GameManager : MonoBehaviour
     public IEnumerator BattleTransition(Actor[] F, Map m, int map = 0)
     {
         var f = OverworldCam.orthographicSize;
-        OverworldCam.orthographicSize /= 2;
+        OverworldCam.orthographicSize /= 2;    
         Time.timeScale = 0;
         yield return new WaitForSecondsRealtime(.1f);
         audiSFX.PlayOneShot(sfxbattlestart);
+   
+      
 
-
-
-
+       
         var e = 0f;
 
 
         while (e < 3)
         {
-            DarknessMyOldFriend.color = Color.Lerp(DarknessMyOldFriend.color, Color.black, (e + 1) * Time.unscaledDeltaTime);
+            DarknessMyOldFriend.color = Color.Lerp(DarknessMyOldFriend.color,Color.black, (e + 1) * Time.unscaledDeltaTime);
             e += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -223,7 +222,7 @@ public class GameManager : MonoBehaviour
     }
     public static void OverworldStartBattle(Actor[] F, Map m, int map = 0)
     {
-        GM.StartCoroutine(GM.BattleTransition(F, m, map));
+        GM.StartCoroutine(GM.BattleTransition(F,m,map));
     }
     public static void StartBattle(Actor[] F, Map m, int map = 0)
     {
@@ -242,7 +241,7 @@ public class GameManager : MonoBehaviour
         GM.Cam.enabled = true;
         GM.TextAndUI.worldCamera = GM.Cam;
         GM.Cursor.gameObject.SetActive(true);
-
+        GM.onHoverGO.SetActive(true);
         map = Mathf.Clamp(map, 0, GM.Battlefields.Length - 1);
         for (int i = 0; i < GM.Battlefields.Length; i++)
             GM.Battlefields[i].Map.SetActive(false);
@@ -290,8 +289,8 @@ public class GameManager : MonoBehaviour
         var ymob = 0;
         for (int i = 0; i < GM.InGameFoes.Count; i++)
         {
-            if (i % CurrentBattle.map.Width == 0) { ymob = 0; mobsspawn++; }
-            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(CurrentBattle.map.Length - 1 - mobsspawn, ymob));
+            if (i % CurrentBattle.map.Width == 0) { ymob = 0; mobsspawn++; } 
+            GM.InGameFoes[i].actor.Teleport(CurrentBattle.map.AtPos(CurrentBattle.map.Length -1 - mobsspawn,ymob));
             GM.InGameFoes[i].actor.Heal();
             if (GM.InGameFoes[i].actor is Monster)
             {
@@ -395,8 +394,8 @@ public class GameManager : MonoBehaviour
     {
         if (!GM) GM = this;
         else Destroy(this.gameObject);
-        LOG += "-" + System.Security.Principal.WindowsIdentity.GetCurrent().Name + "" + System.DateTime.Now + "-\n";
-        Protags = new List<Actor>
+        LOG += "-" + System.Security.Principal.WindowsIdentity.GetCurrent().Name+ "" + System.DateTime.Now + "-\n";
+        Protags = new List<Actor> 
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =6, LUC =2 , STR = 1, WIS =5 }, true, "Mage")
         { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
@@ -425,7 +424,7 @@ public class GameManager : MonoBehaviour
         }
         GenerateOverworld(Main);
         TextAndUI.worldCamera = OverworldCam;
-
+       
         //14 6
         //var nGroup = new List<Monster>();
 
@@ -453,7 +452,7 @@ public class GameManager : MonoBehaviour
 
         // CreateNewItemOnField(Item.Gold, new Vector(2, 5));
 
-
+        GM.onHoverGO.SetActive(false);
     }
 
     public static Events[,] EventList = new global::Events[1000, 1000];
@@ -576,7 +575,7 @@ public class GameManager : MonoBehaviour
         spoils_Gold.enabled = false;
         spoils_grade.text = CurrentBattle.Grade;
         spoils_grade.enabled = false;
-
+        GM.onHoverGO.SetActive(false);
         ///Clean the inventory - We should spawn 100 at the start of 'em instead of doing this
         var vx = spoils_Inventory;
         for (int i = 0; i < vx.Count; i++)
@@ -1030,6 +1029,7 @@ public class GameManager : MonoBehaviour
     public static int EstimathPath(Actor Whom, Vector where, int maximum)
     {
 
+
         var ThisTurnPlayer = CurrentBattle.ThisTurn.Order[0];
         if (Whom == null && CurrentBattle.ThisTurn.Order[0] == null)
         {
@@ -1125,7 +1125,6 @@ public class GameManager : MonoBehaviour
         return PathUI.Count;
     }
 
-
     /// <summary>
     /// Set the current SelectedActor
     /// </summary>
@@ -1152,7 +1151,6 @@ public class GameManager : MonoBehaviour
 
 
     }
-    
 
     /// <summary>
     /// Is called on Update
@@ -1237,7 +1235,7 @@ public class GameManager : MonoBehaviour
 + a.GetLevel.ToString("00") + "\n[ hp  "
 + a.HP.ToString("00") + " ]\n[ mp "
 + a.MP.ToString("00") + " ]\n[ sp  "
-+ a.SP.ToString("00") + " ]";*/
++ a.SP.ToString("00") + " ]";*/ 
 
         OnHover.text = "[" + a.Name + "]" + "  " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + a.GetLevel;
         Bar[0].GetComponent<RectTransform>().sizeDelta = new Vector2(70 + a.HP * 2, 20);
@@ -1390,8 +1388,6 @@ public class GameManager : MonoBehaviour
                     }
         }
     }
-
-
 
     /// <summary>
     /// Camera Update
@@ -1612,9 +1608,6 @@ public class GameManager : MonoBehaviour
 
         }
     }
-
-
-
     bool Tabmenu = false;
     /// <summary>
     /// Close or Open Tab Menu
@@ -1696,7 +1689,7 @@ public class GameManager : MonoBehaviour
     }
 
     int TabChoice = 0;
-    public GameObject[] MiniMenuBTN, OverWorldMenuBTN;
+    public GameObject[] MiniMenuBTN,OverWorldMenuBTN;
     public GameObject SkillList;
     Skill SelectedSkill;
     int skillUI = 0;
@@ -1820,7 +1813,7 @@ public class GameManager : MonoBehaviour
                 if (uiStatus.main.activeSelf)
                 {
                     uiStatus.main.SetActive(false);
-
+                    
                 }
 
                 if (inventorySelected)
@@ -1828,7 +1821,7 @@ public class GameManager : MonoBehaviour
 
 
                     if (SelectedItem != null) { ShowItemDescInfo(SelectedItem); SelectedItem = null; }
-                    else if (inventorySelected) { inventorySelected = false; InfoBar.transform.parent.gameObject.SetActive(false); }
+                    else if (inventorySelected) { inventorySelected = false; InfoBar.transform.parent.gameObject.SetActive(false); } 
                     else CloseInventory();
                 }
                 else if (SkillsSelected)
@@ -1852,14 +1845,14 @@ public class GameManager : MonoBehaviour
                     else CloseInventory();
 
                 }
-
+                
 
 
             }
 
 
         if (SelectedSkill == null && SelectedItem == null)
-            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu)
+            if (Input.GetKeyDown(KeyCode.Space) && Tabmenu )
             {
                 if (inventorySelected && SelectedActor.inventory.items[invUIItem] != null && SelectedItem == null)
                 {
@@ -1917,8 +1910,7 @@ public class GameManager : MonoBehaviour
                     }
                     SkillList.SetActive(true);
                 }
-                else if (TabChoice == 1)
-                {
+                else if (TabChoice == 1) {
                     inventorySelected = true;
 
                     audiSFX.PlayOneShot(click); invUIItem = 0;
@@ -1932,7 +1924,7 @@ public class GameManager : MonoBehaviour
 
                 }
 
-                else
+                else 
                 if (TabChoice == 3 && SelectedActor.SP > 0)
                 {
                     audiSFX.PlayOneShot(click);
@@ -1940,7 +1932,7 @@ public class GameManager : MonoBehaviour
                     GetInGameFromActor(SelectedActor).EndTurn();
                     ShowTabMenu(false);
                 }
-                else if (TabChoice == 4 && !uiStatus.main.activeSelf)
+                else if(TabChoice == 4 && !uiStatus.main.activeSelf)
                 {
                     audiSFX.PlayOneShot(click);
                     uiStatus.GetInfo(SelectedActor);
@@ -1969,7 +1961,7 @@ public class GameManager : MonoBehaviour
         SelectedSkill = null;
         SelectedItem = null;
         inventorySelected = false;
-        InfoBar.transform.parent.gameObject.SetActive(false);
+        InfoBar.transform.parent.gameObject.SetActive(false);   
         invUIItem = 0;
         uiStatus.main.SetActive(false);
     }
