@@ -410,12 +410,12 @@ public class GameManager : MonoBehaviour
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
-        Language.Initialize();
+        
     }
 
     public void Start()
     {
-
+        Language.Initialize();
 
         GM.InitializeUI();
         GM.Cam.enabled = false;
