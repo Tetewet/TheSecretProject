@@ -30,7 +30,7 @@ sealed class SingleChefKodama : Kodama
         {
             if (chefKodamaInstance == null)
             {
-                chefKodamaInstance = new SingleChefKodama(LanguageDao.GetLanguage("chefkuku", GameManager.language), new Stat { AGI = 6, END = 5, LUC = 35, STR = 4 }, false, "~Kuku", true);
+                chefKodamaInstance = new SingleChefKodama(LanguageDao.GetLanguage("chefkuku", ref GameManager.language), new Stat { AGI = 6, END = 5, LUC = 35, STR = 4 }, false, "~Kuku", true);
             }
             return chefKodamaInstance;
         }

@@ -30,7 +30,7 @@ public class Language
         Text[] bigTranslator = GameManager.GM.TextAndUI.GetComponentsInChildren<Text>();
         for (int i = 0; i < bigTranslator.Length; i++) 
         {
-            bigTranslator[i].text = LanguageDao.GetLanguage(bigTranslator[i].name, lang);
+            bigTranslator[i].text = LanguageDao.GetLanguage(bigTranslator[i].name, ref lang);
         }
     }
 }
