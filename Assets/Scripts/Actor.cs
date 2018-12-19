@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+
 //Can't use Unity Classes.... Creating my Own
 public struct Vector
 {
@@ -257,17 +258,29 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + Target.Name);
-        switch (s.DmgType)
+        DamageType dam = s.DmgType;
+        UnityEngine.Debug.Log(Enum.Parse(typeof(DamageType),(DamageType.Offensive & s.DmgType).ToString()));
+        if (( DamageType.Offensive & s.DmgType) == s.DmgType) {
+            dam = DamageType.Offensive;
+            UnityEngine.Debug.Log("Offensive");
+        }
+        if ((DamageType.Effects & s.DmgType) == s.DmgType) {
+            dam = DamageType.Effects;
+            UnityEngine.Debug.Log("Effects");
+        }
+        switch (dam)
         {
             case DamageType.Offensive:
                 s.ApplyAttack(Target, GetStats, this);
+                UnityEngine.Debug.Log("Applied Attack");
                 break;
             case DamageType.Effects:
                 Target.Apply(s.FX);
+                UnityEngine.Debug.Log("Applied Effects");
                 break;
             case DamageType.None:
                 s.DoEffect(GameManager.CursorPos,this);
-               
+                UnityEngine.Debug.Log("Applied Ability");
                 break;
         }
 
@@ -284,7 +297,19 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
         foreach (var item in Target)
         {
-            switch (s.DmgType)
+            DamageType dam = s.DmgType;
+            UnityEngine.Debug.Log(Enum.Parse(typeof(DamageType), (DamageType.Offensive & s.DmgType).ToString()));
+            if ((DamageType.Offensive & s.DmgType) == s.DmgType)
+            {
+                dam = DamageType.Offensive;
+                UnityEngine.Debug.Log("Offensive");
+            }
+            if ((DamageType.Effects & s.DmgType) == s.DmgType)
+            {
+                dam = DamageType.Effects;
+                UnityEngine.Debug.Log("Effects");
+            }
+            switch (dam)
             {
                 case DamageType.Offensive:
                     s.ApplyAttack(item, GetStats, this);
