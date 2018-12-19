@@ -85,6 +85,7 @@ public class GameManager : MonoBehaviour
     public RectTransform BattleStartGameObject;
     public GameObject SkillsCursorPos;
     public Canvas TextAndUI;
+    public GameObject[] uiMenus;
     public UI_status uiStatus;
     public GameObject onHoverGO;
     public static string language = "fr";
@@ -409,7 +410,18 @@ public class GameManager : MonoBehaviour
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
+        //starting to initalize the menus to translate them
+        foreach (var menu in uiMenus)
+        {
+            menu.gameObject.SetActive(true);
+        }
+        //translating
         Language.Initialize();
+        //unactivating all the menus now that it is translated
+        foreach (var menu in uiMenus)
+        {
+            menu.gameObject.SetActive(false);
+        }
     }
 
     public void Start()
@@ -425,7 +437,7 @@ public class GameManager : MonoBehaviour
         }
         GenerateOverworld(Main);
         TextAndUI.worldCamera = OverworldCam;
-        Language.Initialize();
+        
 
         //14 6
         //var nGroup = new List<Monster>();
@@ -433,7 +445,7 @@ public class GameManager : MonoBehaviour
         // for (int i = 0; i < UnityEngine.Random.Range(1, 5); i++)
         //    nGroup.Add(new Monster("Kuku " + i, new Stat { AGI = 4, END = 3, LUC = 20, STR = 2 }, false, "~Kuku"));
         //   StartBattle(MonsterControllerFactory.SpawnMonsters(), new Map(new Vector(38, 9)), 0);
-        
+
 
         Protags[1].Equip(
        new Weapon("Iron Sword")
