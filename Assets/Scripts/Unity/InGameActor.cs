@@ -168,7 +168,8 @@ public class InGameActor : MonoBehaviour
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error(LanguageDao.GetLanguage("applyally", GameManager.language)); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error(LanguageDao.GetLanguage("applyennemy", GameManager.language)); return; }
         if (r == Skill.TargetType.Self && to != actor && !s.FX.Func.IsSpawner) { Error(LanguageDao.GetLanguage("applyyou", GameManager.language)); return; }
-
+        if (r == Skill.TargetType.Self && to == actor && s.FX.Func.IsSpawner) { Error(LanguageDao.GetLanguage("applyempty", GameManager.language)); return; }
+        
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
