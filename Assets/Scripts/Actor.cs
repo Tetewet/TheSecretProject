@@ -195,8 +195,8 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     protected Stat baseStats = new Stat();
     public Profession Class = new Profession(new Stat());
     public string Description = "A normal actor.";
- 
-    
+
+   
     
     public Stat GetStats
     {
@@ -247,9 +247,9 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
         return true; 
     }
-    public virtual void Use(Skill s, Actor Target)
+    public virtual void UseEffect(Skill s, Actor Target = null)
     {
-
+        if (s == null) return;
         if (!CanUseSkill(s)) return;
 
         if (s.HpCost > 0) TakeDamage(s.HpCost);
@@ -257,10 +257,22 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + Target.Name);
-        s.Attack(Target, GetStats, this);
+        switch (s.DmgType)
+        {
+            case DamageType.Offensive:
+                s.ApplyAttack(Target, GetStats, this);
+                break;
+            case DamageType.Effects:
+                Target.Apply(s.FX);
+                break;
+            case DamageType.None:
+                s.DoEffect(GameManager.CursorPos,this);
+               
+                break;
+        }
 
     }
-    public virtual void Use(Skill s, Actor[] Target)
+    public virtual void UseEffect(Skill s, Actor[] Target)
     {
         if (s == null) return;
         if (!CanUseSkill(s)) return;
@@ -271,8 +283,19 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
         foreach (var item in Target)
-            s.Attack(item, GetStats, this);
+        {
+            switch (s.DmgType)
+            {
+                case DamageType.Offensive:
+                    s.ApplyAttack(item, GetStats, this);
+                    break;
+                case DamageType.Effects:
+                    item.Apply(s.FX);
+                    break;
 
+            }
+            
+        }
 
     }
 
@@ -464,6 +487,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     public Vector TilePosition
     {
         get { return CurrentTile.Position; }
+        set { CurrentTile.Position = value; }
     }
     //Act for one turn. Must be in a battle
 
@@ -948,7 +972,17 @@ public struct Stat : IComparable<Stat>
         } }
 
     public int Magnitude { get { return (STR + AGI + END + WIS + INT + LUC) / 6; } }
+    public static Stat operator /(Stat stat, int divider)
+    {
+        stat.AGI =stat.AGI / 2;
+        stat.END =stat.END / 2;
+        stat.INT =stat.INT / 2;
+        stat.LUC =stat.LUC / 2;
+        stat.STR =stat.STR / 2;
+        stat.WIS =stat.WIS / 2;
 
+        return stat;
+    }
     public void AddStats(int x, _stats s)
     {
         switch (s)

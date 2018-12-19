@@ -116,8 +116,8 @@ public class InGameActor : MonoBehaviour
     void StupidAI()
     {
         if (!isAI || !MyTurn) return;
-        AITImer += Time.fixedDeltaTime;
-        if (AITImer > .5f) EndTurn();
+        //AITImer += Time.fixedDeltaTime;
+        //if (AITImer > .5f) EndTurn();
 
     }
     //Action and Attack
@@ -240,12 +240,13 @@ public class InGameActor : MonoBehaviour
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error(LanguageDao.GetLanguage("applyally", GameManager.language)); return; }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error(LanguageDao.GetLanguage("applyennemy", GameManager.language)); return; }
-        if (r == Skill.TargetType.Self && to != actor) { Error(LanguageDao.GetLanguage("applyyou", GameManager.language)); return; }
-
+        if (r == Skill.TargetType.Self && to != actor && !s.FX.Func.IsSpawner) { Error(LanguageDao.GetLanguage("applyyou", GameManager.language)); return; }
+        if (r == Skill.TargetType.Self && to == actor && s.FX.Func.IsSpawner) { Error(LanguageDao.GetLanguage("applyempty", GameManager.language)); return; }
+        
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
-        actor.Use(s, to);
+        actor.UseEffect(s, to);
 
         GameManager.GM.ShowTabMenu(false);
 
@@ -287,7 +288,7 @@ public class InGameActor : MonoBehaviour
 
         TurnSprite((validActors[0].TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
-        actor.Use(skill, validActors.ToArray());
+        actor.UseEffect(skill, validActors.ToArray());
 
         GameManager.GM.ShowTabMenu(false);
 
@@ -368,7 +369,7 @@ public class InGameActor : MonoBehaviour
         AITImer = 0;
         Actor[] e = new Actor[1];
         e[0] = temptarget;
-        actor.Use(tempattack, e);
+        actor.UseEffect(tempattack, e);
         TimeSincedAttack = 0;
         AITImer = 0;
 
@@ -1023,6 +1024,10 @@ public class InGameActor : MonoBehaviour
     {
 
         if (actor == null) return;
+
+        AITImer += Time.deltaTime;
+        if (AITImer > 3)
+            imageAIMenu.gameObject.SetActive(false);
 
         if (GameManager.BattleMode)
             BattleModeSprite();

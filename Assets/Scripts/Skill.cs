@@ -109,7 +109,7 @@ public class Skill : IUniversalID
 
         }
     }
-    public virtual void Attack(Actor target, Stat stats = new Stat(), Actor f = null)
+    public virtual void ApplyAttack(Actor target, Stat stats = new Stat(), Actor f = null)
     {
 
         var x = Damage;
@@ -128,9 +128,12 @@ public class Skill : IUniversalID
 
         target.TakeDamage(x, this, f);
     }
-    public void Activate(Actor[] a, Actor f = null)
-    {
-        foreach (var item in a) { Attack(item); }
+    public virtual void DoEffect(Vector pos,Actor actor) {
+        if (FX.Func.IsSpawner) {
+            Buddy.GetRandomBuddy(pos,actor);
+
+        }
+
     }
     private readonly string ID;
     public string GetID()
