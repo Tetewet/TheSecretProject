@@ -88,7 +88,8 @@ public class GameManager : MonoBehaviour
     public GameObject[] uiMenus;
     public UI_status uiStatus;
     public GameObject onHoverGO;
-    public static string language = "fr";
+    public static string language = Language.languageCode.ToString();
+    public Dropdown dropDown;
 
 
     [Header("BattleMode")]
@@ -410,6 +411,14 @@ public class GameManager : MonoBehaviour
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
+        IWantToChangeLanguageBro();
+    }
+
+    public void IWantToChangeLanguageBro()
+    {
+        Language.languageCode = (LanguageCode)dropDown.value;
+        language = Language.languageCode.ToString();
+
         //starting to initalize the menus to translate them
         foreach (var menu in uiMenus)
         {

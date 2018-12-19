@@ -692,10 +692,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
             return;
         }
 
-        if (!GameManager.BattleMode)
-        {
-            Overworld.PlayerPos = where.Position;
-        }
+        
 
         Path.Clear();
         CreatePath(where);

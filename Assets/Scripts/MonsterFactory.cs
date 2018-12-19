@@ -64,16 +64,14 @@ class MonsterControllerFactory : MonsterFactory
 
     public static Actor[] SpawnMonsters()
     {
-        int difficulty = (int)Overworld.PlayerPos.y;
+        int difficulty = 2;
         UnityEngine.Debug.Log("DIFFICULTY OF ENCOUNTER " + difficulty);
-        if (difficulty < 1)
+        int difficulTemp = 1;
+        if (difficulty <= difficulTemp && difficulty <= 6)
         {
-            difficulty = 2;
+            difficulty = difficulTemp;
         }
-        if (difficulty > 5)
-        {
-            difficulty = 5;
-        }
+        else { difficulTemp++; }
         // randomize here
         int chances = random.Next(0, 100); // quels monstres ? = aleatoire
         int number = random.Next(2, difficulty); // nombre de monstres a faire spawn

@@ -324,6 +324,10 @@ public class Map
                 }
                 
             }
+            if (a == GameManager.Protags[0] && !GameManager.BattleMode)
+            {
+                Overworld.PlayerPos = Position;
+            }
 
               
 
