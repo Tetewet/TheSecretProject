@@ -41,6 +41,11 @@ public class InGameActor : MonoBehaviour
     public Image[] SFX;
     private Canvas cv;
 
+    private List<AIInfoClass> collection = new List<AIInfoClass>();
+    public Text AIHoverText;
+    public Image imageAIMenu;
+    public static Vector fromNode;
+
     [Header("Equipements")]
     public Transform[] Wep;
 
@@ -120,15 +125,83 @@ public class InGameActor : MonoBehaviour
     public void AI(Battle.Turn Turn = null)
     {
 
+        AITImer = 0;
+        Weapon weapon;
+
+        imageAIMenu.gameObject.SetActive(true);
+        AIHoverText.transform.rotation = Quaternion.Euler(Vector3.zero);
+
         GameManager.SelectedActor = null;
         if (!MyTurn) return;
 
 
-        if (AITImer > .3f && !attacking)
+
+        AI ai = new AI();
+
+        var collectionDumb = ai.Monster_Grunt_Ai();
+        var nodesList = collectionDumb[0].NodesS;
+
+        //text over ai
+        AIHoverText.text = ai.whatToSay;
+
+        int counter = 0;
+        int max = collectionDumb[0].MyMovePoints;
+
+        foreach (var item in nodesList)
         {
-            actor.Move(targetThisTurn.TilePosition, true);
+            if (counter == max)
+            {
+                break;
+            }
+
+            if (counter > 0)
+            {
+                fromNode = nodesList[counter - 1].Pos;
+                actor.Move(nodesList[counter].Pos, true, true);
+
+
+            }
+            else
+            {
+                fromNode = nodesList[0].Pos;
+            }
+
+
+            counter++;
+
         }
-        else if (GameManager.EstimathPath(actor, targetThisTurn.TilePosition) == 1 && CanPerformAction(Skill.Base)) Attack(targetThisTurn, Skill.Base);
+
+
+
+
+
+        if (collectionDumb[0].Distancefoe == 1)
+        {
+
+
+            if (!ai.flee)
+            {
+                if (actor.inventory.GetWeapons != null)
+                {
+
+                    actor.inventory.GetWeapons.Sort((a, b) => (a.ATK.CompareTo(b.ATK)));
+                    weapon = actor.inventory.GetWeapons[0];
+                    Attack(collectionDumb[0].Target, Skill.Weapon(weapon));
+                }
+                else
+                {
+
+                    Attack(collectionDumb[0].Target, Skill.Base);
+                }
+
+            }
+        }
+
+
+
+
+        EndTurn();
+
 
 
 
