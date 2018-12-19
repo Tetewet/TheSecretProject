@@ -1425,10 +1425,10 @@ public class GameManager : MonoBehaviour
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
-                                if (item != null) GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, Skill.Weapon(item));
+                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
                                 print(Skill.Weapon(item).Targets +" "+ item.Name);
                             }
-                        else GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, Skill.Base);
+                        else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
                     }
         }
     }

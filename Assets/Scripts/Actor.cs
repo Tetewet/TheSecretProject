@@ -297,7 +297,19 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
         foreach (var item in Target)
         {
-            switch (s.DmgType)
+            DamageType dam = s.DmgType;
+            UnityEngine.Debug.Log(Enum.Parse(typeof(DamageType), (DamageType.Offensive & s.DmgType).ToString()));
+            if ((DamageType.Offensive & s.DmgType) == s.DmgType)
+            {
+                dam = DamageType.Offensive;
+                UnityEngine.Debug.Log("Offensive");
+            }
+            if ((DamageType.Effects & s.DmgType) == s.DmgType)
+            {
+                dam = DamageType.Effects;
+                UnityEngine.Debug.Log("Effects");
+            }
+            switch (dam)
             {
                 case DamageType.Offensive:
                     s.ApplyAttack(item, GetStats, this);
