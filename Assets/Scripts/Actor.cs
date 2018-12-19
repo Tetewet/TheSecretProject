@@ -683,9 +683,13 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
     public virtual void Move(Map.Tile where)
     {
-       var v = Vector.Distance(where.Position,CurrentTile.Position);
+        var v = Vector.Distance(where.Position, CurrentTile.Position);
+        if (!GameManager.BattleMode)
+        {
+            Overworld.PlayerPos = where.Position;
+        }
 
-     
+
         if (where.Actor != null || !CanMoveThere(where))
         {
             CantMove(where.Position);
