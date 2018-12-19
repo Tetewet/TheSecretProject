@@ -441,6 +441,7 @@ public class GameManager : MonoBehaviour
            slot = Equipement.Slot.Weapon,
            StatsBonus = new Stat { STR = 2 },
            DamageType = DamageType.Slashing,
+           targetType = Skill.TargetType.OneEnemy,
            WeaponType = Weapon.type.Sword,
            GoldValue = 100,
            rarity = Item.Rarity.Common,
@@ -808,8 +809,32 @@ public class GameManager : MonoBehaviour
 
                 if (CurrentBattle.map.AtPos(tile).Actor != null)
                 {
+                    switch (SelectedSkill.Targets) {
+                        case Skill.TargetType.Ally:
+                            if (CurrentBattle.IsTeamWith(CurrentBattle.map.AtPos(tile).Actor, SelectedActor))
+                            {
+                                targets.Add(CurrentBattle.map.AtPos(tile).Actor);
+                                print("Helping: " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
+                            }
+                            break;
+                        case Skill.TargetType.Enemy:
+                            if (!CurrentBattle.IsTeamWith(CurrentBattle.map.AtPos(tile).Actor, SelectedActor) && CurrentBattle.map.AtPos(tile).Actor.Name != SelectedActor.Name)
+                            {
+                                targets.Add(CurrentBattle.map.AtPos(tile).Actor);
+                                print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
+                            }
+                            break;
+                        case Skill.TargetType.Anyone:
+                            
+                                targets.Add(CurrentBattle.map.AtPos(tile).Actor);
+                                print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
+                            
+                            break;
+
+                    }
+                    if (!CurrentBattle.IsTeamWith(CurrentBattle.map.AtPos(tile).Actor,SelectedActor) ) { 
                     targets.Add(CurrentBattle.map.AtPos(tile).Actor);
-                    print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
+                    print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile); }
                 }
             }
         }
@@ -1400,9 +1425,10 @@ public class GameManager : MonoBehaviour
                         if (SelectedActor.inventory.HasWeapon)
                             foreach (var item in SelectedActor.inventory.GetWeapons)
                             {
-                                if (item != null) GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Weapon(item));
+                                if (item != null) GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, Skill.Weapon(item));
+                                print(Skill.Weapon(item).Targets +" "+ item.Name);
                             }
-                        else GetInGameFromActor(SelectedActor).Attack(curtile.Actor, Skill.Base);
+                        else GetInGameFromActor(SelectedActor).UseSkill(curtile.Actor, Skill.Base);
                     }
         }
     }

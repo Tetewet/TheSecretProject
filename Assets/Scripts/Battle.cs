@@ -151,7 +151,7 @@ public class Battle{
     public bool IsTeamWith(Actor a, Actor b)
     {
         
-        return (a != b) && (Players.Contains(a) && Players.Contains(b)) || (Foes.Contains(a) && Foes.Contains(b));
+        return (a != b) && ((Players.Contains(a) && Players.Contains(b)) || (Foes.Contains(a) && Foes.Contains(b)));
     }
     public void OnBattleEnd()
     {
