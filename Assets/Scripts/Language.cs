@@ -14,7 +14,7 @@ public enum LanguageCode
 
 public class Language
 {
-    //public static LanguageCode languageCode;
+    public static LanguageCode languageCode;
 
     public static void Initialize()
     {
