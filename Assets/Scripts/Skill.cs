@@ -23,6 +23,7 @@ public class Skill : IUniversalID
         this.element = element;
         this.FX = fX;
         areaOfEffectRange = aoe;
+        
         this.Unlocked = unlocked;
         ID = GameManager.GenerateID(this);
     }
@@ -58,6 +59,7 @@ public class Skill : IUniversalID
     public Effects FX { get; set; }
     public Element element { get; set; }
     public int areaOfEffectRange { get; set; }
+   
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;

@@ -85,7 +85,6 @@ static class SkillDao
             //
             //  }
             string[] total= reader.GetString((int)lang).Split(':');
-            Debug.Log("Reading: " +(reader.GetString((int)lang)) + " from: " + (int)lang);
             string name = "Null";
             string desc = "Null";
             if (total.Length > 1)

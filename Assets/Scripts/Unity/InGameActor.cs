@@ -165,7 +165,7 @@ public class InGameActor : MonoBehaviour
         var r = s.Targets;
         if (to == actor)
         {
-            if (s.FX.Func != null)
+            if (s.FX != null)
             {
                 if (s.FX.Func.IsSpawner)
                 {

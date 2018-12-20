@@ -28,10 +28,15 @@ public class Language
     private static void LoadLanguage(string lang)
     {
         Text[] bigTranslator = GameManager.GM.TextAndUI.GetComponentsInChildren<Text>();
+        Debug.Log(GameManager.GM);
+        Debug.Log(GameManager.GM.TextAndUI);
+      //  Debug.Log(bigTranslator[0]);
         for (int i = 0; i < bigTranslator.Length; i++) 
         {
             bigTranslator[i].text = LanguageDao.GetLanguage(bigTranslator[i].name, ref lang);
+
         }
+
     }
 }
 //FindObjectOfAll<Text>()
