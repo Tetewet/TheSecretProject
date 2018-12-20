@@ -138,7 +138,7 @@ public  class AIUIDialogues
 
 
 
-        UnityEngine.Debug.Log(textToShow);
+        
         return textToShow;
     }
 }

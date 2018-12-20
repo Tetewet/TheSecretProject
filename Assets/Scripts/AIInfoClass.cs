@@ -16,7 +16,7 @@ public class AIInfoClass
     public bool InRange { get; set; }
     public bool Threathened { get; set; }
     
-    // leader public  leader { get; set; }
+    // leader public  leader { get; set; } future
 
     public AIInfoClass(Vector pos, List<List<Node_Tile>> nodes, Actor target, int weight, float distanceFoe, bool inRange, bool threathened, int myMovePoints)
     {

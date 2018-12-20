@@ -41,7 +41,6 @@ public class InGameActor : MonoBehaviour
     public Image[] SFX;
     private Canvas cv;
 
-    private List<AIInfoClass> collection = new List<AIInfoClass>();
     public Text AIHoverText;
     public Image imageAIMenu;
     public static Vector fromNode;
@@ -121,7 +120,7 @@ public class InGameActor : MonoBehaviour
     {
         if (!isAI || !MyTurn) return;
         AITImer += Time.fixedDeltaTime;
-        if (AITImer > .8f) EndTurn();
+        if (AITImer > 0.8f) EndTurn();
 
     }
     //Action and Attack
@@ -157,10 +156,10 @@ public class InGameActor : MonoBehaviour
         int counter = 0;
         int max = collectionDumb[0].MyMovePoints;
 
-        if (collectionDumb[0].Distancefoe > 1)
+
+
+        if (collectionDumb[0].Distancefoe > 0 || ai.flee)
         {
-
-
             foreach (var item in nodesList)
             {
                 if (counter == max)
@@ -184,7 +183,9 @@ public class InGameActor : MonoBehaviour
                 counter++;
 
             }
+
         }
+
 
 
 
@@ -194,24 +195,22 @@ public class InGameActor : MonoBehaviour
         if (collectionDumb[0].Distancefoe == 1)
         {
            
-            UnityEngine.Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+           
 
             if (!ai.flee)
             {
                 if (actor.inventory.GetWeapons != null)
                 {
-                    UnityEngine.Debug.Log("####################################################################");
+                    
 
                     actor.inventory.GetWeapons.Sort((a, b) => (a.ATK.CompareTo(b.ATK)));
                     weapon = actor.inventory.GetWeapons[0];
                     Attack(collectionDumb[0].Target, Skill.Weapon(weapon));
-                    // AnimatedAttack();
+                    
                 }
                 else
                 {
-                    UnityEngine.Debug.Log(CanPerformAction(Skill.Base));
-                    Attack(collectionDumb[0].Target, Skill.Base);
-                    //  AnimatedAttack();
+                    Attack(collectionDumb[0].Target, Skill.Base);     
                 }
 
             }
@@ -359,7 +358,7 @@ public class InGameActor : MonoBehaviour
     {
 
         if (!gameObject.activeSelf) return;
-        
+        AITImer = 0;
         if (isAI)
             targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.CurrentBattle.Players.Count)].actor;
         actor.TileWalkedThisTurn = 0;
