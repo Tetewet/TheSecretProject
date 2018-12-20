@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
     public UI_status uiStatus;
     public GameObject onHoverGO;
     public static string language = Language.languageCode.ToString();
-   // public Dropdown dropDown;
+    public Dropdown dropDown;
 
 
     [Header("BattleMode")]
@@ -398,7 +398,6 @@ public class GameManager : MonoBehaviour
         if (!GM) GM = this;
         else Destroy(this.gameObject);
         LOG += "-" + System.Security.Principal.WindowsIdentity.GetCurrent().Name + "" + System.DateTime.Now + "-\n";
-        
         Protags = new List<Actor>
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =16, LUC =2 , STR = 2, WIS =7 }, true, "Mage")
@@ -417,7 +416,7 @@ public class GameManager : MonoBehaviour
 
     public void IWantToChangeLanguageBro()
     {
-        //Language.languageCode = (LanguageCode)dropDown.value;
+        Language.languageCode = (LanguageCode)dropDown.value;
         language = Language.languageCode.ToString();
 
         //starting to initalize the menus to translate them
@@ -824,7 +823,7 @@ public class GameManager : MonoBehaviour
     private Actor[] GetTargets()
     {
         List<Actor> targets = new List<Actor>();
-        if (SelectedSkill.Targets != Skill.TargetType.Everything)
+        if (SelectedSkill.Targets != Skill.TargetType.Anyone)
         {
             if (PathUI.Count > 0)
             {
@@ -855,13 +854,9 @@ public class GameManager : MonoBehaviour
                                     print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
                                 }
                                 break;
-                            case Skill.TargetType.Anyone:
-                                targets.Add(CurrentBattle.map.AtPos(tile).Actor);
-                                print("Attacking : " + CurrentBattle.map.AtPos(tile).Actor.Name + "at" + tile);
-                                break;
+
 
                         }
-
                     }
 
                 }

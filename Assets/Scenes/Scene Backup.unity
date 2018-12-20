@@ -251,25 +251,6 @@ Prefab:
       propertyPath: Events.Array.data[1]
       value: 
       objectReference: {fileID: 509534516}
-    - target: {fileID: 224506610741954818, guid: 31332ceea4bdc1a47a09f40ff8bef942,
-        type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1623998616227362, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 82858301273383240, guid: 31332ceea4bdc1a47a09f40ff8bef942,
-        type: 2}
-      propertyPath: m_Volume
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 82209407224008244, guid: 31332ceea4bdc1a47a09f40ff8bef942,
-        type: 2}
-      propertyPath: m_Volume
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
   m_IsPrefabAsset: 0

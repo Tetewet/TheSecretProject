@@ -202,7 +202,6 @@ public class InGameActor : MonoBehaviour
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
-        
         actor.UseEffect(s, to);
 
         GameManager.GM.ShowTabMenu(false);
