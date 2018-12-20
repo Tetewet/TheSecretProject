@@ -129,7 +129,7 @@ public class AI
                 inRange = false;
             }
             // calcul si au prochain coup la force de l'ennemie peux tuer l'IA
-            if (InGameFoes[i].GetStats.STR > (current_Ac.HP*2))
+            if (InGameFoes[i].GetStats.STR > (current_Ac.HP*3))
             {
                 
                 threaten = true;
@@ -217,9 +217,8 @@ public class AI
 
 
         
-        // ui AI
-        AIUIDialogues aIUIDialogues = new AIUIDialogues();
-        whatToSay  = aIUIDialogues.AIUIDialogueGrunt(collectionDumb);
+       
+        
         if (!flee)
         {
             collectionDumb = BonusPoints(collectionDumb);
