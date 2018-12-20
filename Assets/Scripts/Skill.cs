@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class Skill : IUniversalID
 {
-    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element, Effects fX,int aoe, bool unlocked = true) {
+    public Skill(int id, string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element, Effects fX,int aoe, bool unlocked = true) {
+        SkillID = id;
         this.name = name;
         this.Description = description;
         this.profType = profType;
@@ -139,6 +140,7 @@ public class Skill : IUniversalID
 
     }
     private readonly string ID;
+    public int SkillID;
     public string GetID()
     {
         return ID;

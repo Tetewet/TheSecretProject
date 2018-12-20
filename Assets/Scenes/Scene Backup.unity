@@ -258,7 +258,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1623998616227362, guid: 31332ceea4bdc1a47a09f40ff8bef942, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 82858301273383240, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
@@ -268,6 +268,11 @@ Prefab:
     - target: {fileID: 82209407224008244, guid: 31332ceea4bdc1a47a09f40ff8bef942,
         type: 2}
       propertyPath: m_Volume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114257034841433178, guid: 31332ceea4bdc1a47a09f40ff8bef942,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
