@@ -41,7 +41,6 @@ public class InGameActor : MonoBehaviour
     public Image[] SFX;
     private Canvas cv;
 
-    private List<AIInfoClass> collection = new List<AIInfoClass>();
     public Text AIHoverText;
     public Image imageAIMenu;
     public static Vector fromNode;
@@ -157,33 +156,36 @@ public class InGameActor : MonoBehaviour
         int counter = 0;
         int max = collectionDumb[0].MyMovePoints;
 
-        
-       
 
-        foreach (var item in nodesList)
+
+        if (collectionDumb[0].Distancefoe > 0 || ai.flee)
         {
-            if (counter == max)
+            foreach (var item in nodesList)
             {
-                break;
+                if (counter == max)
+                {
+                    break;
+                }
+
+                if (counter > 0)
+                {
+                    fromNode = nodesList[counter - 1].Pos;
+                    actor.Move(nodesList[counter].Pos, true, true);
+
+
+                }
+                else
+                {
+                    fromNode = nodesList[0].Pos;
+                }
+
+
+                counter++;
+
             }
-
-            if (counter > 0)
-            {
-                fromNode = nodesList[counter - 1].Pos;
-                actor.Move(nodesList[counter].Pos, true, true);
-                
-
-            }
-            else
-            {
-                fromNode = nodesList[0].Pos;
-            }
-
-
-            counter++;
 
         }
-        
+
 
 
 
