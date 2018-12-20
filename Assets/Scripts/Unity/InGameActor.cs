@@ -70,6 +70,10 @@ public class InGameActor : MonoBehaviour
         public float EXPGain;
     }
     public bool BattleSprite = true;
+    public void DisableEffectsUI() {
+        foreach (var item in SFX)
+            item.enabled = false;
+    }
     public void UpdateEffectUI()
     {
         foreach (var item in SFX)

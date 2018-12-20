@@ -180,7 +180,8 @@ public class GameManager : MonoBehaviour
             Destroy(h.gameObject);
         foreach (var l in GM.InGameFoes)
             Destroy(l.gameObject);
-
+        IGA.actor.effects.Clear();
+        IGA.UpdateEffectUI();
         GM.InGameActors.Clear();
         GM.InGameFoes.Clear();
     }
@@ -402,7 +403,7 @@ public class GameManager : MonoBehaviour
         Protags = new List<Actor>
     {
         new Player("Nana",new Stat{ AGI  =2 , END =1, INT =16, LUC =2 , STR = 2, WIS =7 }, true, "Mage")
-        { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Dragoon),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
+        { inventory = Actor.Inventory.Light, Class = new Profession(new Stat(),Profession.ProfessionType.Mage),Description = "A being from the realm of Idea. It'll figuratively and literally take arms against evil. Dislike doing his taxes."},
         new Player("Mathew", new Stat{ STR = 16, AGI = 2, END =4, LUC =3 ,WIS = 1, INT = 0},true,"Barbarian")
         { inventory = Actor.Inventory.Light,Description = "A romantic fighter that seek his purpose in combat. Has a Master in Philosophy."}
     }; //TODO alonso desc traduction
