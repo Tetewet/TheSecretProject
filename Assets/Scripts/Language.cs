@@ -14,13 +14,18 @@ public enum LanguageCode
 
 public class Language
 {
-    public static LanguageCode languageCode;
-
+    public static LanguageCode languageCode = LanguageCode.en;
+    public void OnAwake() {
+        PlayerPrefs.SetString("lang", "en");
+       
+    }
     public static void Initialize()
     {
         LanguageDao.DatabasePath = "URI=file:" + Application.dataPath + "/Databases/Languages.db";
-        PlayerPrefs.SetString("lang", GameManager.language.ToLower());
-        LoadLanguage(PlayerPrefs.GetString("lang"));
+        
+        languageCode = (LanguageCode)Enum.Parse(typeof(LanguageCode), PlayerPrefs.GetString("lang"));
+        LoadLanguage(languageCode.ToString());
+        
         PlayerPrefs.Save();
         //var languageTranslation = LanguageDao.GetLanguage(languageCode.ToString().ToLower());
     }

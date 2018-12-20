@@ -36,7 +36,8 @@ public class Skill : IUniversalID
         OneEnemy = 2,
         Enemy = 3,
         Anyone = 4,
-        Ally = 5
+        Ally = 5,
+        Everything =6
     }
     
     private new string name = "";
