@@ -7,25 +7,25 @@ public class Effects:IUniversalID {
     public static List<Effects> Core = new List<Effects>()
     {
         new Poison("null","null", new Functionality(),Vector.right ,duration:5),//0
-        new Poison("Poison","poison.png", new Functionality(),Vector.right ,duration:5),//1
-        new Effects("Paralyze","paralyze.png",new Functionality(){CanMove = false}),//2
-        new Burning ("Burning", "burning.png",new Functionality(),Vector.right,EffectToCause:4,chanceToEffect:5),//3
-        new Effects("Soaked","soak.png",new Functionality(),new Stat(){ AGI =-1},duration: 2),//4
-        new Effects("Frenzy","frenzy.png",new Functionality(){IsRational = false},duration:1),//5
+        new Poison("Poison","null", new Functionality(),Vector.right ,duration:5),//1
+        new Effects("Paralyze","null",new Functionality(){CanMove = false}),//2
+        new Burning ("Burning", "null",new Functionality(),Vector.right,EffectToCause:4,chanceToEffect:5),//3
+        new Effects("Soaked","null",new Functionality(),new Stat(){ AGI =-1},duration: 2),//4
+        new Effects("Frenzy","null",new Functionality(){IsRational = false},duration:1),//5
         new Bonus("Critical +","critup",new Functionality(), duration:3, statchange: new Stat(){CriticalHitFlat = 20}),//6
-        new Poison("HealingPerTurn","heal.png", new Functionality(),Vector.left*2 ,duration:5),//7
-        new InstaHealing("Healing","heal.png", new Functionality(),Vector3.right*6),//8
-        new InstaHealing("MPBoost","mp.png", new Functionality(),Vector3.up*6),//9
-        new InstaHealing("SPBoost","sp.png", new Functionality(),Vector3.forward*3),//10
-        new Bonus("Spawn", null,new Functionality(){ IsSpawner = true }, statchange: new Stat(){  }),//11
-        new Bonus("STR +","str",new Functionality(), duration:3, statchange: new Stat(){STR = 5 }),//12
-        new Bonus("AGI +","str",new Functionality(), duration:3, statchange: new Stat(){AGI = 5 }),//13//
-        new Bonus("END +","str",new Functionality(), duration:3, statchange: new Stat(){END = 5 }),//14
-        new Bonus("WIS +","str",new Functionality(), duration:3, statchange: new Stat(){WIS = 5 }),//15
-        new Bonus("INT +","str",new Functionality(), duration:3, statchange: new Stat(){INT = 5 }),//16//
-        new Bonus("LUC +","str",new Functionality(), duration:3, statchange: new Stat(){LUC = 5 }),//17
-         new Bonus("STR -","minusstr",new Functionality(), duration:3, statchange: new Stat(){STR = -5 }),//18
-         new Bonus("STR -","minusstr",new Functionality(), duration:3, statchange: new Stat(){AGI = -5 })//19
+        new Poison("HealingPerTurn","null", new Functionality(),Vector.left*2 ,duration:5),//7
+        new InstaHealing("Healing","null", new Functionality(),Vector3.right*6),//8
+        new InstaHealing("MPBoost","null", new Functionality(),Vector3.up*6),//9
+        new InstaHealing("SPBoost","null", new Functionality(),Vector3.forward*3),//10
+        new Bonus("Spawn", "null",new Functionality(){ IsSpawner = true }, statchange: new Stat(){  }),//11
+        new Bonus("STR +","null",new Functionality(), duration:3, statchange: new Stat(){STR = 5 }),//12
+        new Bonus("AGI +","null",new Functionality(), duration:3, statchange: new Stat(){AGI = 5 }),//13//
+        new Bonus("END +","null",new Functionality(), duration:3, statchange: new Stat(){END = 5 }),//14
+        new Bonus("WIS +","null",new Functionality(), duration:3, statchange: new Stat(){WIS = 5 }),//15
+        new Bonus("INT +","null",new Functionality(), duration:3, statchange: new Stat(){INT = 5 }),//16//
+        new Bonus("LUC +","null",new Functionality(), duration:3, statchange: new Stat(){LUC = 5 }),//17
+         new Bonus("STR -","null",new Functionality(), duration:3, statchange: new Stat(){STR = -5 }),//18
+         new Bonus("AGI -","null",new Functionality(), duration:3, statchange: new Stat(){AGI = -5 })//19
        
        
 

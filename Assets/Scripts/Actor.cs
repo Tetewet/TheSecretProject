@@ -278,9 +278,9 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
                 Target.Apply(s.FX);
                 UnityEngine.Debug.Log("Applied Effects");
                 break;
-            case DamageType.None:
-                s.DoEffect(GameManager.CursorPos,this);
-                UnityEngine.Debug.Log("Applied Ability");
+             default:
+                Target.Apply(s.FX);
+                UnityEngine.Debug.Log("Applied Effect");
                 break;
         }
 
