@@ -41,6 +41,11 @@ public class InGameActor : MonoBehaviour
     public Image[] SFX;
     private Canvas cv;
 
+    private List<AIInfoClass> collection = new List<AIInfoClass>();
+    public Text AIHoverText;
+    public Image imageAIMenu;
+    public static Vector fromNode;
+
     [Header("Equipements")]
     public Transform[] Wep;
 
@@ -70,6 +75,10 @@ public class InGameActor : MonoBehaviour
         public float EXPGain;
     }
     public bool BattleSprite = true;
+    public void DisableEffectsUI() {
+        foreach (var item in SFX)
+            item.enabled = false;
+    }
     public void UpdateEffectUI()
     {
         foreach (var item in SFX)
@@ -103,8 +112,8 @@ public class InGameActor : MonoBehaviour
     {
         ExpBar.transform.parent.gameObject.SetActive(false);
         ExpBar.fillAmount = 0;
-
-        //StartCoroutine(UpDateEXP());
+        
+        
     }
     bool attacking = false;
 
@@ -112,28 +121,105 @@ public class InGameActor : MonoBehaviour
     {
         if (!isAI || !MyTurn) return;
         AITImer += Time.fixedDeltaTime;
-        if (AITImer > .5f) EndTurn();
+        if (AITImer > .8f) EndTurn();
 
     }
     //Action and Attack
 
     public void AI(Battle.Turn Turn = null)
     {
+       
+       
+        Weapon weapon;
+
+        imageAIMenu.gameObject.SetActive(true);
+
 
         GameManager.SelectedActor = null;
         if (!MyTurn) return;
 
 
-        if (AITImer > .3f && !attacking)
+
+        AI ai = new AI();
+
+        var collectionDumb = ai.Monster_Grunt_Ai();
+        var nodesList = collectionDumb[0].NodesS;
+
+        //text over ai
+        
+        AIUIDialogues aIUIDialogues = new AIUIDialogues();
+        aIUIDialogues.AIUIDialogueGrunt(collectionDumb);
+        AIHoverText.text = aIUIDialogues.AIUIDialogueGrunt(collectionDumb);
+       
+        
+
+
+        int counter = 0;
+        int max = collectionDumb[0].MyMovePoints;
+
+        if (collectionDumb[0].Distancefoe > 1)
         {
-            actor.Move(targetThisTurn.TilePosition, true);
+
+
+            foreach (var item in nodesList)
+            {
+                if (counter == max)
+                {
+                    break;
+                }
+
+                if (counter > 0)
+                {
+                    fromNode = nodesList[counter - 1].Pos;
+                    actor.Move(nodesList[counter].Pos, true, true);
+
+
+                }
+                else
+                {
+                    fromNode = nodesList[0].Pos;
+                }
+
+
+                counter++;
+
+            }
         }
-        else if (GameManager.EstimathPath(actor, targetThisTurn.TilePosition) == 1 && CanPerformAction(Skill.Base)) Attack(targetThisTurn, Skill.Base);
 
 
+
+
+
+
+        if (collectionDumb[0].Distancefoe == 1)
+        {
+           
+            UnityEngine.Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+            if (!ai.flee)
+            {
+                if (actor.inventory.GetWeapons != null)
+                {
+                    UnityEngine.Debug.Log("####################################################################");
+
+                    actor.inventory.GetWeapons.Sort((a, b) => (a.ATK.CompareTo(b.ATK)));
+                    weapon = actor.inventory.GetWeapons[0];
+                    Attack(collectionDumb[0].Target, Skill.Weapon(weapon));
+                    // AnimatedAttack();
+                }
+                else
+                {
+                    UnityEngine.Debug.Log(CanPerformAction(Skill.Base));
+                    Attack(collectionDumb[0].Target, Skill.Base);
+                    //  AnimatedAttack();
+                }
+
+            }
+        }
 
 
     }
+    
 
 
     Actor cachedactor; Item cacheditem; public SpriteRenderer OnActorItem;
@@ -273,7 +359,7 @@ public class InGameActor : MonoBehaviour
     {
 
         if (!gameObject.activeSelf) return;
-
+        
         if (isAI)
             targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.CurrentBattle.Players.Count)].actor;
         actor.TileWalkedThisTurn = 0;
@@ -281,7 +367,7 @@ public class InGameActor : MonoBehaviour
         if (sprity[0] != null)
             sprity[0].color = Color.white;
         MyTurn = true;
-
+        if (actor.SP > 0 && MyTurn && isAI && !attacking) AI();
         if (!isAI)
         {
 
@@ -320,7 +406,7 @@ public class InGameActor : MonoBehaviour
     public void AnimatedAttack()
     {
 
-        if (!MyTurn) return;
+        //if (!MyTurn) return;
 
         GameManager.GM.Cam.orthographicSize = 5.2f;
         AITImer = 0;
@@ -359,7 +445,7 @@ public class InGameActor : MonoBehaviour
     {
         MyTurn = false;
         UpdateEffectUI();
-        StopAttacking();
+        //StopAttacking();
         StartCoroutine(_EndTurn());
     }
 
@@ -760,7 +846,7 @@ public class InGameActor : MonoBehaviour
                         //   anim[0].SetTrigger(tempattack.DmgType.ToString());
 
                     }
-                    else EndTurn();
+                    //else EndTurn();
                     timer = 0;
                 }
 
@@ -982,6 +1068,13 @@ public class InGameActor : MonoBehaviour
 
         if (actor == null) return;
 
+        AITImer += Time.deltaTime;
+
+        if (AITImer > 3)
+            imageAIMenu.gameObject.SetActive(false);
+        else
+            AIHoverText.transform.rotation = Quaternion.Euler(Vector3.zero);
+
         if (GameManager.BattleMode)
             BattleModeSprite();
         else if (!BattleSprite)
@@ -989,9 +1082,9 @@ public class InGameActor : MonoBehaviour
         bar.text = actor.Name;
 
 
-        if (actor.SP > 0 && MyTurn && isAI && !attacking) AI();
+        
         if (MyTurn && timeSinceTurn > 1 && TimeSincedAttack > 1) if (actor.SP <= 0) EndTurn();
-
+        //if (actor.SP > 0 && MyTurn && isAI && !attacking) AI();
     }
 
 

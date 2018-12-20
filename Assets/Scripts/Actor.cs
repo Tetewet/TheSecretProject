@@ -278,9 +278,9 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
                 Target.Apply(s.FX);
                 UnityEngine.Debug.Log("Applied Effects");
                 break;
-            case DamageType.None:
-                s.DoEffect(GameManager.CursorPos,this);
-                UnityEngine.Debug.Log("Applied Ability");
+             default:
+                Target.Apply(s.FX);
+                UnityEngine.Debug.Log("Applied Effect");
                 break;
         }
 
@@ -573,7 +573,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     /// </summary>
     /// <param name="v"></param>
     /// <param name="bypass"></param>
-    public virtual void Move(Vector v,bool bypass = false)
+    public virtual void Move(Vector v,bool bypass = false, bool AI = false)
     {
         if (v == Vector.zero) return;
         var b = GameManager.CurrentBattle;
@@ -611,9 +611,18 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
 
         // Move(b.map.AtPos(v));
-        
+
+        Vector from = new Vector();
+        from = InGameActor.fromNode;
         Path.Clear();
-        CreatePath(b.map.AtPos(v));
+        if (AI)
+        {
+            CreatePath(b.map.AtPos(v), from);
+        }
+        else
+        {
+            CreatePath(b.map.AtPos(v));
+        }
         return;
     }
     //Position In Battle
@@ -668,7 +677,41 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
             //x + 1
             for (int i = 1; i <= Math.Abs(x)  ; i++) Path.Enqueue( TilePosition + Vector.up * y + Vector.right * i * a);
         }
- }
+    }
+
+    public void CreatePath(Map.Tile where, Vector from)
+    {
+
+        Path.Clear();
+        int x = (int)(where.x - from.x);
+        int y = (int)(where.y - from.y);
+
+        UnityEngine.Debug.Log(Name + ": Creating Path : from " + from.ToString() + " to " + where.Position.ToString() + " Offset: {" + x + " " + y + "}");
+
+
+        var a = 1;
+        var b = 1;
+        if (x < 0) a = -1;
+        if (y < 0) b = -1;
+        Map e;
+        if (GameManager.BattleMode) e = GameManager.CurrentBattle.map;
+        else e = GameManager.Map;
+
+        if (Math.Abs(x) > Math.Abs(y) || e.AtPos(from + Vector.up * b).Actor != null)
+        {
+            for (int i = 1; i <= Math.Abs(x); i++)
+            { if (from + Vector.up * i * b == from) continue; Path.Enqueue(from + Vector.right * i * a); }
+            // y +1
+            for (int i = 1; i <= Math.Abs(y); i++) Path.Enqueue(from + Vector.right * x + Vector.up * i * b);
+        }
+        else
+        {
+            for (int i = 1; i <= Math.Abs(y); i++)
+            { if (from + Vector.up * i * b == from) continue; Path.Enqueue(from + Vector.up * i * b); }
+            //x + 1
+            for (int i = 1; i <= Math.Abs(x); i++) Path.Enqueue(from + Vector.up * y + Vector.right * i * a);
+        }
+    }
 
     bool CanMoveThere(Map.Tile Where)
     {
