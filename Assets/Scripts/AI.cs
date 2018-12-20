@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -136,7 +136,7 @@ public class AI
                
             }
             // if an ennemy is in danger close range (peux se rendre a l'IA et la tuer)
-            if (threaten == true & inRange)
+            if (threaten == true & ennemy_Move_Point > dist_to_foe)
             {
                 dangerClose = true;
                 
@@ -177,7 +177,7 @@ public class AI
                 collectionChief.Clear(); collectionDumb.Clear();
                 collectionChief.Add(new AIInfoClass(current_Ac.TilePosition, ParentnodesList, InGameFoes[i], weigth, dist_to_foe, inRange, dangerClose, my_Move_Points));
                 collectionDumb.Add((new AIInfoClass(ChildnodesList, InGameFoes[i], weigth, dist_to_foe, dangerClose, my_Move_Points)));
-                break;
+                return;
             }
 
             collectionChief.Add(new AIInfoClass(current_Ac.TilePosition, ParentnodesList, InGameFoes[i], weigth, dist_to_foe, inRange, dangerClose, my_Move_Points));
@@ -187,7 +187,7 @@ public class AI
 
     }
 
-    // weapon to use
+   
     
 
 
@@ -226,7 +226,8 @@ public class AI
 
         }
 
-
+        AIUIDialogues aIUIDialogues = new AIUIDialogues();
+        aIUIDialogues.AIUIDialogueGrunt(collectionDumb);
 
         return collectionDumb;
 
