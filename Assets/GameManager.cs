@@ -413,10 +413,10 @@ public class GameManager : MonoBehaviour
 
 
         // Protags[0].SetProfession(Profession.Madoshi);
-        IWantToChangeLanguageBro();
+        LanguageChanger();
     }
 
-    public void IWantToChangeLanguageBro()
+    public void LanguageChanger()
     {
         Language.languageCode = (LanguageCode)dropDown.value;
         language = Language.languageCode.ToString();
