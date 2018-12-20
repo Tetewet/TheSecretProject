@@ -14,7 +14,7 @@ public enum LanguageCode
 
 public class Language
 {
-    //public static LanguageCode languageCode;
+    public static LanguageCode languageCode;
 
     public static void Initialize()
     {
@@ -28,10 +28,15 @@ public class Language
     private static void LoadLanguage(string lang)
     {
         Text[] bigTranslator = GameManager.GM.TextAndUI.GetComponentsInChildren<Text>();
+        Debug.Log(GameManager.GM);
+        Debug.Log(GameManager.GM.TextAndUI);
+      //  Debug.Log(bigTranslator[0]);
         for (int i = 0; i < bigTranslator.Length; i++) 
-        {
-            bigTranslator[i].text = LanguageDao.GetLanguage(bigTranslator[i].name, lang);
+        {if(bigTranslator[i].name != "Attack (1)" && bigTranslator[i].name != "GameObject" && bigTranslator[i].name != "OPEN MENU" && bigTranslator[i].name != "Label")
+            bigTranslator[i].text = LanguageDao.GetLanguage(bigTranslator[i].name, ref lang);
+
         }
+
     }
 }
 //FindObjectOfAll<Text>()

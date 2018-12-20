@@ -31,7 +31,7 @@ sealed class SingleChefKuku : Kuku
         {
             if (chefKukuInstance == null) 
             {
-                 chefKukuInstance = new SingleChefKuku(LanguageDao.GetLanguage("chefkuku", GameManager.language), new Stat { AGI = 6, END = 5, LUC = 35, STR = 4 }, false, "~Kuku", true);
+                 chefKukuInstance = new SingleChefKuku(LanguageDao.GetLanguage("chefkuku", ref GameManager.language), new Stat { AGI = 6, END = 5, LUC = 35, STR = 4 }, false, "~Kuku", true);
             }
             return chefKukuInstance;
         }

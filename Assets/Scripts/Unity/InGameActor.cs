@@ -165,35 +165,35 @@ public class InGameActor : MonoBehaviour
         var r = s.Targets;
         if (to == actor)
         {
-            if (s.FX.Func != null)
+            if (s.FX != null)
             {
                 if (s.FX.Func.IsSpawner)
                 {
-                    Error(LanguageDao.GetLanguage("applyempty", GameManager.language));
+                    Error(LanguageDao.GetLanguage("applyempty", ref GameManager.language));
                     return;
                 }
             }
         }
         if (!actor.CanUseSkill(s))
         {
-            Error(LanguageDao.GetLanguage("notenough", GameManager.language));
+            Error(LanguageDao.GetLanguage("notenough", ref GameManager.language));
             return;
         }
 
         if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor))
         {
-            Error(LanguageDao.GetLanguage("applyally", GameManager.language));
+            Error(LanguageDao.GetLanguage("applyally", ref GameManager.language));
             return;
         }
         if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor))
         {
-            Error(LanguageDao.GetLanguage("applyennemy", GameManager.language));
+            Error(LanguageDao.GetLanguage("applyennemy", ref GameManager.language));
             return;
         }
         if (r == Skill.TargetType.Self && to != actor)
         {
 
-            Error(LanguageDao.GetLanguage("applyyou", GameManager.language));
+            Error(LanguageDao.GetLanguage("applyyou", ref GameManager.language));
 
             return;
         }
@@ -202,6 +202,7 @@ public class InGameActor : MonoBehaviour
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
+        
         actor.UseEffect(s, to);
 
         GameManager.GM.ShowTabMenu(false);
@@ -453,7 +454,7 @@ public class InGameActor : MonoBehaviour
                 if ((f != actor && f != a) || f.IsTeamWith(actor))
                 {
 
-                    Error(f.Name + " " + LanguageDao.GetLanguage("isblocking", GameManager.language) + " " + name);
+                    Error(f.Name + " " + LanguageDao.GetLanguage("isblocking", ref GameManager.language) + " " + name);
                     attacking = false;
                     tempattack = null;
                     temptarget = null;

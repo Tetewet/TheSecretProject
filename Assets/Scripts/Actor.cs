@@ -285,7 +285,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         }
 
     }
-    public virtual void UseEffect(Skill s, Actor[] Target)
+    public virtual void UseEffect(Skill s, Actor[] Targets)
     {
         if (s == null) return;
         if (!CanUseSkill(s)) return;
@@ -295,8 +295,9 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         if (s.SpCost > 0) ConsumeSP(s.SpCost);
 
         UnityEngine.Debug.Log(Name + " uses " + s.Name);
-        foreach (var item in Target)
+        foreach (var item in Targets)
         {
+            UnityEngine.Debug.Log(Name + " uses " + s.Name + " on " + item.Name);
             DamageType dam = s.DmgType;
             UnityEngine.Debug.Log(Enum.Parse(typeof(DamageType), (DamageType.Offensive & s.DmgType).ToString()));
             if ((DamageType.Offensive & s.DmgType) == s.DmgType)
@@ -313,13 +314,18 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
             {
                 case DamageType.Offensive:
                     s.ApplyAttack(item, GetStats, this);
+                    UnityEngine.Debug.Log("Applied Attack");
                     break;
                 case DamageType.Effects:
                     item.Apply(s.FX);
+                    UnityEngine.Debug.Log("Applied Effects");
                     break;
-
+                case DamageType.None:
+                    s.DoEffect(GameManager.CursorPos, this);
+                    UnityEngine.Debug.Log("Applied Ability");
+                    break;
             }
-            
+
         }
 
     }
@@ -378,6 +384,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
         OnTurn += fx.OnTurn;
         OnDamage += fx.OnBeingHit;
         OnAttack += fx.OnAttack;
+        fx.OnInstant(ref HP, ref MP, ref SP);
         fx._actor = this;
         UnityEngine.Debug.Log(fx.StatChange);
 
@@ -683,14 +690,16 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
 
     public virtual void Move(Map.Tile where)
     {
-       var v = Vector.Distance(where.Position,CurrentTile.Position);
+        var v = Vector.Distance(where.Position, CurrentTile.Position);
 
-     
+
         if (where.Actor != null || !CanMoveThere(where))
         {
             CantMove(where.Position);
             return;
         }
+
+        
 
         Path.Clear();
         CreatePath(where);
@@ -883,7 +892,7 @@ public abstract class Actor : IComparable<Actor>,IUniversalID {
     }
     public override string ToString()
     {
-        return Name + " " + LanguageDao.GetLanguage("lvl", GameManager.language) + " " + GetLevel;
+        return Name + " " + LanguageDao.GetLanguage("lvl", ref GameManager.language) + " " + GetLevel;
     }
 
     public int CompareTo(Actor other)
@@ -1046,13 +1055,13 @@ public struct Stat : IComparable<Stat>
 
     public override string ToString()
     {
-        return "Stats: \n" + LanguageDao.GetLanguage("statstr", GameManager.language) + " " + STR
-            + "\n" + LanguageDao.GetLanguage("statagi", GameManager.language) + " " + AGI
-            + "\n" + LanguageDao.GetLanguage("statwis", GameManager.language) + " " + WIS
-            + "\n" + LanguageDao.GetLanguage("statend", GameManager.language) + " " + END
-            + "\n" + LanguageDao.GetLanguage("statint", GameManager.language) + " " + INT
-            + "\n" + LanguageDao.GetLanguage("statluc", GameManager.language) + " " + LUC
-            + "\n" + LanguageDao.GetLanguage("statcrit", GameManager.language) + " " + CriticalHitPercentage;
+        return "Stats: \n" + LanguageDao.GetLanguage("statstr", ref GameManager.language) + " " + STR
+            + "\n" + LanguageDao.GetLanguage("statagi", ref GameManager.language) + " " + AGI
+            + "\n" + LanguageDao.GetLanguage("statwis", ref GameManager.language) + " " + WIS
+            + "\n" + LanguageDao.GetLanguage("statend", ref GameManager.language) + " " + END
+            + "\n" + LanguageDao.GetLanguage("statint", ref GameManager.language) + " " + INT
+            + "\n" + LanguageDao.GetLanguage("statluc", ref GameManager.language) + " " + LUC
+            + "\n" + LanguageDao.GetLanguage("statcrit", ref GameManager.language) + " " + CriticalHitPercentage;
     }
 }
 

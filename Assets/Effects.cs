@@ -1,21 +1,33 @@
 ﻿ using System.Collections;
 using System.Collections.Generic;
- 
+using UnityEngine;
 
 public class Effects:IUniversalID {
 
     public static List<Effects> Core = new List<Effects>()
     {
-        new Poison("null","null", new Functionality(),Vector.right ,duration:5),
-        new Poison("Poison","poison.png", new Functionality(),Vector.right ,duration:5),
-        new Effects("Paralyze","paralyze.png",new Functionality(){CanMove = false}),
-        new Burning ("Burning", "burning.png",new Functionality(),Vector.right,EffectToCause:4,chanceToEffect:5),
-        new Effects("Soaked","soak.png",new Functionality(),new Stat(){ AGI =-1},duration: 2),
-        new Effects("Frenzy","frenzy.png",new Functionality(){IsRational = false},duration:1),
-        new Bonus("Critical +","critup",new Functionality(), duration:3, statchange: new Stat(){CriticalHitFlat = 20 }),
-        new Bonus("Healing", null,new Functionality(), statchange: new Stat(){  }),
-        new Bonus("Spawn", null,new Functionality(){ IsSpawner = true }, statchange: new Stat(){  })
-        
+        new Poison("null","null", new Functionality(),Vector.right ,duration:5),//0
+        new Poison("Poison","poison.png", new Functionality(),Vector.right ,duration:5),//1
+        new Effects("Paralyze","paralyze.png",new Functionality(){CanMove = false}),//2
+        new Burning ("Burning", "burning.png",new Functionality(),Vector.right,EffectToCause:4,chanceToEffect:5),//3
+        new Effects("Soaked","soak.png",new Functionality(),new Stat(){ AGI =-1},duration: 2),//4
+        new Effects("Frenzy","frenzy.png",new Functionality(){IsRational = false},duration:1),//5
+        new Bonus("Critical +","critup",new Functionality(), duration:3, statchange: new Stat(){CriticalHitFlat = 20}),//6
+        new Poison("HealingPerTurn","heal.png", new Functionality(),Vector.left*2 ,duration:5),//7
+        new InstaHealing("Healing","heal.png", new Functionality(),Vector3.right*6),//8
+        new InstaHealing("MPBoost","mp.png", new Functionality(),Vector3.up*6),//9
+        new InstaHealing("SPBoost","sp.png", new Functionality(),Vector3.forward*3),//10
+        new Bonus("Spawn", null,new Functionality(){ IsSpawner = true }, statchange: new Stat(){  }),//11
+        new Bonus("STR +","str",new Functionality(), duration:3, statchange: new Stat(){STR = 5 }),//12
+        new Bonus("AGI +","str",new Functionality(), duration:3, statchange: new Stat(){AGI = 5 }),//13//
+        new Bonus("END +","str",new Functionality(), duration:3, statchange: new Stat(){END = 5 }),//14
+        new Bonus("WIS +","str",new Functionality(), duration:3, statchange: new Stat(){WIS = 5 }),//15
+        new Bonus("INT +","str",new Functionality(), duration:3, statchange: new Stat(){INT = 5 }),//16//
+        new Bonus("LUC +","str",new Functionality(), duration:3, statchange: new Stat(){LUC = 5 }),//17
+         new Bonus("STR -","minusstr",new Functionality(), duration:3, statchange: new Stat(){STR = -5 }),//18
+         new Bonus("STR -","minusstr",new Functionality(), duration:3, statchange: new Stat(){AGI = -5 })//19
+       
+       
 
     };
     /// <summary>
@@ -27,7 +39,8 @@ public class Effects:IUniversalID {
         if (f <= 0) return null;
    
         return Core[f];
-    }
+    } 
+    
 
 
 
@@ -37,6 +50,7 @@ public class Effects:IUniversalID {
     public string imgpath = "fx.png";
     public Functionality Func;
     public readonly int Duration = 3;
+    
     public bool IsNegative = false;
     public bool Curse = false;
     //For exemple, if we want to kill something if their hp < 0 or give them bonus based on whom they are 
@@ -73,7 +87,10 @@ public class Effects:IUniversalID {
     {
 
     }
+    public virtual void OnInstant(ref float HP, ref float MP,ref int SP) {
 
+
+    }
     public override string ToString()
     {
         return base.ToString();
@@ -84,6 +101,7 @@ public class Effects:IUniversalID {
         return ID;
     }
 }
+
 
 public class Poison : Effects
 {
@@ -104,7 +122,25 @@ public class Poison : Effects
     }
 
 }
+public class InstaHealing : Effects
+{
+    //x is HP, y is MP
+    public Vector3 constVector = Vector3.right;
+    public InstaHealing(string name, string Path, Functionality fun, Vector3 constVector, Stat statchange = default(Stat), int duration = 0, bool incurable = false) : base(name, Path, fun, statchange, duration, incurable)
+    {
+        this.constVector = constVector;
+    }
+    
+    public override void OnInstant(ref float HP,ref float MP,ref int SP)
+    {
 
+        
+        HP += (int)constVector.x;
+        MP += (int)constVector.y;
+        SP += (int)constVector.z;
+    }
+
+}
 public class Burning : Poison
 {
     public int FXID = 0;
