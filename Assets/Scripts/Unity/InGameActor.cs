@@ -236,16 +236,46 @@ public class InGameActor : MonoBehaviour
     public void UseSkill(Actor to, Skill s)
     {
         var r = s.Targets;
-        if (!actor.CanUseSkill(s)) { Error(LanguageDao.GetLanguage("notenough", GameManager.language)); return; }
+        if (to == actor)
+        {
+            if (s.FX != null)
+            {
+                if (s.FX.Func.IsSpawner)
+                {
+                    Error(LanguageDao.GetLanguage("applyempty", ref GameManager.language));
+                    return;
+                }
+            }
+        }
+        if (!actor.CanUseSkill(s))
+        {
+            Error(LanguageDao.GetLanguage("notenough", ref GameManager.language));
+            return;
+        }
 
-        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor)) { Error(LanguageDao.GetLanguage("applyally", GameManager.language)); return; }
-        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor)) { Error(LanguageDao.GetLanguage("applyennemy", GameManager.language)); return; }
-        if (r == Skill.TargetType.Self && to != actor && !s.FX.Func.IsSpawner) { Error(LanguageDao.GetLanguage("applyyou", GameManager.language)); return; }
-        if (r == Skill.TargetType.Self && to == actor && s.FX.Func.IsSpawner) { Error(LanguageDao.GetLanguage("applyempty", GameManager.language)); return; }
-        
+        if ((r == Skill.TargetType.AnAlly) && (!GameManager.CurrentBattle.IsTeamWith(actor, to) || to == this.actor))
+        {
+            Error(LanguageDao.GetLanguage("applyally", ref GameManager.language));
+            return;
+        }
+        if ((r == Skill.TargetType.Enemy || r == Skill.TargetType.OneEnemy) && (GameManager.CurrentBattle.IsTeamWith(actor, to) || to == actor))
+        {
+            Error(LanguageDao.GetLanguage("applyennemy", ref GameManager.language));
+            return;
+        }
+        if (r == Skill.TargetType.Self && to != actor)
+        {
+
+            Error(LanguageDao.GetLanguage("applyyou", ref GameManager.language));
+
+            return;
+        }
+
+
 
         TurnSprite((to.TilePosition - actor.TilePosition).x < 0);
         GameManager.GM.ActionFreeze();
+        
         actor.UseEffect(s, to);
 
         GameManager.GM.ShowTabMenu(false);
@@ -318,7 +348,7 @@ public class InGameActor : MonoBehaviour
         if (!gameObject.activeSelf) return;
 
         if (isAI)
-        targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.CurrentBattle.Players.Count)].actor;
+            targetThisTurn = GameManager.GM.InGameActors[Random.Range(0, GameManager.CurrentBattle.Players.Count)].actor;
         actor.TileWalkedThisTurn = 0;
         GameManager.GM.ShowUI(actor);
         if (sprity[0] != null)
@@ -497,7 +527,7 @@ public class InGameActor : MonoBehaviour
                 if ((f != actor && f != a) || f.IsTeamWith(actor))
                 {
 
-                    Error(f.Name + " " + LanguageDao.GetLanguage("isblocking", GameManager.language) + " " + name);
+                    Error(f.Name + " " + LanguageDao.GetLanguage("isblocking", ref GameManager.language) + " " + name);
                     attacking = false;
                     tempattack = null;
                     temptarget = null;

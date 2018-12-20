@@ -9,7 +9,7 @@ public static class LanguageDao
 {
     public static string DatabasePath { get; set; }
 
-    public static string GetLanguage(string name, string languageCode)
+    public static string GetLanguage(string name, ref string languageCode)
     {
         string languageTranslation = "";
         IDbConnection dbConnection = new SqliteConnection(DatabasePath);

@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class Skill : IUniversalID
 {
-    public Skill(string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element, Effects fX,int aoe, bool unlocked = true) {
+    public Skill(int id, string name,string description, Profession.ProfessionType profType, DamageType dmgType,int reach, float damage, float baseCritChance,TargetType target,int hpCost,int mpCost,int spCost, int level, Element element, Effects fX,int aoe, bool unlocked = true) {
+        SkillID = id;
         this.name = name;
         this.Description = description;
         this.profType = profType;
@@ -23,6 +24,7 @@ public class Skill : IUniversalID
         this.element = element;
         this.FX = fX;
         areaOfEffectRange = aoe;
+        
         this.Unlocked = unlocked;
         ID = GameManager.GenerateID(this);
     }
@@ -35,7 +37,8 @@ public class Skill : IUniversalID
         OneEnemy = 2,
         Enemy = 3,
         Anyone = 4,
-        Ally = 5
+        Ally = 5,
+        Everything =6
     }
     
     private new string name = "";
@@ -58,6 +61,7 @@ public class Skill : IUniversalID
     public Effects FX { get; set; }
     public Element element { get; set; }
     public int areaOfEffectRange { get; set; }
+   
     Weapon wep;
     //Requirement    
     private int mpCost = 0, hpCost = 0, spCost = 0, level = 0;
@@ -136,6 +140,7 @@ public class Skill : IUniversalID
 
     }
     private readonly string ID;
+    public int SkillID;
     public string GetID()
     {
         return ID;

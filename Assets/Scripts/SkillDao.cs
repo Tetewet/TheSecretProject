@@ -23,7 +23,7 @@ static class SkillDao
         LanguageCode lang = (LanguageCode)Enum.Parse(typeof(LanguageCode), GameManager.language);
         while (reader.Read())
         {
-            string[] total = reader.GetString((int)lang).Split(':');
+            string[] total = reader.GetString((int)lang+1).Split(':');
             Debug.Log("Reading: " + (reader.GetString((int)lang)) + " from: " + (int)lang);
             string name = "Null";
             string desc = "Null";
@@ -33,21 +33,22 @@ static class SkillDao
                 desc = total[1];
             }
             Skill newSkill = new Skill(
+                reader.GetInt32(0),
                 name,//name
                 desc, //description
-                (Profession.ProfessionType)reader.GetInt32(3),//profession
-                (DamageType)reader.GetInt32(4),//damage type
-                reader.GetInt32(5),//reach
-                reader.GetFloat(6),//damage amount
-                reader.GetFloat(7), //base crit chance
-                (Skill.TargetType)reader.GetInt32(8),// target
-                reader.GetInt32(9),//hpCost
-                reader.GetInt32(10),//mpCost
-                reader.GetInt32(11), //spCost
-                reader.GetInt32(12),//level
-                reader.GetInt32(13),//element
-                reader.GetInt32(14),//effects
-                reader.GetInt32(15),//Area of Effect
+                actor.Class.type,//profession
+                (DamageType)reader.GetInt32(5),//damage type
+                reader.GetInt32(6),//reach
+                reader.GetFloat(7),//damage amount
+                reader.GetFloat(8), //base crit chance
+                (Skill.TargetType)reader.GetInt32(9),// target
+                reader.GetInt32(10),//hpCost
+                reader.GetInt32(11),//mpCost
+                reader.GetInt32(12), //spCost
+                reader.GetInt32(13),//level
+                reader.GetInt32(14),//element
+                reader.GetInt32(15),//effects
+                reader.GetInt32(16),//area of effect range
             reader.GetInt32(12) < actor.GetLevel);//unlocked
 
 
@@ -84,8 +85,7 @@ static class SkillDao
             //      Debug.Log(reader.GetDataTypeName(i));
             //
             //  }
-            string[] total= reader.GetString((int)lang).Split(':');
-            Debug.Log("Reading: " +(reader.GetString((int)lang)) + " from: " + (int)lang);
+            string[] total= reader.GetString((int)lang+1).Split(':');
             string name = "Null";
             string desc = "Null";
             if (total.Length > 1)
@@ -97,21 +97,22 @@ static class SkillDao
            
 
             Skill newSkill = new Skill(
+               reader.GetInt32(0),
                 name,//name
                 desc, //description
                 profession,//profession
-                (DamageType)reader.GetInt32(4),//damage type
-                reader.GetInt32(5),//reach
-                reader.GetFloat(6),//damage amount
-                reader.GetFloat(7), //base crit chance
-                (Skill.TargetType)reader.GetInt32(8),// target
-                reader.GetInt32(9),//hpCost
-                reader.GetInt32(10),//mpCost
-                reader.GetInt32(11), //spCost
-                reader.GetInt32(12),//level
-                reader.GetInt32(13),//element
-                reader.GetInt32(14),//effects
-                reader.GetInt32(15));//area of effect range
+                (DamageType)reader.GetInt32(5),//damage type
+                reader.GetInt32(6),//reach
+                reader.GetFloat(7),//damage amount
+                reader.GetFloat(8), //base crit chance
+                (Skill.TargetType)reader.GetInt32(9),// target
+                reader.GetInt32(10),//hpCost
+                reader.GetInt32(11),//mpCost
+                reader.GetInt32(12), //spCost
+                reader.GetInt32(13),//level
+                reader.GetInt32(14),//element
+                reader.GetInt32(15),//effects
+                reader.GetInt32(16));//area of effect range
             skills.Add(newSkill);
 
         }
@@ -124,6 +125,48 @@ static class SkillDao
         ;
 
         return skills.ToArray();
+    }
+
+       public static Skill GetSkillsNamesByProfession(Skill skill)
+    {
+       
+        string conn = "URI=file:" + Application.dataPath + "/Databases/Skills.db"; //Path to database.
+        IDbConnection dbconn;
+        dbconn = (IDbConnection)new SqliteConnection(conn);
+        dbconn.Open(); //Open connection to the database.
+        IDbCommand dbcmd = dbconn.CreateCommand();
+        string sqlQuery = "SELECT " + GameManager.language + "FROM Skills " + "WHERE skillid = " + skill.GetID();
+        //Debug.Log("Profession DB : Class " + profession + " has being loaded! ");
+        dbcmd.CommandText = sqlQuery;
+        IDataReader reader = dbcmd.ExecuteReader();
+        LanguageCode lang = (LanguageCode)Enum.Parse(typeof(LanguageCode),GameManager.language);
+        while (reader.Read())
+        {
+           
+            string[] total= reader.GetString(((int)lang)+1).Split(':');
+            string name = "Null";
+            string desc = "Null";
+            if (total.Length > 1)
+            {
+                 name = total[0];
+                 desc = total[1];
+            }
+
+            skill.Name = name;
+            skill.Description = desc;
+
+            
+
+        }
+        reader.Close();
+        reader = null;
+        dbcmd.Dispose();
+        dbcmd = null;
+        dbconn.Close();
+        dbconn = null;
+        ;
+
+        return skill;
     }
 
 
