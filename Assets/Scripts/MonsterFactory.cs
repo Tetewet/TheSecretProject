@@ -61,12 +61,12 @@ class MonsterControllerFactory : MonsterFactory
     {
         return new Kuku(Name, baseStats, Controllable, AnimatorPath);
     }
+    static int difficulty = 2;
+    static int difficulTemp = 1;
 
     public static Actor[] SpawnMonsters()
     {
-        int difficulty = 2;
         UnityEngine.Debug.Log("DIFFICULTY OF ENCOUNTER " + difficulty);
-        int difficulTemp = 1;
         if (difficulty <= difficulTemp && difficulty <= 6)
         {
             difficulty = difficulTemp;
